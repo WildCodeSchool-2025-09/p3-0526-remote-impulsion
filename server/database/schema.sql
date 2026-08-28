@@ -27,6 +27,7 @@ CREATE TABLE user (
   username VARCHAR(50) NOT NULL UNIQUE,
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
+  theme ENUM('light', 'dark', 'system') NOT NULL DEFAULT 'system',
   last_login_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
