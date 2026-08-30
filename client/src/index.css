@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* ==========================================================================
+   Design tokens Impulsion — voir variables.css pour la version commentée
+   complète. Ce fichier les branche directement sur les variables sémantiques
+   de daisyUI (--color-*), pour utiliser les composants daisyUI (btn, card,
+   badge, modal...) sans rien re-styler à la main.
+   ========================================================================== */
+
+@plugin "daisyui/theme" {
+  name: "impulsion-dark";
+  default: true;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: #0F172A;   /* --bg   : fond d'écran */
+  --color-base-200: #1E293B;   /* --surface : cartes, nav */
+  --color-base-300: #334155;   /* --sep  : bordures, hover imbriqué */
+  --color-base-content: #F8FAFC; /* --tx : texte principal */
+
+  --color-primary: #FD7240;         /* action DOMINANTE — un seul bouton primaire par écran */
+  --color-primary-content: #FFFFFF;
+
+  --color-secondary: #2563EB;       /* --blue : actions secondaires (ex. "Démarrer") */
+  --color-secondary-content: #FFFFFF;
+
+  --color-accent: #22D3EE;          /* --cy : focus clavier, saisie active */
+  --color-accent-content: #0F172A;
+
+  --color-neutral: #94A3B8;         /* --mu : texte secondaire */
+  --color-neutral-content: #0F172A;
+
+  --color-info: #60A5FA;            /* --bt : liens, onglet actif, messages info */
+  --color-info-content: #0F172A;
+
+  --color-success: #22C55E;         /* --gr : accompli */
+  --color-success-content: #0F172A;
+
+  --color-warning: #F59E0B;         /* --am : avertissement non bloquant */
+  --color-warning-content: #1F2937;
+
+  --color-error: #F87171;           /* --rd : erreur, destructif */
+  --color-error-content: #0F172A;
+
+  /* Rayons daisyUI — mappés sur les jetons de la charte */
+  --radius-box: 14px;      /* cartes, feuilles modales */
+  --radius-field: 10px;    /* boutons, champs, vignettes */
+  --radius-selector: 999px; /* chips, badges */
+
+  --size-field: 0.25rem;
+  --size-selector: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "impulsion-light";
+  color-scheme: light;
+
+  --color-base-100: #F1F5F9;
+  --color-base-200: #FFFFFF;
+  --color-base-300: #E2E8F0;
+  --color-base-content: #0F172A;
+
+  --color-primary: #FD7240;         /* non ré-échantillonné en clair — à vérifier sur la maquette si un jour elle existe en light */
+  --color-primary-content: #FFFFFF;
+
+  --color-secondary: #2563EB;
+  --color-secondary-content: #FFFFFF;
+
+  --color-accent: #0891B2;
+  --color-accent-content: #FFFFFF;
+
+  --color-neutral: #475569;
+  --color-neutral-content: #F8FAFC;
+
+  --color-info: #1D4ED8;
+  --color-info-content: #FFFFFF;
+
+  --color-success: #166534;
+  --color-success-content: #FFFFFF;
+
+  --color-warning: #B45309;
+  --color-warning-content: #FFFFFF;
+
+  --color-error: #B91C1C;
+  --color-error-content: #FFFFFF;
+
+  --radius-box: 14px;
+  --radius-field: 10px;
+  --radius-selector: 999px;
+}
+
+/* Police d'affichage (titres) — cf. variables.css pour l'échelle complète */
+@theme {
+  --font-display: "Saira Condensed", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+}
