@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router";
-import { Home, Dumbbell, PlayCircle, Calendar, Clock, Zap } from "lucide-react";
+import { Home, Dumbbell, PlayCircle, Calendar, Clock } from "lucide-react";
+import logo from "../assets/logo/logo-fond-sombre.png";
 
 const NAV_ITEMS = [
   { to: "/", label: "Accueil", icon: Home, end: true },
@@ -14,12 +15,7 @@ function Layout() {
     <div className="min-h-screen bg-base-100 text-base-content lg:flex">
       {/* Rail latéral — desktop uniquement */}
       <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:shrink-0 border-r border-base-300 p-4">
-        <div className="flex items-center gap-2 mb-8">
-          <Zap size={19} className="text-primary" />
-          <span className="font-display italic font-extrabold uppercase text-lg">
-            Impulsion
-          </span>
-        </div>
+        <img src={logo} alt="Impulsion" width={124} height={26} className="mb-8" />
 
         <nav className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
