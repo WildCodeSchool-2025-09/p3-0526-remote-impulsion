@@ -1,3 +1,41 @@
+# Impulsion
+
+Application de suivi sportif pour athlètes hybrides (façon CrossFit) : catalogue d'exercices, séances (préparée → en cours → terminée), programmes, historique et suivi de progression.
+
+## Stack
+
+- **Frontend** : React 19 + TypeScript, Vite, React Router 7, Tailwind CSS v4 + daisyUI
+- **Backend** : Node.js + Express + TypeScript (architecture Actions + Repository)
+- **Base de données** : MySQL
+- **Outils** : Biome (lint/format), Supertest (tests), Docker
+
+## Démarrage rapide
+
+```bash
+npm install
+# Copier .env.sample -> .env dans server/ et client/, puis remplir les variables
+npm run db:migrate
+npm run dev
+```
+
+Client sur `http://localhost:3000`, serveur sur `http://localhost:3310` (voir `.env.sample` pour les ports exacts).
+
+## Documentation du projet
+
+- **Convention de nommage** : voir `convention-nommage-impulsion.md` (BDD, backend, frontend, Git, Trello)
+- **Design tokens** : `client/src/index.css` (couleurs, thèmes clair/sombre, rayons — Tailwind v4 + daisyUI)
+- **Backlog** : board Trello P3-Impulsion (US00 à US42, epics E0 à E6)
+- **Modèle de données** : MCD/MLD/MPD dans `docs/` — version modifiable sur [Miro](lien-vers-ton-miro)
+
+## Convention de branches et commits
+
+- Branches : `type/USxx-slug-court` (ex. `feature/US30-preparer-seance`)
+- Commits : [Conventional Commits](https://www.conventionalcommits.org/) avec référence à l'US (ex. `feat(US30): créer une séance au statut préparée`)
+
+---
+
+*Le reste de ce README (ci-dessous) est le guide générique Wild Code School sur l'architecture du monorepo — utile en référence technique.*
+
 # p3-0526-remote-impulsion
 
 Ce projet est un monorepo JS, suivant l'architecture React-Express-MySQL telle qu'enseignée à la Wild Code School (v7.2.4) :
