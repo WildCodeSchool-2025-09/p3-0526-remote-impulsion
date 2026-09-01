@@ -64,7 +64,8 @@ CREATE TABLE exercise (
     ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_exercise_difficulty
     FOREIGN KEY (difficulty_id) REFERENCES difficulty(id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  INDEX idx_exercise_name (name)
 );
 
 CREATE TABLE exercise_muscle (
@@ -110,6 +111,7 @@ CREATE TABLE workout_template (
   name VARCHAR(100) NOT NULL,
   estimated_duration_minutes SMALLINT UNSIGNED NULL,
   position SMALLINT UNSIGNED NOT NULL,
+  CONSTRAINT uq_workout_template_position UNIQUE (program_id, position),
   CONSTRAINT fk_workout_template_program
     FOREIGN KEY (program_id) REFERENCES program(id)
     ON DELETE CASCADE ON UPDATE CASCADE
@@ -125,6 +127,8 @@ CREATE TABLE workout_template_exercise (
   target_weight_kg DECIMAL(5,2) NULL,
   target_duration_seconds SMALLINT UNSIGNED NULL,
   rest_seconds SMALLINT UNSIGNED NULL,
+  CONSTRAINT uq_workout_template_exercise UNIQUE (workout_template_id, exercise_id),
+  CONSTRAINT uq_workout_template_exercise_position UNIQUE (workout_template_id, position),
   CONSTRAINT fk_workout_template_exercise_template
     FOREIGN KEY (workout_template_id) REFERENCES workout_template(id)
     ON DELETE CASCADE ON UPDATE CASCADE,
@@ -137,6 +141,8 @@ CREATE TABLE workout_session (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL,
   workout_template_id INT UNSIGNED NULL,
+  source_workout_session_id INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   started_at DATETIME NULL,
   ended_at DATETIME NULL,
   status ENUM('prepared', 'in_progress', 'completed') NOT NULL DEFAULT 'prepared',
@@ -146,6 +152,9 @@ CREATE TABLE workout_session (
     ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT fk_workout_session_template
     FOREIGN KEY (workout_template_id) REFERENCES workout_template(id)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_workout_session_source
+    FOREIGN KEY (source_workout_session_id) REFERENCES workout_session(id)
     ON DELETE SET NULL ON UPDATE CASCADE
 );
 
@@ -160,6 +169,7 @@ CREATE TABLE workout_session_exercise (
   target_duration_seconds SMALLINT UNSIGNED NULL,
   rest_seconds SMALLINT UNSIGNED NULL,
   CONSTRAINT uq_workout_session_exercise UNIQUE (workout_session_id, exercise_id),
+  CONSTRAINT uq_workout_session_exercise_position UNIQUE (workout_session_id, position),
   CONSTRAINT fk_workout_session_exercise_session
     FOREIGN KEY (workout_session_id) REFERENCES workout_session(id)
     ON DELETE CASCADE ON UPDATE CASCADE,
