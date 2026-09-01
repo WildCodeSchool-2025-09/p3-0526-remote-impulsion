@@ -70,6 +70,18 @@ Format : `<nom>Repository.ts` --- ex. `exerciseRepository.ts`,
 Les repositories gèrent l'accès à MySQL. Méthodes usuelles :
 `readAll()`, `read()`, `create()`, `update()`, `delete()`.
 
+### Données privées et utilisateur courant
+
+Tant que l'authentification n'est pas branchée, l'identifiant de l'utilisateur
+de démonstration est obtenu uniquement via
+`server/src/helpers/currentUser.ts`. Il ne doit pas être dupliqué dans les
+repositories.
+
+Tout futur repository qui accède à une donnée privée (`program`,
+`workout_session`, historique...) doit filtrer ses requêtes par `user_id`.
+Après l'intégration de l'authentification, cet identifiant devra venir du
+serveur et jamais d'un paramètre libre fourni par le client.
+
 ## 3. Routes API
 
 Règles : ressources au pluriel, minuscules, `kebab-case` pour les noms
@@ -169,10 +181,10 @@ Exemples :
 
 ``` text
 chore/US00-initialisation-projet
-feature/US01-catalogue-exercices
-feature/US03-detail-exercice
-feature/US10-seance-en-cours
-fix/US10-validation-serie
+feature/US08-catalogue-exercices
+feature/US10-detail-exercice
+feature/US16-demarrer-seance
+fix/US18-validation-serie
 ```
 
 Workflow :
@@ -212,9 +224,9 @@ Exemples :
 ``` text
 chore(US00): configure project environment
 chore(US00): create database schema
-feat(US01): add exercise repository
-feat(US01): display exercise catalogue
-fix(US10): prevent empty set validation
+feat(US08): add exercise repository
+feat(US08): display exercise catalogue
+fix(US18): prevent empty set validation
 ```
 
 Toute l'équipe doit utiliser la même langue pour les messages de commit.
@@ -231,8 +243,8 @@ Exemples :
 
 ``` text
 [US00] Initialisation du projet
-[US01] Catalogue des exercices
-[US10] Réalisation d'une séance
+[US08] Catalogue des exercices
+[US16] Démarrer une séance
 ```
 
 Les branches de travail sont fusionnées vers `dev` via Pull Request.
@@ -300,15 +312,15 @@ repository         → camelCaseRepository.ts
 seeder             → PascalCaseSeeder.ts
 
 Branches :
-feature/US01-catalogue-exercices
-fix/US10-validation-serie
+feature/US08-catalogue-exercices
+fix/US18-validation-serie
 chore/US00-initialisation-projet
 
 Commits :
-feat(US01): add exercise catalogue
-fix(US10): fix set validation
+feat(US08): add exercise catalogue
+fix(US18): fix set validation
 chore(US00): create database schema
 
 Pull Requests :
-[US01] Catalogue des exercices
+[US08] Catalogue des exercices
 ```

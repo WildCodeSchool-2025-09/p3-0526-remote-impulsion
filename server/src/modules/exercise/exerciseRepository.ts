@@ -7,18 +7,18 @@ type Exercise = {
   slug: string;
   name: string;
   description: string;
-  category_id: number;
-  difficulty_id: number;
+  categoryName: string;
+  difficultyName: string;
 };
 
 type ExerciseMuscle = {
-  muscle_group_id: number;
+  muscleGroupId: number;
   name: string;
   role: "primary" | "secondary";
 };
 
 type ExerciseEquipment = {
-  equipment_id: number;
+  equipmentId: number;
   name: string;
 };
 
@@ -31,8 +31,8 @@ class ExerciseRepository {
     const [rows] = await databaseClient.query<Rows>(
       `select
         exercise.id, exercise.slug, exercise.name,
-        category.name as category_name,
-        difficulty.name as difficulty_name
+        category.name as categoryName,
+        difficulty.name as difficultyName
       from exercise
       join category on category.id = exercise.category_id
       join difficulty on difficulty.id = exercise.difficulty_id
@@ -46,8 +46,8 @@ class ExerciseRepository {
     const [rows] = await databaseClient.query<Rows>(
       `select
         exercise.id, exercise.slug, exercise.name, exercise.description,
-        category.name as category_name,
-        difficulty.name as difficulty_name
+        category.name as categoryName,
+        difficulty.name as difficultyName
       from exercise
       join category on category.id = exercise.category_id
       join difficulty on difficulty.id = exercise.difficulty_id
@@ -60,7 +60,7 @@ class ExerciseRepository {
 
   async readMuscles(exerciseId: number) {
     const [rows] = await databaseClient.query<Rows>(
-      `select muscle_group.id as muscle_group_id, muscle_group.name, exercise_muscle.role
+      `select muscle_group.id as muscleGroupId, muscle_group.name, exercise_muscle.role
       from exercise_muscle
       join muscle_group on muscle_group.id = exercise_muscle.muscle_group_id
       where exercise_muscle.exercise_id = ?`,
@@ -72,7 +72,7 @@ class ExerciseRepository {
 
   async readEquipment(exerciseId: number) {
     const [rows] = await databaseClient.query<Rows>(
-      `select equipment.id as equipment_id, equipment.name
+      `select equipment.id as equipmentId, equipment.name
       from exercise_equipment
       join equipment on equipment.id = exercise_equipment.equipment_id
       where exercise_equipment.exercise_id = ?`,
