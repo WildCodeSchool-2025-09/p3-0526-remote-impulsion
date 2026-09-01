@@ -37,11 +37,11 @@ describe("Installation", () => {
   });
 
   // Test: Check if the database migration scripts have been executed
-  test("You have executed the db:migrate scripts", async () => {
-    // Query the 'item' table to check if any data has been inserted
-    const [rows] = await databaseClient.query<Rows>("select * from item");
+  test("the Impulsion schema and exercise seed are installed", async () => {
+    const [rows] = await databaseClient.query<Rows>(
+      "select count(*) as exercise_count from exercise",
+    );
 
-    // Expecting rows to be returned, indicating successful migration
-    expect(rows.length).toBeGreaterThanOrEqual(0);
+    expect(rows[0].exercise_count).toBe(151);
   });
 });

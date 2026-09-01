@@ -1,11 +1,11 @@
 import { RouterProvider, createBrowserRouter } from "react-router";
 
 import Layout from "./components/Layout";
-import Home from "./pages/Home";
 import Exercises from "./pages/Exercises";
-import Session from "./pages/Session";
-import Programs from "./pages/Programs";
 import History from "./pages/History";
+import Home from "./pages/Home";
+import Programs from "./pages/Programs";
+import Session from "./pages/Session";
 
 const router = createBrowserRouter([
   {

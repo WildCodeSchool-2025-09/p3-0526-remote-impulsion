@@ -9,43 +9,46 @@
    ========================================================================== */
 
 @plugin "daisyui/theme" {
+  /* biome-ignore lint/correctness/noUnknownProperty: DaisyUI theme descriptor. */
   name: "impulsion-dark";
+  /* biome-ignore lint/correctness/noUnknownProperty: DaisyUI theme descriptor. */
   default: true;
+  /* biome-ignore lint/correctness/noUnknownProperty: DaisyUI theme descriptor. */
   prefersdark: true;
   color-scheme: dark;
 
-  --color-base-100: #0F172A;   /* --bg   : fond d'écran */
-  --color-base-200: #1E293B;   /* --surface : cartes, nav */
-  --color-base-300: #334155;   /* --sep  : bordures, hover imbriqué */
-  --color-base-content: #F8FAFC; /* --tx : texte principal */
+  --color-base-100: #0f172a; /* --bg   : fond d'écran */
+  --color-base-200: #1e293b; /* --surface : cartes, nav */
+  --color-base-300: #334155; /* --sep  : bordures, hover imbriqué */
+  --color-base-content: #f8fafc; /* --tx : texte principal */
 
-  --color-primary: #FD7240;         /* action DOMINANTE — un seul bouton primaire par écran */
-  --color-primary-content: #FFFFFF;
+  --color-primary: #fd7240; /* action DOMINANTE — un seul bouton primaire par écran */
+  --color-primary-content: #ffffff;
 
-  --color-secondary: #2563EB;       /* --blue : actions secondaires (ex. "Démarrer") */
-  --color-secondary-content: #FFFFFF;
+  --color-secondary: #2563eb; /* --blue : actions secondaires (ex. "Démarrer") */
+  --color-secondary-content: #ffffff;
 
-  --color-accent: #22D3EE;          /* --cy : focus clavier, saisie active */
-  --color-accent-content: #0F172A;
+  --color-accent: #22d3ee; /* --cy : focus clavier, saisie active */
+  --color-accent-content: #0f172a;
 
-  --color-neutral: #94A3B8;         /* --mu : texte secondaire */
-  --color-neutral-content: #0F172A;
+  --color-neutral: #94a3b8; /* --mu : texte secondaire */
+  --color-neutral-content: #0f172a;
 
-  --color-info: #60A5FA;            /* --bt : liens, onglet actif, messages info */
-  --color-info-content: #0F172A;
+  --color-info: #60a5fa; /* --bt : liens, onglet actif, messages info */
+  --color-info-content: #0f172a;
 
-  --color-success: #22C55E;         /* --gr : accompli */
-  --color-success-content: #0F172A;
+  --color-success: #22c55e; /* --gr : accompli */
+  --color-success-content: #0f172a;
 
-  --color-warning: #F59E0B;         /* --am : avertissement non bloquant */
-  --color-warning-content: #1F2937;
+  --color-warning: #f59e0b; /* --am : avertissement non bloquant */
+  --color-warning-content: #1f2937;
 
-  --color-error: #F87171;           /* --rd : erreur, destructif */
-  --color-error-content: #0F172A;
+  --color-error: #f87171; /* --rd : erreur, destructif */
+  --color-error-content: #0f172a;
 
   /* Rayons daisyUI — mappés sur les jetons de la charte */
-  --radius-box: 14px;      /* cartes, feuilles modales */
-  --radius-field: 10px;    /* boutons, champs, vignettes */
+  --radius-box: 14px; /* cartes, feuilles modales */
+  --radius-field: 10px; /* boutons, champs, vignettes */
   --radius-selector: 999px; /* chips, badges */
 
   --size-field: 0.25rem;
@@ -56,37 +59,38 @@
 }
 
 @plugin "daisyui/theme" {
+  /* biome-ignore lint/correctness/noUnknownProperty: DaisyUI theme descriptor. */
   name: "impulsion-light";
   color-scheme: light;
 
-  --color-base-100: #F1F5F9;
-  --color-base-200: #FFFFFF;
-  --color-base-300: #E2E8F0;
-  --color-base-content: #0F172A;
+  --color-base-100: #f1f5f9;
+  --color-base-200: #ffffff;
+  --color-base-300: #e2e8f0;
+  --color-base-content: #0f172a;
 
-  --color-primary: #FD7240;         /* non ré-échantillonné en clair — à vérifier sur la maquette si un jour elle existe en light */
-  --color-primary-content: #FFFFFF;
+  --color-primary: #fd7240; /* non ré-échantillonné en clair — à vérifier sur la maquette si un jour elle existe en light */
+  --color-primary-content: #ffffff;
 
-  --color-secondary: #2563EB;
-  --color-secondary-content: #FFFFFF;
+  --color-secondary: #2563eb;
+  --color-secondary-content: #ffffff;
 
-  --color-accent: #0891B2;
-  --color-accent-content: #FFFFFF;
+  --color-accent: #0891b2;
+  --color-accent-content: #ffffff;
 
   --color-neutral: #475569;
-  --color-neutral-content: #F8FAFC;
+  --color-neutral-content: #f8fafc;
 
-  --color-info: #1D4ED8;
-  --color-info-content: #FFFFFF;
+  --color-info: #1d4ed8;
+  --color-info-content: #ffffff;
 
   --color-success: #166534;
-  --color-success-content: #FFFFFF;
+  --color-success-content: #ffffff;
 
-  --color-warning: #B45309;
-  --color-warning-content: #FFFFFF;
+  --color-warning: #b45309;
+  --color-warning-content: #ffffff;
 
-  --color-error: #B91C1C;
-  --color-error-content: #FFFFFF;
+  --color-error: #b91c1c;
+  --color-error-content: #ffffff;
 
   --radius-box: 14px;
   --radius-field: 10px;

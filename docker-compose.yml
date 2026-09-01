@@ -16,7 +16,7 @@ services:
       DB_PORT: 3306
       DB_USER: user
       DB_PASSWORD: password
-      DB_NAME: js_template_fullstack
+      DB_NAME: impulsion
       VITE_API_URL: "http://localhost:3310"
     command: sh -c "npm run dev"
     depends_on:

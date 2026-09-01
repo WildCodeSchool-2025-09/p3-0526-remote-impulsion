@@ -112,6 +112,12 @@ client/
 
 ## 5. TypeScript
 
+Le projet conserve uniquement les workspaces `client` et `server` : aucun
+dossier ou workspace `shared` n'est utilisé. Les types frontend vivent dans
+`client/src/types`. Les types backend vivent dans le module concerné ou dans
+`server/src/types` lorsqu'ils sont transverses au serveur. Le contrat HTTP
+relie les deux applications sans import TypeScript entre les workspaces.
+
 Variables et fonctions en `camelCase` :
 
 ``` ts

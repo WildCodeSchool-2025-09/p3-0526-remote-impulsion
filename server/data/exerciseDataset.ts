@@ -39,10 +39,7 @@ type ExerciseDataset = {
   exercises: Exercise[];
 };
 
-const datasetPath = path.join(
-  __dirname,
-  "./exercise-api/v1/dataset.json",
-);
+const datasetPath = path.join(__dirname, "./exercise-api/v1/dataset.json");
 
 const dataset = JSON.parse(
   fs.readFileSync(datasetPath, "utf8"),

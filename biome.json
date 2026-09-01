@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["**/dist/*", "**/*.template.*", "**/tsconfig.json", "coverage"]
+    "ignore": [
+      "**/dist/*",
+      "**/*.template.*",
+      "**/tsconfig.json",
+      "coverage",
+      "server/data/exercise-api/v1/dataset.json"
+    ]
   },
   "formatter": {
     "enabled": true,

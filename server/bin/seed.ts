@@ -22,7 +22,7 @@ const seed = async () => {
 
     for (const filePath of filePaths) {
       const { default: SeederClass } = await import(
-	`file://${path.join(fixturesPath, filePath)}`
+        `file://${path.join(fixturesPath, filePath)}`
       );
 
       const seeder = new SeederClass() as AbstractSeeder;
@@ -71,17 +71,17 @@ const seed = async () => {
       await Promise.all(seeder.promises);
     }
 
-    // Close the database connection
-    database.end();
-
     console.info(
       `${process.env.DB_NAME} filled from '${path.normalize(fixturesPath)}' 🌱`,
     );
   } catch (err) {
     const { message, stack } = err as Error;
     console.error("Error filling the database:", message, stack);
+    process.exitCode = 1;
+  } finally {
+    await database.end();
   }
 };
 
 // Run the seed function
-seed();
+void seed();

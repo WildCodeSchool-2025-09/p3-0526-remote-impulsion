@@ -1,7 +1,7 @@
+import dataset from "../../data/exerciseDataset";
 import AbstractSeeder from "./AbstractSeeder";
 import CategorySeeder from "./CategorySeeder";
 import DifficultySeeder from "./DifficultySeeder";
-import dataset from "../../data/exerciseDataset";
 
 class ExerciseSeeder extends AbstractSeeder {
   constructor() {
