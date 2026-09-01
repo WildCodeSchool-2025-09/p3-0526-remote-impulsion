@@ -1,7 +1,3 @@
--- Impulsion - schema.sql
--- MySQL 8+
--- Basé sur le MCD / MLD / MPD actuels et le dataset local exercise-api.
-
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -11,6 +7,7 @@ DROP TABLE IF EXISTS workout_session;
 DROP TABLE IF EXISTS workout_template_exercise;
 DROP TABLE IF EXISTS workout_template;
 DROP TABLE IF EXISTS program;
+DROP TABLE IF EXISTS exercise_step;
 DROP TABLE IF EXISTS exercise_equipment;
 DROP TABLE IF EXISTS exercise_muscle;
 DROP TABLE IF EXISTS exercise;
@@ -67,6 +64,23 @@ CREATE TABLE exercise (
     ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
+-- NOUVEAU (MPD v3) : étapes d'exécution d'un exercice, remplace l'ancien
+-- champ exercise.instructions par une liste structurée et ordonnée.
+-- ATTENTION : les valeurs de l'ENUM `kind` sont une hypothèse (une seule
+-- valeur vue sur la maquette : les étapes d'exécution numérotées). A
+-- confirmer avec l'équipe avant de considérer cette table comme figée.
+CREATE TABLE exercise_step (
+  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  exercise_id INT UNSIGNED NOT NULL,
+  kind ENUM('execution') NOT NULL DEFAULT 'execution',
+  position SMALLINT UNSIGNED NOT NULL,
+  content TEXT NOT NULL,
+  CONSTRAINT uq_exercise_step_position UNIQUE (exercise_id, position),
+  CONSTRAINT fk_exercise_step_exercise
+    FOREIGN KEY (exercise_id) REFERENCES exercise(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 CREATE TABLE exercise_muscle (
   exercise_id INT UNSIGNED NOT NULL,
   muscle_group_id SMALLINT UNSIGNED NOT NULL,
@@ -110,6 +124,9 @@ CREATE TABLE workout_template (
   name VARCHAR(100) NOT NULL,
   estimated_duration_minutes SMALLINT UNSIGNED NULL,
   position SMALLINT UNSIGNED NOT NULL,
+  -- NOUVEAU (MPD v3) : empêche deux séances types à la même position
+  -- dans un même programme (nécessaire pour US36, "proposer la prochaine").
+  CONSTRAINT uq_workout_template_position UNIQUE (program_id, position),
   CONSTRAINT fk_workout_template_program
     FOREIGN KEY (program_id) REFERENCES program(id)
     ON DELETE CASCADE ON UPDATE CASCADE
@@ -125,6 +142,9 @@ CREATE TABLE workout_template_exercise (
   target_weight_kg DECIMAL(5,2) NULL,
   target_duration_seconds SMALLINT UNSIGNED NULL,
   rest_seconds SMALLINT UNSIGNED NULL,
+  -- NOUVEAU (MPD v3) : empêche deux exercices à la même position
+  -- dans une même séance type (US35, ordre des exercices).
+  CONSTRAINT uq_workout_template_exercise_position UNIQUE (workout_template_id, position),
   CONSTRAINT fk_workout_template_exercise_template
     FOREIGN KEY (workout_template_id) REFERENCES workout_template(id)
     ON DELETE CASCADE ON UPDATE CASCADE,
@@ -160,6 +180,9 @@ CREATE TABLE workout_session_exercise (
   target_duration_seconds SMALLINT UNSIGNED NULL,
   rest_seconds SMALLINT UNSIGNED NULL,
   CONSTRAINT uq_workout_session_exercise UNIQUE (workout_session_id, exercise_id),
+  -- NOUVEAU (MPD v3) : empêche deux exercices à la même position
+  -- dans une même séance (US35, ordre des exercices).
+  CONSTRAINT uq_workout_session_exercise_position UNIQUE (workout_session_id, position),
   CONSTRAINT fk_workout_session_exercise_session
     FOREIGN KEY (workout_session_id) REFERENCES workout_session(id)
     ON DELETE CASCADE ON UPDATE CASCADE,

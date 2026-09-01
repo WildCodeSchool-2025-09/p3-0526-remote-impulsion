@@ -25,7 +25,7 @@ Client sur `http://localhost:3000`, serveur sur `http://localhost:3310` (voir `.
 - **Convention de nommage** : voir `convention-nommage-impulsion.md` (BDD, backend, frontend, Git, Trello)
 - **Design tokens** : `client/src/index.css` (couleurs, thèmes clair/sombre, rayons — Tailwind v4 + daisyUI)
 - **Backlog** : board Trello P3-Impulsion (US00 à US42, epics E0 à E6)
-- **Modèle de données** : MCD/MLD/MPD dans `docs/` — version modifiable sur [Miro](lien-vers-ton-miro)
+- **Modèle de données** : MCD/MLD/MPD dans `docs/`
 
 ## Convention de branches et commits
 
