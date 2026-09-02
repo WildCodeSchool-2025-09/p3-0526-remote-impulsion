@@ -1,7 +1,16 @@
 import type { RequestHandler } from "express";
 import exerciseRepository from "./exerciseRepository";
+import type { ExerciseDetail, ExerciseSummary } from "./exerciseTypes";
 
-const browse: RequestHandler = async (req, res, next) => {
+type ExerciseIdParams = {
+  id: string;
+};
+
+const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
+  _req,
+  res,
+  next,
+) => {
   try {
     const exercises = await exerciseRepository.readAll();
 
@@ -11,7 +20,11 @@ const browse: RequestHandler = async (req, res, next) => {
   }
 };
 
-const read: RequestHandler = async (req, res, next) => {
+const read: RequestHandler<ExerciseIdParams, ExerciseDetail> = async (
+  req,
+  res,
+  next,
+) => {
   try {
     const exerciseId = Number(req.params.id);
     const exercise = await exerciseRepository.read(exerciseId);
@@ -26,7 +39,13 @@ const read: RequestHandler = async (req, res, next) => {
       exerciseRepository.readEquipment(exerciseId),
     ]);
 
-    res.json({ ...exercise, muscles, equipment });
+    const exerciseDetail: ExerciseDetail = {
+      ...exercise,
+      muscles,
+      equipment,
+    };
+
+    res.json(exerciseDetail);
   } catch (err) {
     next(err);
   }

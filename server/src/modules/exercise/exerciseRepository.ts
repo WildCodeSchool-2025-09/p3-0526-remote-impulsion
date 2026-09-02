@@ -1,30 +1,21 @@
 import databaseClient from "../../../database/client";
 
-import type { Rows } from "../../../database/client";
+import type { RowDataPacket } from "mysql2/promise";
+import type {
+  Exercise,
+  ExerciseEquipment,
+  ExerciseMuscle,
+  ExerciseSummary,
+} from "./exerciseTypes";
 
-type Exercise = {
-  id: number;
-  slug: string;
-  name: string;
-  description: string;
-  categoryName: string;
-  difficultyName: string;
-};
-
-type ExerciseMuscle = {
-  muscleGroupId: number;
-  name: string;
-  role: "primary" | "secondary";
-};
-
-type ExerciseEquipment = {
-  equipmentId: number;
-  name: string;
-};
+type ExerciseSummaryRow = ExerciseSummary & RowDataPacket;
+type ExerciseRow = Exercise & RowDataPacket;
+type ExerciseMuscleRow = ExerciseMuscle & RowDataPacket;
+type ExerciseEquipmentRow = ExerciseEquipment & RowDataPacket;
 
 class ExerciseRepository {
-  async readAll() {
-    const [rows] = await databaseClient.query<Rows>(
+  async readAll(): Promise<ExerciseSummary[]> {
+    const [rows] = await databaseClient.query<ExerciseSummaryRow[]>(
       `select
         exercise.id, exercise.slug, exercise.name,
         category.name as categoryName,
@@ -38,8 +29,8 @@ class ExerciseRepository {
     return rows;
   }
 
-  async read(id: number) {
-    const [rows] = await databaseClient.query<Rows>(
+  async read(id: number): Promise<Exercise | undefined> {
+    const [rows] = await databaseClient.query<ExerciseRow[]>(
       `select
         exercise.id, exercise.slug, exercise.name, exercise.description,
         category.name as categoryName,
@@ -51,11 +42,11 @@ class ExerciseRepository {
       [id],
     );
 
-    return rows[0] as Exercise | undefined;
+    return rows[0];
   }
 
-  async readMuscles(exerciseId: number) {
-    const [rows] = await databaseClient.query<Rows>(
+  async readMuscles(exerciseId: number): Promise<ExerciseMuscle[]> {
+    const [rows] = await databaseClient.query<ExerciseMuscleRow[]>(
       `select muscle_group.id as muscleGroupId, muscle_group.name, exercise_muscle.role
       from exercise_muscle
       join muscle_group on muscle_group.id = exercise_muscle.muscle_group_id
@@ -63,11 +54,11 @@ class ExerciseRepository {
       [exerciseId],
     );
 
-    return rows as ExerciseMuscle[];
+    return rows;
   }
 
-  async readEquipment(exerciseId: number) {
-    const [rows] = await databaseClient.query<Rows>(
+  async readEquipment(exerciseId: number): Promise<ExerciseEquipment[]> {
+    const [rows] = await databaseClient.query<ExerciseEquipmentRow[]>(
       `select equipment.id as equipmentId, equipment.name
       from exercise_equipment
       join equipment on equipment.id = exercise_equipment.equipment_id
@@ -75,7 +66,7 @@ class ExerciseRepository {
       [exerciseId],
     );
 
-    return rows as ExerciseEquipment[];
+    return rows;
   }
 }
 
