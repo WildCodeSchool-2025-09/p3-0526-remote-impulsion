@@ -23,11 +23,7 @@ type ExerciseEquipment = {
 };
 
 class ExerciseRepository {
-  // The Rs of BREAD - Read operations
-
   async readAll() {
-    // Join category and difficulty to return their name directly,
-    // rather than making the front do a second request per exercise.
     const [rows] = await databaseClient.query<Rows>(
       `select
         exercise.id, exercise.slug, exercise.name,

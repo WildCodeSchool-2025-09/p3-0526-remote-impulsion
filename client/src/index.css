@@ -1,55 +1,44 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* ==========================================================================
-   Design tokens Impulsion — voir variables.css pour la version commentée
-   complète. Ce fichier les branche directement sur les variables sémantiques
-   de daisyUI (--color-*), pour utiliser les composants daisyUI (btn, card,
-   badge, modal...) sans rien re-styler à la main.
-   ========================================================================== */
-
 @plugin "daisyui/theme" {
-  /* biome-ignore lint/correctness/noUnknownProperty: DaisyUI theme descriptor. */
   name: "impulsion-dark";
-  /* biome-ignore lint/correctness/noUnknownProperty: DaisyUI theme descriptor. */
   default: true;
-  /* biome-ignore lint/correctness/noUnknownProperty: DaisyUI theme descriptor. */
   prefersdark: true;
   color-scheme: dark;
 
-  --color-base-100: #0f172a; /* --bg   : fond d'écran */
-  --color-base-200: #1e293b; /* --surface : cartes, nav */
-  --color-base-300: #334155; /* --sep  : bordures, hover imbriqué */
-  --color-base-content: #f8fafc; /* --tx : texte principal */
+  --color-base-100: #0f172a;
+  --color-base-200: #1e293b;
+  --color-base-300: #334155;
+  --color-base-content: #f8fafc;
 
-  --color-primary: #fd7240; /* action DOMINANTE — un seul bouton primaire par écran */
+  --color-primary: #fd7240;
   --color-primary-content: #ffffff;
 
-  --color-secondary: #2563eb; /* --blue : actions secondaires (ex. "Démarrer") */
+  --color-secondary: #2563eb;
   --color-secondary-content: #ffffff;
 
-  --color-accent: #22d3ee; /* --cy : focus clavier, saisie active */
+  --color-accent: #22d3ee;
   --color-accent-content: #0f172a;
 
-  --color-neutral: #94a3b8; /* --mu : texte secondaire */
+  --color-neutral: #94a3b8;
   --color-neutral-content: #0f172a;
 
-  --color-info: #60a5fa; /* --bt : liens, onglet actif, messages info */
+  --color-info: #60a5fa;
   --color-info-content: #0f172a;
 
-  --color-success: #22c55e; /* --gr : accompli */
+  --color-success: #22c55e;
   --color-success-content: #0f172a;
 
-  --color-warning: #f59e0b; /* --am : avertissement non bloquant */
+  --color-warning: #f59e0b;
   --color-warning-content: #1f2937;
 
-  --color-error: #f87171; /* --rd : erreur, destructif */
+  --color-error: #f87171;
   --color-error-content: #0f172a;
 
-  /* Rayons daisyUI — mappés sur les jetons de la charte */
-  --radius-box: 14px; /* cartes, feuilles modales */
-  --radius-field: 10px; /* boutons, champs, vignettes */
-  --radius-selector: 999px; /* chips, badges */
+  --radius-box: 14px;
+  --radius-field: 10px;
+  --radius-selector: 999px;
 
   --size-field: 0.25rem;
   --size-selector: 0.25rem;
@@ -59,7 +48,6 @@
 }
 
 @plugin "daisyui/theme" {
-  /* biome-ignore lint/correctness/noUnknownProperty: DaisyUI theme descriptor. */
   name: "impulsion-light";
   color-scheme: light;
 
@@ -68,7 +56,7 @@
   --color-base-300: #e2e8f0;
   --color-base-content: #0f172a;
 
-  --color-primary: #fd7240; /* non ré-échantillonné en clair — à vérifier sur la maquette si un jour elle existe en light */
+  --color-primary: #fd7240;
   --color-primary-content: #ffffff;
 
   --color-secondary: #2563eb;
@@ -97,7 +85,6 @@
   --radius-selector: 999px;
 }
 
-/* Police d'affichage (titres) — cf. variables.css pour l'échelle complète */
 @theme {
   --font-display: "Saira Condensed", sans-serif;
   --font-body: "Inter", system-ui, sans-serif;

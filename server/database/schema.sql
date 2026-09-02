@@ -108,8 +108,6 @@ CREATE TABLE workout_template (
   name VARCHAR(100) NOT NULL,
   estimated_duration_minutes SMALLINT UNSIGNED NULL,
   position SMALLINT UNSIGNED NOT NULL,
-  -- NOUVEAU (MPD v3) : empêche deux séances types à la même position
-  -- dans un même programme (nécessaire pour US37, "proposer la prochaine").
   CONSTRAINT uq_workout_template_position UNIQUE (program_id, position),
   CONSTRAINT fk_workout_template_program
     FOREIGN KEY (program_id) REFERENCES program(id)
@@ -128,8 +126,6 @@ CREATE TABLE workout_template_exercise (
   rest_seconds SMALLINT UNSIGNED NULL,
   CONSTRAINT uq_workout_template_exercise
     UNIQUE (workout_template_id, exercise_id),
-  -- NOUVEAU (MPD v3) : empêche deux exercices à la même position
-  -- dans une même séance type (US14, ordre des exercices).
   CONSTRAINT uq_workout_template_exercise_position UNIQUE (workout_template_id, position),
   CONSTRAINT fk_workout_template_exercise_template
     FOREIGN KEY (workout_template_id) REFERENCES workout_template(id)
@@ -171,8 +167,6 @@ CREATE TABLE workout_session_exercise (
   target_duration_seconds SMALLINT UNSIGNED NULL,
   rest_seconds SMALLINT UNSIGNED NULL,
   CONSTRAINT uq_workout_session_exercise UNIQUE (workout_session_id, exercise_id),
-  -- NOUVEAU (MPD v3) : empêche deux exercices à la même position
-  -- dans une même séance (US14, ordre des exercices).
   CONSTRAINT uq_workout_session_exercise_position UNIQUE (workout_session_id, position),
   CONSTRAINT fk_workout_session_exercise_session
     FOREIGN KEY (workout_session_id) REFERENCES workout_session(id)

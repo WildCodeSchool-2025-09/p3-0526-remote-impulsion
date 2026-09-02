@@ -13,7 +13,6 @@ const NAV_ITEMS = [
 function Layout() {
   return (
     <div className="min-h-screen bg-base-100 text-base-content lg:flex">
-      {/* Rail latéral — desktop uniquement */}
       <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:shrink-0 border-r border-base-300 p-4">
         <img
           src={logo}
@@ -44,12 +43,10 @@ function Layout() {
         </nav>
       </aside>
 
-      {/* Contenu de la page */}
       <main className="flex-1 p-4 pb-24 lg:pb-4">
         <Outlet />
       </main>
 
-      {/* Barre basse — mobile uniquement */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-base-200 border-t border-base-300 flex justify-around items-center">
         {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
           <NavLink
