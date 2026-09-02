@@ -18,11 +18,9 @@ class ExerciseRepository {
     const [rows] = await databaseClient.query<ExerciseSummaryRow[]>(
       `select
         exercise.id, exercise.slug, exercise.name,
-        category.name as categoryName,
-        difficulty.name as difficultyName
+        category.name as category
       from exercise
       join category on category.id = exercise.category_id
-      join difficulty on difficulty.id = exercise.difficulty_id
       order by exercise.name`,
     );
 

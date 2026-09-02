@@ -4,8 +4,7 @@ export type ExerciseSummary = {
   id: number;
   slug: string;
   name: string;
-  categoryName: string;
-  difficultyName: string;
+  category: string;
 };
 
 export type Exercise = ExerciseSummary & {
