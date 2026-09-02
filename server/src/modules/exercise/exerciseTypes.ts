@@ -5,6 +5,7 @@ export type ExerciseSummary = {
   slug: string;
   name: string;
   category: string;
+  imageUrl: string;
 };
 
 export type Exercise = ExerciseSummary & {

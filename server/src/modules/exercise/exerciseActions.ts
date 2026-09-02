@@ -14,7 +14,14 @@ const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
   try {
     const exercises = await exerciseRepository.readAll();
 
-    res.json(exercises);
+    const exercisesWithImage = exercises.map((exercise) => {
+      return {
+        ...exercise,
+        imageUrl: `/assets/images/${exercise.slug}.jpg`,
+      };
+    });
+
+    res.json(exercisesWithImage);
   } catch (err) {
     next(err);
   }
