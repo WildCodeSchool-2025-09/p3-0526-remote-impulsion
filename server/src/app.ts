@@ -50,9 +50,9 @@ app.use(
 // 3. `express.text()`: Parses requests with raw text data.
 // 4. `express.raw()`: Parses requests with raw binary data.
 
-// The Impulsion API exchanges JSON payloads.
+// Uncomment one or more of these options depending on the format of the data sent by your client:
 
-app.use(express.json());
+// app.use(express.json());
 // app.use(express.urlencoded());
 // app.use(express.text());
 // app.use(express.raw());
@@ -119,17 +119,6 @@ const logErrors: ErrorRequestHandler = (err, req, res, next) => {
 
 // Mount the logErrors middleware globally
 app.use(logErrors);
-
-const sendErrorResponse: ErrorRequestHandler = (err, _req, res, next) => {
-  if (res.headersSent) {
-    next(err);
-    return;
-  }
-
-  res.status(500).json({ error: "Une erreur interne est survenue." });
-};
-
-app.use(sendErrorResponse);
 
 /* ************************************************************************* */
 
