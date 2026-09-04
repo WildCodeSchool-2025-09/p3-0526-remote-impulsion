@@ -7,13 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": [
-      "**/dist/*",
-      "**/*.template.*",
-      "**/tsconfig.json",
-      "coverage",
-      "server/data/exercise-api/v1/dataset.json"
-    ]
+    "ignore": ["**/dist/*", "**/*.template.*", "**/tsconfig.json", "coverage"]
   },
   "formatter": {
     "enabled": true,
@@ -25,10 +19,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
-      "correctness": {
-        "noUnknownProperty": "off"
-      }
+      "recommended": true
     }
   },
   "javascript": {

@@ -11,11 +11,6 @@ import type { Result } from "../client";
 // Declare an object to store created objects from their names
 type Ref = object & { insertId: number };
 
-type SeederData = {
-  refName?: string;
-  [column: string]: unknown;
-};
-
 const refs: { [key: string]: Ref } = {};
 
 type SeederOptions = {
@@ -48,7 +43,7 @@ abstract class AbstractSeeder implements SeederOptions {
     this.faker = faker;
   }
 
-  async #doInsert(data: SeederData) {
+  async #doInsert(data: { refName?: string } & object) {
     // Extract ref name (if it exists)
     const { refName, ...values } = data;
 
@@ -70,7 +65,7 @@ abstract class AbstractSeeder implements SeederOptions {
     }
   }
 
-  insert(data: SeederData) {
+  insert(data: { refName?: string } & object) {
     this.promises.push(this.#doInsert(data));
   }
 

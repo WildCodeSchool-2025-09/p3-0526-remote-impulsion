@@ -14,20 +14,12 @@ const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
 import mysql from "mysql2/promise";
 
 const migrate = async () => {
-  if (DB_NAME == null || !/^[a-zA-Z0-9_]+$/.test(DB_NAME)) {
-    throw new Error(
-      "DB_NAME doit contenir uniquement des lettres, chiffres ou underscores.",
-    );
-  }
-
-  let database: mysql.Connection | undefined;
-
   try {
     // Read the SQL statements from the schema file
     const sql = fs.readFileSync(schema, "utf8");
 
     // Create a specific connection to the database
-    database = await mysql.createConnection({
+    const database = await mysql.createConnection({
       host: DB_HOST,
       port: DB_PORT as number | undefined,
       user: DB_USER,
@@ -36,26 +28,26 @@ const migrate = async () => {
     });
 
     // Drop the existing database if it exists
-    await database.query(`drop database if exists \`${DB_NAME}\``);
+    await database.query(`drop database if exists ${DB_NAME}`);
 
     // Create a new database with the specified name
-    await database.query(`create database \`${DB_NAME}\``);
+    await database.query(`create database ${DB_NAME}`);
 
     // Switch to the newly created database
-    await database.query(`use \`${DB_NAME}\``);
+    await database.query(`use ${DB_NAME}`);
 
     // Execute the SQL statements to update the database schema
     await database.query(sql);
+
+    // Close the database connection
+    database.end();
 
     console.info(`${DB_NAME} updated from '${path.normalize(schema)}' 🆙`);
   } catch (err) {
     const { message, stack } = err as Error;
     console.error("Error updating the database:", message, stack);
-    process.exitCode = 1;
-  } finally {
-    await database?.end();
   }
 };
 
 // Run the migration function
-void migrate();
+migrate();
