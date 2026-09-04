@@ -4,7 +4,11 @@ import CalendarIcon from "../assets/icons/navigation/calendar-month.svg?react";
 import HistoryIcon from "../assets/icons/navigation/history.svg?react";
 import HomeIcon from "../assets/icons/navigation/home.svg?react";
 import PlayIcon from "../assets/icons/navigation/player-play.svg?react";
-import logo from "../assets/logo/logo-fond-sombre.png";
+import ThemeIcon from "../assets/icons/navigation/theme.svg?react";
+import UserIcon from "../assets/icons/navigation/user.svg?react";
+import logoLight from "../assets/logo/logo-fond-clair.png";
+import logoDark from "../assets/logo/logo-fond-sombre.png";
+import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
   { to: "/", label: "Accueil", icon: HomeIcon, end: true },
@@ -15,11 +19,25 @@ const NAV_ITEMS = [
 ];
 
 function Layout() {
+  const [theme, setTheme] = useState<"impulsion-dark" | "impulsion-light">("impulsion-dark");
+
+  function toggleTheme() {
+    setTheme((currentTheme) =>
+      currentTheme === "impulsion-dark"
+        ? "impulsion-light"
+        : "impulsion-dark",
+    );
+  }
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
   return (
     <div className="min-h-screen bg-base-100 text-base-content lg:flex">
       <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:shrink-0 border-r border-base-300 p-4">
         <img
-          src={logo}
+          src={theme === "impulsion-dark" ? logoDark : logoLight}
           alt="Impulsion"
           width={124}
           height={26}
@@ -45,6 +63,31 @@ function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        <div className="mt-auto flex flex-col gap-1 border-base-300 border-t pt-4">
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 rounded-field px-3 py-2 text-left text-neutral text-sm transition-colors hover:bg-base-200 hover:text-base-content focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
+            onClick={toggleTheme}
+          >
+            <ThemeIcon className="size-5" />
+            <span>Thème</span>
+          </button>
+
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-field px-3 py-2 text-sm transition-colors hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 ${
+                isActive
+                  ? "font-semibold text-info"
+                  : "text-neutral hover:text-base-content"
+              }`
+            }
+          >
+            <UserIcon className="size-5" />
+            <span>Profil</span>
+          </NavLink>
+        </div>
       </aside>
 
       <main className="flex-1 p-4 pb-24 lg:pb-4">
