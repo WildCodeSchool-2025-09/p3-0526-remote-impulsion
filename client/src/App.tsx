@@ -1,11 +1,30 @@
+import { RouterProvider, createBrowserRouter } from "react-router";
+
+import Layout from "./components/Layout";
+import Exercises from "./pages/Exercises";
+import History from "./pages/History";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Programs from "./pages/Programs";
+import Session from "./pages/Session";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: "exercises", element: <Exercises /> },
+      { path: "session", element: <Session /> },
+      { path: "programs", element: <Programs /> },
+      { path: "history", element: <History /> },
+      { path: "profile", element: <Profile /> },
+    ],
+  },
+]);
+
 function App() {
-  return (
-    <main className="min-h-screen bg-base-100 p-6 text-base-content">
-      <h1 className="font-display text-3xl font-extrabold uppercase italic">
-        Impulsion
-      </h1>
-    </main>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
