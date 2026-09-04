@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
 import CalendarIcon from "../assets/icons/navigation/calendar-month.svg?react";
@@ -8,7 +9,6 @@ import ThemeIcon from "../assets/icons/navigation/theme.svg?react";
 import UserIcon from "../assets/icons/navigation/user.svg?react";
 import logoLight from "../assets/logo/logo-fond-clair.png";
 import logoDark from "../assets/logo/logo-fond-sombre.png";
-import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
   { to: "/", label: "Accueil", icon: HomeIcon, end: true },
@@ -19,13 +19,13 @@ const NAV_ITEMS = [
 ];
 
 function Layout() {
-  const [theme, setTheme] = useState<"impulsion-dark" | "impulsion-light">("impulsion-dark");
+  const [theme, setTheme] = useState<"impulsion-dark" | "impulsion-light">(
+    "impulsion-dark",
+  );
 
   function toggleTheme() {
     setTheme((currentTheme) =>
-      currentTheme === "impulsion-dark"
-        ? "impulsion-light"
-        : "impulsion-dark",
+      currentTheme === "impulsion-dark" ? "impulsion-light" : "impulsion-dark",
     );
   }
 
@@ -89,6 +89,30 @@ function Layout() {
           </NavLink>
         </div>
       </aside>
+
+      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-base-300 border-b bg-base-100/95 px-4 backdrop-blur lg:hidden">
+        <img
+          src={theme === "impulsion-dark" ? logoDark : logoLight}
+          alt="Impulsion"
+          width={112}
+          height={24}
+        />
+
+        <NavLink
+          to="/profile"
+          aria-label="Ouvrir le profil"
+          className={({ isActive }) =>
+            `grid size-10 place-items-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 ${
+              isActive
+                ? "border-info bg-info text-info-content"
+                : "border-base-300 bg-base-200 text-base-content hover:border-info hover:text-info"
+            }`
+          }
+        >
+          <UserIcon className="size-5" />
+          <span className="sr-only">Profil</span>
+        </NavLink>
+      </header>
 
       <main className="flex-1 p-4 pb-24 lg:pb-4">
         <Outlet />
