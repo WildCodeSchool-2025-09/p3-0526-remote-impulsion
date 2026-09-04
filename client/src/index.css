@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  /* biome-ignore lint/correctness/noUnknownProperty: daisyUI theme syntax */
+  name: "impulsion-dark";
+  /* biome-ignore lint/correctness/noUnknownProperty: daisyUI theme syntax */
+  default: true;
+  /* biome-ignore lint/correctness/noUnknownProperty: daisyUI theme syntax */
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: #0f172a;
+  --color-base-200: #1e293b;
+  --color-base-300: #334155;
+  --color-base-content: #f8fafc;
+
+  --color-primary: #fd7240;
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #2563eb;
+  --color-secondary-content: #ffffff;
+
+  --color-accent: #22d3ee;
+  --color-accent-content: #0f172a;
+
+  --color-neutral: #94a3b8;
+  --color-neutral-content: #0f172a;
+
+  --color-info: #60a5fa;
+  --color-info-content: #0f172a;
+
+  --color-success: #22c55e;
+  --color-success-content: #0f172a;
+
+  --color-warning: #f59e0b;
+  --color-warning-content: #1f2937;
+
+  --color-error: #f87171;
+  --color-error-content: #0f172a;
+
+  --radius-box: 14px;
+  --radius-field: 10px;
+  --radius-selector: 999px;
+
+  --size-field: 0.25rem;
+  --size-selector: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  /* biome-ignore lint/correctness/noUnknownProperty: daisyUI theme syntax */
+  name: "impulsion-light";
+  color-scheme: light;
+
+  --color-base-100: #f1f5f9;
+  --color-base-200: #ffffff;
+  --color-base-300: #e2e8f0;
+  --color-base-content: #0f172a;
+
+  --color-primary: #fd7240;
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #2563eb;
+  --color-secondary-content: #ffffff;
+
+  --color-accent: #0891b2;
+  --color-accent-content: #ffffff;
+
+  --color-neutral: #475569;
+  --color-neutral-content: #f8fafc;
+
+  --color-info: #1d4ed8;
+  --color-info-content: #ffffff;
+
+  --color-success: #166534;
+  --color-success-content: #ffffff;
+
+  --color-warning: #b45309;
+  --color-warning-content: #ffffff;
+
+  --color-error: #b91c1c;
+  --color-error-content: #ffffff;
+
+  --radius-box: 14px;
+  --radius-field: 10px;
+  --radius-selector: 999px;
+}
+
+@theme {
+  --font-display: "Saira Condensed", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+}
