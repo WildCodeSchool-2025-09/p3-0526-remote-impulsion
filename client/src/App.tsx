@@ -1,11 +1,11 @@
 import { RouterProvider, createBrowserRouter } from "react-router";
 
-import Exercises from "./pages/Exercises";
+import ExercisesPage from "./pages/ExercisesPage";
 
 const router = createBrowserRouter([
   {
     path: "/exercises",
-    element: <Exercises />,
+    element: <ExercisesPage />,
   },
 ]);
 
