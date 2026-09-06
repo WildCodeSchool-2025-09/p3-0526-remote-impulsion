@@ -1,0 +1,23 @@
+import type { ExerciseSummary } from "../types/exercise";
+
+function ExerciseCard({ exercise }: { exercise: ExerciseSummary }) {
+  return (
+    <button
+      type="button"
+      onClick={() => console.log("La modale de l'US10 s'affiche")}
+      className="flex w-full flex-col items-start gap-2 rounded-box border border-base-300 bg-base-200 p-3 text-left"
+    >
+      <img
+        src={`${import.meta.env.VITE_API_URL}${exercise.imageUrl}`}
+        alt={exercise.name}
+        className="aspect-square w-full rounded-field object-cover"
+      />
+      <h2 className="font-body text-sm font-semibold text-base-content">
+        {exercise.name}
+      </h2>
+      <span className="badge badge-sm">{exercise.category}</span>
+    </button>
+  );
+}
+
+export default ExerciseCard;

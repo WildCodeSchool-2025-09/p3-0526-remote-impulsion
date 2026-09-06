@@ -1,4 +1,5 @@
 import useExercises from "../hooks/useExercises";
+import ExerciseCard from "../components/ExerciseCard";
 
 function ExercisesPage() {
   const { exercises, isLoading, error, retry } = useExercises();
@@ -11,7 +12,9 @@ function ExercisesPage() {
     return (
       <>
         <p>Impossible de charger les exercices</p>
-        <button onClick={retry}>Réessayer</button>
+        <button type="button" onClick={retry}>
+          Réessayer
+        </button>
       </>
     );
   }
@@ -21,9 +24,16 @@ function ExercisesPage() {
   }
 
   return (
-    <h1 className="text-2xl font-display italic font-extrabold uppercase">
-      Exercices {exercises.length}
-    </h1>
+    <section>
+      <h1 className="text-2xl font-display italic font-extrabold uppercase">
+        Exercices {exercises.length}
+      </h1>
+      <article>
+        {exercises.map((exercise) => (
+          <ExerciseCard key={exercise.id} exercise={exercise} />
+        ))}
+      </article>
+    </section>
   );
 }
 

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import exerciseApi from "../services/exerciseApi";
+import type { ExerciseSummary } from "../types/exercise";
 
 function useExercises() {
-  const [exercises, setExercises] = useState([]);
+  const [exercises, setExercises] = useState<ExerciseSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -19,6 +20,7 @@ function useExercises() {
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: on veut charger une seule fois au montage
   useEffect(() => {
     loadExercises();
   }, []);
