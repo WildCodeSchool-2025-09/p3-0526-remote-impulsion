@@ -1,7 +1,7 @@
-import ExerciseCard from "../components/ExerciseCard";
-import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
+import ExerciseCard from "../components/ExerciseCard";
+import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
 import useExercises from "../hooks/useExercises";
 
 function ExercisesPage() {
