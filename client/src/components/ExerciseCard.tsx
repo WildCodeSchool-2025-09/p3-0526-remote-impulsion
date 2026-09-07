@@ -11,6 +11,9 @@ function ExerciseCard({ exercise }: { exercise: ExerciseSummary }) {
         src={`${import.meta.env.VITE_API_URL}${exercise.imageUrl}`}
         alt={exercise.name}
         className="aspect-square w-full rounded-field object-cover"
+        onError={(event) => {
+          event.currentTarget.src = `${import.meta.env.VITE_API_URL}/assets/images/placeholder-exercise.png`;
+        }}
       />
       <h2 className="font-body text-sm font-semibold text-base-content">
         {exercise.name}
