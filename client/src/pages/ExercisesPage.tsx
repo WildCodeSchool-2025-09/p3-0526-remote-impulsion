@@ -1,6 +1,8 @@
 import useExercises from "../hooks/useExercises";
 import ExerciseCard from "../components/ExerciseCard";
 import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
+import EmptyState from "../components/EmptyState";
+import ErrorState from "../components/ErrorState";
 
 function ExercisesPage() {
   const { exercises, isLoading, error, retry } = useExercises();
@@ -17,18 +19,11 @@ function ExercisesPage() {
   }
 
   if (error) {
-    return (
-      <>
-        <p>Impossible de charger les exercices</p>
-        <button type="button" onClick={retry}>
-          Réessayer
-        </button>
-      </>
-    );
+    return <ErrorState retry={retry} />;
   }
 
   if (exercises.length === 0) {
-    return <p>Aucun exercice n'est disponible pour le moment.</p>;
+    return <EmptyState />;
   }
 
   return (
