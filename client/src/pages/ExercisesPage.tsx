@@ -1,11 +1,19 @@
 import useExercises from "../hooks/useExercises";
 import ExerciseCard from "../components/ExerciseCard";
+import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
 
 function ExercisesPage() {
   const { exercises, isLoading, error, retry } = useExercises();
 
   if (isLoading) {
-    return <p>Chargement...</p>;
+    return (
+      <div>
+        {Array.from({ length: 6 }).map((_, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: skeletons identiques et statiques, pas de réordonnancement possible
+          <ExerciseCardSkeleton key={index} />
+        ))}
+      </div>
+    );
   }
 
   if (error) {
