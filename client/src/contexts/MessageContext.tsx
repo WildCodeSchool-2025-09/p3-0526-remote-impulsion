@@ -1,4 +1,10 @@
-import { createContext, type ReactNode, useState } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 type MessageProviderProps = {
   children: ReactNode;
@@ -22,9 +28,22 @@ const MessageContext = createContext<MessageContextValue | undefined>(
   undefined,
 );
 
+const MESSAGE_DURATION_MS = 5000;
+
 export function MessageProvider({ children }: MessageProviderProps) {
   const [messages, setMessages] = useState<AppMessage[]>([]);
   const currentMessage = messages[0];
+
+  useEffect(() => {
+    if (currentMessage === undefined || currentMessage.tone === "error") {
+      return;
+    }
+    const timeoutId = window.setTimeout(() => {
+      setMessages((currentMessages) => currentMessages.slice(1));
+    }, MESSAGE_DURATION_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [currentMessage]);
 
   function showMessage(text: string, tone: MessageTone) {
     const newMessage: AppMessage = {
@@ -53,4 +72,13 @@ export function MessageProvider({ children }: MessageProviderProps) {
       {children}
     </MessageContext.Provider>
   );
+}
+
+export function useMessages() {
+  const context = useContext(MessageContext);
+
+  if (context === undefined) {
+    throw new Error("useMessages doit être utilisé dans un MessageProvider");
+  }
+  return context;
 }

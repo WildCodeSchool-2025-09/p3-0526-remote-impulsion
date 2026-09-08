@@ -1,8 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-
 import App from "./App";
+import { MessageProvider } from "./contexts/MessageContext";
 
 const rootElement = document.getElementById("root");
 if (rootElement == null) {
@@ -11,6 +11,8 @@ if (rootElement == null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <MessageProvider>
+      <App />
+    </MessageProvider>
   </StrictMode>,
 );
