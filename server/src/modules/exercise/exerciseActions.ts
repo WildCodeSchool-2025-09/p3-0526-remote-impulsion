@@ -7,21 +7,28 @@ type ExerciseIdParams = {
 };
 
 const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
-  _req,
+  req,
   res,
   next,
 ) => {
   try {
-    const exercises = await exerciseRepository.readAll();
+    const categoryId = req.query.categoryId
+      ? Number(req.query.categoryId)
+      : undefined;
+    const difficultyId = req.query.difficultyId
+      ? Number(req.query.difficultyId)
+      : undefined;
+    const equipmentId = req.query.equipmentId
+      ? Number(req.query.equipmentId)
+      : undefined;
 
-    const exercisesWithImage = exercises.map((exercise) => {
-      return {
-        ...exercise,
-        imageUrl: `/assets/images/${exercise.slug}.jpg`,
-      };
-    });
+    const exercises = await exerciseRepository.readAll(
+      categoryId,
+      difficultyId,
+      equipmentId,
+    );
 
-    res.json(exercisesWithImage);
+    res.json(exercises);
   } catch (err) {
     next(err);
   }

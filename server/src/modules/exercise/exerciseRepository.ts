@@ -14,14 +14,43 @@ type ExerciseMuscleRow = ExerciseMuscle & RowDataPacket;
 type ExerciseEquipmentRow = ExerciseEquipment & RowDataPacket;
 
 class ExerciseRepository {
-  async readAll(): Promise<ExerciseSummary[]> {
+  async readAll(
+    categoryId?: number,
+    difficultyId?: number,
+    equipmentId?: number,
+  ): Promise<ExerciseSummary[]> {
+    const conditions: string[] = [];
+    const values: number[] = [];
+
+    if (categoryId) {
+      conditions.push("exercise.category_id = ?");
+      values.push(categoryId);
+    }
+
+    if (difficultyId) {
+      conditions.push("exercise.difficulty_id = ?");
+      values.push(difficultyId);
+    }
+
+    if (equipmentId) {
+      conditions.push("exercise.equipment_id = ?");
+      values.push(equipmentId);
+    }
+
+    let whereClause = "";
+    if (conditions.length > 0) {
+      whereClause = `WHERE ${conditions.join(" AND ")}`;
+    }
+
     const [rows] = await databaseClient.query<ExerciseSummaryRow[]>(
-      `select
+      `SELECT
         exercise.id, exercise.slug, exercise.name,
-        category.name as category
-      from exercise
-      join category on category.id = exercise.category_id
-      order by exercise.name`,
+        category.name AS category
+      FROM exercise
+      JOIN category ON category.id = exercise.category_id
+      ${whereClause}
+      ORDER BY exercise.name`,
+      values,
     );
 
     return rows;
@@ -29,14 +58,14 @@ class ExerciseRepository {
 
   async read(id: number): Promise<Exercise | undefined> {
     const [rows] = await databaseClient.query<ExerciseRow[]>(
-      `select
+      `SELECT
         exercise.id, exercise.slug, exercise.name, exercise.description,
-        category.name as categoryName,
-        difficulty.name as difficultyName
-      from exercise
-      join category on category.id = exercise.category_id
-      join difficulty on difficulty.id = exercise.difficulty_id
-      where exercise.id = ?`,
+        category.name AS categoryName,
+        difficulty.name AS difficultyName
+      FROM exercise
+      JOIN category ON category.id = exercise.category_id
+      JOIN difficulty ON difficulty.id = exercise.difficulty_id
+      WHERE exercise.id = ?`,
       [id],
     );
 
@@ -45,10 +74,10 @@ class ExerciseRepository {
 
   async readMuscles(exerciseId: number): Promise<ExerciseMuscle[]> {
     const [rows] = await databaseClient.query<ExerciseMuscleRow[]>(
-      `select muscle_group.id as muscleGroupId, muscle_group.name, exercise_muscle.role
-      from exercise_muscle
-      join muscle_group on muscle_group.id = exercise_muscle.muscle_group_id
-      where exercise_muscle.exercise_id = ?`,
+      `SELECT muscle_group.id AS muscleGroupId, muscle_group.name, exercise_muscle.role
+      FROM exercise_muscle
+      JOIN muscle_group ON muscle_group.id = exercise_muscle.muscle_group_id
+      WHERE exercise_muscle.exercise_id = ?`,
       [exerciseId],
     );
 
@@ -57,10 +86,10 @@ class ExerciseRepository {
 
   async readEquipment(exerciseId: number): Promise<ExerciseEquipment[]> {
     const [rows] = await databaseClient.query<ExerciseEquipmentRow[]>(
-      `select equipment.id as equipmentId, equipment.name
-      from exercise_equipment
-      join equipment on equipment.id = exercise_equipment.equipment_id
-      where exercise_equipment.exercise_id = ?`,
+      `SELECT equipment.id AS equipmentId, equipment.name
+      FROM exercise_equipment
+      JOIN equipment ON equipment.id = exercise_equipment.equipment_id
+      WHERE exercise_equipment.exercise_id = ?`,
       [exerciseId],
     );
 
