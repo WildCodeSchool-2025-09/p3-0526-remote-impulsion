@@ -43,4 +43,4 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
-export { add, browse, destroy };
+export default { add, browse, destroy };
