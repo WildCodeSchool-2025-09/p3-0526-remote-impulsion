@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import workoutSessionService from "../services/workoutSessionService";
-import type { WorkoutSession } from "../types/workoutSession";
+import workoutSessionService from "../../services/workoutSessionService";
+import type { WorkoutSession } from "../../types/workoutSession";
 
 const usePreparedSessions = () => {
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
