@@ -21,7 +21,8 @@ class WorkoutSessionRepository {
           status
         FROM workout_session
         WHERE user_id = ?
-        AND status = 'prepared'`,
+        AND status = 'prepared'
+        ORDER BY created_at DESC`,
       [userId],
     );
     return rows;
