@@ -2,6 +2,8 @@ import express from "express";
 
 import exerciseActions from "./modules/exercise/exerciseActions";
 
+import filtersActions from "./modules/filters/filtersActions";
+
 const router = express.Router();
 
 /* ************************************************************************* */
@@ -10,6 +12,10 @@ const router = express.Router();
 
 router.get("/api/exercises", exerciseActions.browse);
 router.get("/api/exercises/:id", exerciseActions.read);
+
+router.get("/api/categories", filtersActions.browseCategories);
+router.get("/api/difficulties", filtersActions.browseDifficulties);
+router.get("/api/equipment", filtersActions.browseEquipment);
 
 /* ************************************************************************* */
 
