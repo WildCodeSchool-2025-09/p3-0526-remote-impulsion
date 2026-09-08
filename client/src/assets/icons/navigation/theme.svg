@@ -1,0 +1,12 @@
+<svg aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M12 3a9 9 0 1 0 9 9c0 -.46 -.04 -.91 -.1 -1.35a6 6 0 0 1 -7.55 -7.55c-.44 -.06 -.89 -.1 -1.35 -.1" />
+</svg>
