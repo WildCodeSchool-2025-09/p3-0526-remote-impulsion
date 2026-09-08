@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
 import CalendarIcon from "../assets/icons/navigation/calendar-month.svg?react";
@@ -9,6 +8,8 @@ import ThemeIcon from "../assets/icons/navigation/theme.svg?react";
 import UserIcon from "../assets/icons/navigation/user.svg?react";
 import logoLight from "../assets/logo/logo-fond-clair.png";
 import logoDark from "../assets/logo/logo-fond-sombre.png";
+import useTheme from "../hooks/useTheme";
+import NavItem from "./navigation/NavItem";
 
 const NAV_ITEMS = [
   { to: "/", label: "Accueil", icon: HomeIcon, end: true },
@@ -19,19 +20,7 @@ const NAV_ITEMS = [
 ];
 
 function Layout() {
-  const [theme, setTheme] = useState<"impulsion-dark" | "impulsion-light">(
-    "impulsion-dark",
-  );
-
-  function toggleTheme() {
-    setTheme((currentTheme) =>
-      currentTheme === "impulsion-dark" ? "impulsion-light" : "impulsion-dark",
-    );
-  }
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content lg:flex">
@@ -44,23 +33,16 @@ function Layout() {
           className="mb-8"
         />
 
-        <nav className="flex flex-col gap-1">
-          {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
+        <nav aria-label="Navigation principale" className="flex flex-col gap-1">
+          {NAV_ITEMS.map(({ to, label, icon, end }) => (
+            <NavItem
               key={to}
               to={to}
+              label={label}
+              icon={icon}
               end={end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-field text-sm ${
-                  isActive
-                    ? "text-info font-semibold"
-                    : "text-neutral hover:text-base-content"
-                }`
-              }
-            >
-              <Icon className="size-5" />
-              {label}
-            </NavLink>
+              variant="desktop"
+            />
           ))}
         </nav>
 
@@ -118,21 +100,19 @@ function Layout() {
         <Outlet />
       </main>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-base-200 border-t border-base-300 flex justify-around items-center">
-        {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
+      <nav
+        aria-label="Navigation mobile"
+        className="fixed right-0 bottom-0 left-0 flex h-20 items-center justify-around border-base-300 border-t bg-base-200 lg:hidden"
+      >
+        {NAV_ITEMS.map(({ to, label, icon, end }) => (
+          <NavItem
             key={to}
             to={to}
+            label={label}
+            icon={icon}
             end={end}
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 text-[10px] font-semibold ${
-                isActive ? "text-info" : "text-neutral"
-              }`
-            }
-          >
-            <Icon className="size-5" />
-            {label}
-          </NavLink>
+            variant="mobile"
+          />
         ))}
       </nav>
     </div>
