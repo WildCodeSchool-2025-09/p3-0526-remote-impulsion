@@ -18,9 +18,10 @@ class ExerciseRepository {
     categoryId?: number,
     difficultyId?: number,
     equipmentId?: number,
+    search?: string,
   ): Promise<ExerciseSummary[]> {
     const conditions: string[] = [];
-    const values: number[] = [];
+    const values: (number | string)[] = [];
 
     if (categoryId) {
       conditions.push("exercise.category_id = ?");
@@ -35,6 +36,11 @@ class ExerciseRepository {
     if (equipmentId) {
       conditions.push("exercise.equipment_id = ?");
       values.push(equipmentId);
+    }
+
+    if (search) {
+      conditions.push("exercise.name LIKE ?");
+      values.push(`%${search}%`);
     }
 
     let whereClause = "";

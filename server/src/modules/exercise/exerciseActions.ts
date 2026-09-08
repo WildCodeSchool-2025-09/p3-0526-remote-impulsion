@@ -21,11 +21,13 @@ const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
     const equipmentId = req.query.equipmentId
       ? Number(req.query.equipmentId)
       : undefined;
+    const search = req.query.search ? String(req.query.search) : undefined;
 
     const exercises = await exerciseRepository.readAll(
       categoryId,
       difficultyId,
       equipmentId,
+      search,
     );
 
     res.json(exercises);
