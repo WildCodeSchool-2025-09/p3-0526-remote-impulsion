@@ -4,7 +4,8 @@ function ExerciseCard({ exercise }: { exercise: ExerciseSummary }) {
   return (
     <button
       type="button"
-      onClick={() => console.log("La modale de l'US10 s'affiche")}
+      // TODO US10: ouvrir la modale de la fiche exercice
+      onClick={() => {}}
       className="flex w-full flex-col items-start gap-2 rounded-box border border-base-300 bg-base-200 p-3 text-left"
     >
       <img
