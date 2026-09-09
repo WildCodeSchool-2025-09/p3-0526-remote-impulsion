@@ -34,6 +34,8 @@ class ExerciseRepository {
     }
 
     if (equipmentId) {
+      // un exercice peut avoir plusieurs equipements : on cherche dans la table
+      // de liaison s'il en existe au moins une ligne avec cet equipement
       conditions.push(
         "EXISTS (SELECT 1 FROM exercise_equipment WHERE exercise_equipment.exercise_id = exercise.id AND exercise_equipment.equipment_id = ?)",
       );
