@@ -1,7 +1,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router";
 
 import Layout from "./components/Layout";
-import ExercisesPage from "./pages/ExercisesPage";
+import Exercises from "./pages/Exercises";
 import History from "./pages/History";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
@@ -14,7 +14,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Home /> },
-      { path: "exercises", element: <ExercisesPage /> },
+      { path: "exercises", element: <Exercises /> },
       { path: "session", element: <Session /> },
       { path: "programs", element: <Programs /> },
       { path: "history", element: <History /> },
