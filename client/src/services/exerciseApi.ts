@@ -1,4 +1,6 @@
-async function fetchExercises() {
+import type { ExerciseSummary } from "../types/exercise";
+
+async function fetchExercises(): Promise<ExerciseSummary[]> {
   const url = `${import.meta.env.VITE_API_URL}/api/exercises`;
   const response = await fetch(url);
   if (!response.ok) {

@@ -10,7 +10,7 @@ const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
   try {
     const exercises = await exerciseRepository.readAll();
 
-    const exercisesWithImage = exercises.map((exercise) => ({
+    const exercisesWithImage: ExerciseSummary[] = exercises.map((exercise) => ({
       ...exercise,
       imageUrl: `/assets/images/${exercise.slug}.jpg`,
     }));

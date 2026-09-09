@@ -3,11 +3,11 @@ import databaseClient from "../../../database/client";
 import type { RowDataPacket } from "mysql2/promise";
 import type { ExerciseSummary } from "./exerciseTypes";
 
-type ExerciseSummaryRow = ExerciseSummary & RowDataPacket;
+type ExerciseRow = Omit<ExerciseSummary, "imageUrl"> & RowDataPacket;
 
 class ExerciseRepository {
-  async readAll(): Promise<ExerciseSummary[]> {
-    const [rows] = await databaseClient.query<ExerciseSummaryRow[]>(
+  async readAll(): Promise<Omit<ExerciseSummary, "imageUrl">[]> {
+    const [rows] = await databaseClient.query<ExerciseRow[]>(
       `SELECT
         exercise.id, exercise.slug, exercise.name,
         category.name AS category
