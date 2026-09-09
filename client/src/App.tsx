@@ -1,11 +1,25 @@
 import { RouterProvider, createBrowserRouter } from "react-router";
 
+import Layout from "./components/Layout";
 import ExercisesPage from "./pages/ExercisesPage";
+import History from "./pages/History";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Programs from "./pages/Programs";
+import Session from "./pages/Session";
 
 const router = createBrowserRouter([
   {
-    path: "/exercises",
-    element: <ExercisesPage />,
+    path: "/",
+    element: <Layout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: "exercises", element: <ExercisesPage /> },
+      { path: "session", element: <Session /> },
+      { path: "programs", element: <Programs /> },
+      { path: "history", element: <History /> },
+      { path: "profile", element: <Profile /> },
+    ],
   },
 ]);
 
