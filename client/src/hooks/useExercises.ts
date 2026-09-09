@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import exerciseApi from "../services/exerciseApi";
 import type { ExerciseSummary } from "../types/exercise";
 
@@ -17,11 +17,18 @@ function useExercises() {
     number | null
   >(null);
   const [page, setPage] = useState(1);
-  const [isCatalogEmpty, setIsCatalogEmpty] = useState(false);
-  const isFirstLoad = useRef(true);
+  // compteur qu'on incremente juste pour relancer l'effet quand on clique sur "Reessayer"
+  const [reloadCount, setReloadCount] = useState(0);
 
-  const loadExercises = useCallback(
-    async (signal?: AbortSignal) => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadCount n'est pas lu dans l'effet, il sert uniquement a le relancer quand on clique sur "Reessayer"
+  useEffect(() => {
+    // toute modification de recherche ou de filtre renvoie a la page 1 (pagination = US26)
+    setPage(1);
+
+    // permet d'annuler cette requete si un critere change avant qu'elle reponde
+    const controller = new AbortController();
+
+    async function loadExercises() {
       try {
         setIsLoading(true);
         setError(null);
@@ -30,33 +37,37 @@ function useExercises() {
           selectedDifficultyId ?? undefined,
           selectedEquipmentId ?? undefined,
           search,
-          signal,
+          controller.signal,
         );
         setExercises(data);
-        if (isFirstLoad.current) {
-          isFirstLoad.current = false;
-          setIsCatalogEmpty(data.length === 0);
-        }
       } catch (err) {
+        // requete annulee : une plus recente est en cours, on ignore cette reponse
         if ((err as Error).name === "AbortError") {
           return;
         }
         setError(err as Error);
       } finally {
-        if (!signal?.aborted) {
+        if (!controller.signal.aborted) {
           setIsLoading(false);
         }
       }
-    },
-    [search, selectedCategoryId, selectedEquipmentId, selectedDifficultyId],
-  );
+    }
 
-  useEffect(() => {
-    setPage(1);
-    const controller = new AbortController();
-    loadExercises(controller.signal);
+    loadExercises();
+
+    // React appelle cette fonction avant de relancer l'effet
     return () => controller.abort();
-  }, [loadExercises]);
+  }, [
+    search,
+    selectedCategoryId,
+    selectedEquipmentId,
+    selectedDifficultyId,
+    reloadCount,
+  ]);
+
+  function retry() {
+    setReloadCount((count) => count + 1);
+  }
 
   function resetFilters() {
     setSearch("");
@@ -71,11 +82,15 @@ function useExercises() {
     selectedEquipmentId !== null ||
     selectedDifficultyId !== null;
 
+  // zero resultat sans aucun filtre actif = le catalogue lui-meme est vide
+  const isCatalogEmpty =
+    !isLoading && exercises.length === 0 && !hasActiveFilter;
+
   return {
     exercises,
     isLoading,
     error,
-    retry: () => loadExercises(),
+    retry,
     search,
     setSearch,
     selectedCategoryId,
