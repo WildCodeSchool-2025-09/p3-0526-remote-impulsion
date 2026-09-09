@@ -5,6 +5,7 @@ export type WorkoutSession = {
   startedAt: string | null;
   endedAt: string | null;
   status: WorkoutSessionStatus;
+  exerciseCount: number;
 };
 
 export type WorkoutSessionStatus = "prepared" | "in_progress" | "completed";
