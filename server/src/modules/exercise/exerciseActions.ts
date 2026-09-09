@@ -1,25 +1,35 @@
 import type { RequestHandler } from "express";
 import exerciseRepository from "./exerciseRepository";
-import type { ExerciseDetail, ExerciseSummary } from "./exerciseTypes";
-
-type ExerciseIdParams = {
-  id: string;
-};
+import type { ExerciseSummary } from "./exerciseTypes";
 
 const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
-  _req,
+  req,
   res,
   next,
 ) => {
   try {
-    const exercises = await exerciseRepository.readAll();
+    const categoryId = req.query.categoryId
+      ? Number(req.query.categoryId)
+      : undefined;
+    const difficultyId = req.query.difficultyId
+      ? Number(req.query.difficultyId)
+      : undefined;
+    const equipmentId = req.query.equipmentId
+      ? Number(req.query.equipmentId)
+      : undefined;
+    const search = req.query.search ? String(req.query.search) : undefined;
 
-    const exercisesWithImage = exercises.map((exercise) => {
-      return {
-        ...exercise,
-        imageUrl: `/assets/images/${exercise.slug}.jpg`,
-      };
-    });
+    const exercises = await exerciseRepository.readAll(
+      categoryId,
+      difficultyId,
+      equipmentId,
+      search,
+    );
+
+    const exercisesWithImage = exercises.map((exercise) => ({
+      ...exercise,
+      imageUrl: `/assets/images/${exercise.slug}.jpg`,
+    }));
 
     res.json(exercisesWithImage);
   } catch (err) {
@@ -27,35 +37,4 @@ const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
   }
 };
 
-const read: RequestHandler<ExerciseIdParams, ExerciseDetail> = async (
-  req,
-  res,
-  next,
-) => {
-  try {
-    const exerciseId = Number(req.params.id);
-    const exercise = await exerciseRepository.read(exerciseId);
-
-    if (exercise == null) {
-      res.sendStatus(404);
-      return;
-    }
-
-    const [muscles, equipment] = await Promise.all([
-      exerciseRepository.readMuscles(exerciseId),
-      exerciseRepository.readEquipment(exerciseId),
-    ]);
-
-    const exerciseDetail: ExerciseDetail = {
-      ...exercise,
-      muscles,
-      equipment,
-    };
-
-    res.json(exerciseDetail);
-  } catch (err) {
-    next(err);
-  }
-};
-
-export default { browse, read };
+export default { browse };

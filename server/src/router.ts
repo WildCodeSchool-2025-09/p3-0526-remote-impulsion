@@ -9,7 +9,6 @@ const router = express.Router();
 /* ************************************************************************* */
 
 router.get("/api/exercises", exerciseActions.browse);
-router.get("/api/exercises/:id", exerciseActions.read);
 
 /* ************************************************************************* */
 
