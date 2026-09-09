@@ -34,12 +34,16 @@ class ExerciseRepository {
     }
 
     if (equipmentId) {
-      conditions.push("exercise.equipment_id = ?");
+      conditions.push(
+        "EXISTS (SELECT 1 FROM exercise_equipment WHERE exercise_equipment.exercise_id = exercise.id AND exercise_equipment.equipment_id = ?)",
+      );
       values.push(equipmentId);
     }
 
     if (search) {
-      conditions.push("exercise.name LIKE ?");
+      // COLLATE explicite : l'insensibilite aux accents et a la casse ne doit pas
+      // dependre de la collation par defaut du serveur MySQL qui heberge la base
+      conditions.push("exercise.name COLLATE utf8mb4_unicode_ci LIKE ?");
       values.push(`%${search}%`);
     }
 
