@@ -3,6 +3,7 @@ async function fetchExercises(
   difficultyId?: number,
   equipmentId?: number,
   search?: string,
+  signal?: AbortSignal,
 ) {
   const params = new URLSearchParams();
 
@@ -20,7 +21,7 @@ async function fetchExercises(
   }
 
   const url = `${import.meta.env.VITE_API_URL}/api/exercises?${params.toString()}`;
-  const response = await fetch(url);
+  const response = await fetch(url, { signal });
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
