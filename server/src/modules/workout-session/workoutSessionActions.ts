@@ -5,6 +5,15 @@ import { getCurrentUserId } from "../../helpers/currentUser";
 const add: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
+    const sessions = await workoutSessionRepository.readAllPrepared(userId);
+    const emptySession = sessions.find(
+      (session) => session.exerciseCount === 0,
+    );
+
+    if (emptySession) {
+      res.status(200).json({ id: emptySession.id });
+      return;
+    }
     const sessionId = await workoutSessionRepository.create(userId);
 
     res.status(201).json({ id: sessionId });
