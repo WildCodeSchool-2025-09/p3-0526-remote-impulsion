@@ -1,5 +1,25 @@
-async function fetchExercises() {
-  const url = `${import.meta.env.VITE_API_URL}/api/exercises`;
+async function fetchExercises(
+  categoryId?: number,
+  difficultyId?: number,
+  equipmentId?: number,
+  search?: string,
+) {
+  const params = new URLSearchParams();
+
+  if (categoryId) {
+    params.set("categoryId", String(categoryId));
+  }
+  if (difficultyId) {
+    params.set("difficultyId", String(difficultyId));
+  }
+  if (equipmentId) {
+    params.set("equipmentId", String(equipmentId));
+  }
+  if (search) {
+    params.set("search", search);
+  }
+
+  const url = `${import.meta.env.VITE_API_URL}/api/exercises?${params.toString()}`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
