@@ -9,6 +9,7 @@ import UserIcon from "../assets/icons/navigation/user.svg?react";
 import logoLight from "../assets/logo/logo-fond-clair.png";
 import logoDark from "../assets/logo/logo-fond-sombre.png";
 import useTheme from "../hooks/useTheme";
+import MessageBanner from "./feedback/MessageBanner";
 import NavItem from "./navigation/NavItem";
 
 const NAV_ITEMS = [
@@ -24,6 +25,7 @@ function Layout() {
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content lg:flex">
+      <MessageBanner />
       <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:shrink-0 border-r border-base-300 p-4">
         <img
           src={theme === "impulsion-dark" ? logoDark : logoLight}
