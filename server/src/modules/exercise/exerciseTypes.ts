@@ -1,3 +1,11 @@
+export type ExerciseSummary = {
+  id: number;
+  slug: string;
+  name: string;
+  category: string;
+  imageUrl: string;
+};
+
 export type MuscleRole = "primary" | "secondary";
 
 export type ExerciseMuscle = {

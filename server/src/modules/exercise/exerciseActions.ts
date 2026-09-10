@@ -1,9 +1,28 @@
 import type { RequestHandler } from "express";
 import exerciseRepository from "./exerciseRepository";
-import type { ExerciseDetail } from "./exerciseTypes";
+import type { ExerciseDetail, ExerciseSummary } from "./exerciseTypes";
 
 type ExerciseIdParams = {
   id: string;
+};
+
+const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
+  _req,
+  res,
+  next,
+) => {
+  try {
+    const exercises = await exerciseRepository.readAll();
+
+    const exercisesWithImage: ExerciseSummary[] = exercises.map((exercise) => ({
+      ...exercise,
+      imageUrl: `/assets/images/${exercise.slug}.jpg`,
+    }));
+
+    res.json(exercisesWithImage);
+  } catch (error) {
+    next(error);
+  }
 };
 
 const read: RequestHandler<ExerciseIdParams, ExerciseDetail> = async (
@@ -44,4 +63,4 @@ const read: RequestHandler<ExerciseIdParams, ExerciseDetail> = async (
   }
 };
 
-export default { read };
+export default { browse, read };
