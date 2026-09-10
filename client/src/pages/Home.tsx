@@ -1,5 +1,8 @@
 import { useNavigate } from "react-router";
+
 import HomeSessionAction from "../components/HomeSessionAction";
+import PreparedSessionsList from "../components/PreparedSessionsList";
+
 import useCreatePreparedSession from "../hooks/workout-session/useCreatePreparedSession";
 import usePreparedSessions from "../hooks/workout-session/usePreparedSessions";
 
@@ -35,20 +38,26 @@ function Home() {
 
   return (
     <>
-      <h1>PRÊT POUR TA SÉANCE ?</h1>
+      <section>
+        <h1>PRÊT POUR TA SÉANCE ?</h1>
 
-      <HomeSessionAction
-        subtitle={
-          emptySession
-            ? "Ta séance est créée, ajoute maintenant tes exercices."
-            : "Ajoute tes exercices, puis démarre quand tu veux."
-        }
-        buttonLabel={
-          emptySession ? "AJOUTER DES EXERCICES" : "CRÉER UNE SÉANCE"
-        }
-        onAction={handleSessionAction}
-        isLoading={createLoading}
-      />
+        <HomeSessionAction
+          subtitle={
+            emptySession
+              ? "Ta séance est créée, ajoute maintenant tes exercices."
+              : "Ajoute tes exercices, puis démarre quand tu veux."
+          }
+          buttonLabel={
+            emptySession ? "AJOUTER DES EXERCICES" : "CRÉER UNE SÉANCE"
+          }
+          onAction={handleSessionAction}
+          isLoading={createLoading}
+        />
+      </section>
+
+      <section>
+        <PreparedSessionsList sessions={sessions} />
+      </section>
     </>
   );
 }
