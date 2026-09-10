@@ -120,6 +120,18 @@ const logErrors: ErrorRequestHandler = (err, req, res, next) => {
 // Mount the logErrors middleware globally
 app.use(logErrors);
 
+// Define a middleware function to send a generic error response
+const sendErrorResponse: ErrorRequestHandler = (err, _req, res, next) => {
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+  res.status(500).json({ error: "Une erreur interne est survenue." });
+};
+
+// Mount the sendErrorResponse middleware globally
+app.use(sendErrorResponse);
+
 /* ************************************************************************* */
 
 export default app;
