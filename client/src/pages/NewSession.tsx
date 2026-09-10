@@ -4,17 +4,18 @@ import { Link } from "react-router";
 import useCreatePreparedSession from "../hooks/workout-session/useCreatePreparedSession";
 import usePreparedSessions from "../hooks/workout-session/usePreparedSessions";
 
-function Session() {
+function NewSession() {
   const { sessions, loading, error } = usePreparedSessions();
   const { createPreparedSession } = useCreatePreparedSession();
   const [sessionId, setSessionId] = useState<number | null>(null);
+  const emptySession = sessions.find((session) => session.exerciseCount === 0);
   const creationStarted = useRef(false);
 
   useEffect(() => {
     if (loading || error || sessionId !== null) return;
 
-    if (sessions.length > 0) {
-      setSessionId(sessions[0].id);
+    if (emptySession) {
+      setSessionId(emptySession.id);
       return;
     }
 
@@ -46,4 +47,4 @@ function Session() {
     </>
   );
 }
-export default Session;
+export default NewSession;
