@@ -6,26 +6,104 @@ function useExercises() {
   const [exercises, setExercises] = useState<ExerciseSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [search, setSearch] = useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null,
+  );
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<number | null>(
+    null,
+  );
+  const [selectedDifficultyId, setSelectedDifficultyId] = useState<
+    number | null
+  >(null);
+  const [page, setPage] = useState(1);
+  // compteur qu'on incremente juste pour relancer l'effet quand on clique sur "Reessayer"
+  const [reloadCount, setReloadCount] = useState(0);
 
-  async function loadExercises() {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await exerciseApi.fetchExercises();
-      setExercises(data);
-    } catch (err) {
-      setError(err as Error);
-    } finally {
-      setIsLoading(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadCount n'est pas lu dans l'effet, il sert uniquement a le relancer quand on clique sur "Reessayer"
+  useEffect(() => {
+    // toute modification de recherche ou de filtre renvoie a la page 1 (pagination = US26)
+    setPage(1);
+
+    // permet d'annuler cette requete si un critere change avant qu'elle reponde
+    const controller = new AbortController();
+
+    async function loadExercises() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await exerciseApi.fetchExercises(
+          selectedCategoryId ?? undefined,
+          selectedDifficultyId ?? undefined,
+          selectedEquipmentId ?? undefined,
+          search,
+          controller.signal,
+        );
+        setExercises(data);
+      } catch (err) {
+        // requete annulee : une plus recente est en cours, on ignore cette reponse
+        if ((err as Error).name === "AbortError") {
+          return;
+        }
+        setError(err as Error);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
     }
+
+    loadExercises();
+
+    // React appelle cette fonction avant de relancer l'effet
+    return () => controller.abort();
+  }, [
+    search,
+    selectedCategoryId,
+    selectedEquipmentId,
+    selectedDifficultyId,
+    reloadCount,
+  ]);
+
+  function retry() {
+    setReloadCount((count) => count + 1);
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: on veut charger une seule fois au montage
-  useEffect(() => {
-    loadExercises();
-  }, []);
+  function resetFilters() {
+    setSearch("");
+    setSelectedCategoryId(null);
+    setSelectedEquipmentId(null);
+    setSelectedDifficultyId(null);
+  }
 
-  return { exercises, isLoading, error, retry: loadExercises };
+  const hasActiveFilter =
+    search !== "" ||
+    selectedCategoryId !== null ||
+    selectedEquipmentId !== null ||
+    selectedDifficultyId !== null;
+
+  // zero resultat sans aucun filtre actif = le catalogue lui-meme est vide
+  const isCatalogEmpty =
+    !isLoading && exercises.length === 0 && !hasActiveFilter;
+
+  return {
+    exercises,
+    isLoading,
+    error,
+    retry,
+    search,
+    setSearch,
+    selectedCategoryId,
+    setSelectedCategoryId,
+    selectedEquipmentId,
+    setSelectedEquipmentId,
+    selectedDifficultyId,
+    setSelectedDifficultyId,
+    page,
+    resetFilters,
+    hasActiveFilter,
+    isCatalogEmpty,
+  };
 }
 
 export default useExercises;
