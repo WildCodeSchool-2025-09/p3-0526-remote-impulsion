@@ -5,7 +5,7 @@ import logo from "../assets/logo/logo-fond-sombre.png";
 const NAV_ITEMS = [
   { to: "/", label: "Accueil", icon: Home, end: true },
   { to: "/exercises", label: "Exercices", icon: Dumbbell, end: false },
-  { to: "/session", label: "Séance", icon: PlayCircle, end: false },
+  { to: "/sessions", label: "Séances", icon: PlayCircle, end: false },
   { to: "/programs", label: "Programmes", icon: Calendar, end: false },
   { to: "/history", label: "Historique", icon: Clock, end: false },
 ];
