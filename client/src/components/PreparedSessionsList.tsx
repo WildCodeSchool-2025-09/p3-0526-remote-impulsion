@@ -65,7 +65,7 @@ const PreparedSessionsList = ({
           ))}
         </ul>
       )}
-      {limit && sessionsList.length >= 4 && (
+      {limit && sessionsList.length > limit && (
         <Link
           to="/sessions"
           className="group col-start-2 row-start-1 flex items-center gap-1.5 rounded-field font-semibold text-info text-sm transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
