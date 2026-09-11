@@ -1,11 +1,15 @@
 import type { ExerciseSummary } from "../types/exercise";
 
-function ExerciseCard({ exercise }: { exercise: ExerciseSummary }) {
+type ExerciseCardProps = {
+  exercise: ExerciseSummary;
+  onSelect: (exerciseId: number) => void;
+};
+
+function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) {
   return (
     <button
       type="button"
-      // TODO US10: ouvrir la modale de la fiche exercice
-      onClick={() => {}}
+      onClick={() => onSelect(exercise.id)}
       className="flex w-full flex-col items-start gap-2 rounded-box border border-base-300 bg-base-200 p-3 text-left"
     >
       <img
