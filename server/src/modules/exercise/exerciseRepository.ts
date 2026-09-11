@@ -1,17 +1,9 @@
 import databaseClient from "../../../database/client";
 
 import type { RowDataPacket } from "mysql2/promise";
-import type {
-  Exercise,
-  ExerciseEquipment,
-  ExerciseMuscle,
-  ExerciseSummary,
-} from "./exerciseTypes";
+import type { ExerciseSummary } from "./exerciseTypes";
 
-type ExerciseSummaryRow = ExerciseSummary & RowDataPacket;
-type ExerciseRow = Exercise & RowDataPacket;
-type ExerciseMuscleRow = ExerciseMuscle & RowDataPacket;
-type ExerciseEquipmentRow = ExerciseEquipment & RowDataPacket;
+type ExerciseRow = Omit<ExerciseSummary, "imageUrl"> & RowDataPacket;
 
 class ExerciseRepository {
   async readAll(
@@ -19,7 +11,7 @@ class ExerciseRepository {
     difficultyId?: number,
     equipmentId?: number,
     search?: string,
-  ): Promise<ExerciseSummary[]> {
+  ): Promise<Omit<ExerciseSummary, "imageUrl">[]> {
     const conditions: string[] = [];
     const values: (number | string)[] = [];
 
@@ -34,8 +26,6 @@ class ExerciseRepository {
     }
 
     if (equipmentId) {
-      // un exercice peut avoir plusieurs equipements : on cherche dans la table
-      // de liaison s'il en existe au moins une ligne avec cet equipement
       conditions.push(
         "EXISTS (SELECT 1 FROM exercise_equipment WHERE exercise_equipment.exercise_id = exercise.id AND exercise_equipment.equipment_id = ?)",
       );
@@ -43,66 +33,24 @@ class ExerciseRepository {
     }
 
     if (search) {
-      // COLLATE explicite : l'insensibilite aux accents et a la casse ne doit pas
-      // dependre de la collation par defaut du serveur MySQL qui heberge la base
       conditions.push("exercise.name COLLATE utf8mb4_unicode_ci LIKE ?");
       values.push(`%${search}%`);
     }
 
-    let whereClause = "";
-    if (conditions.length > 0) {
-      whereClause = `WHERE ${conditions.join(" AND ")}`;
-    }
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    const [rows] = await databaseClient.query<ExerciseSummaryRow[]>(
+    const [rows] = await databaseClient.query<ExerciseRow[]>(
       `SELECT
-        exercise.id, exercise.slug, exercise.name,
+        exercise.id,
+        exercise.slug,
+        exercise.name,
         category.name AS category
       FROM exercise
       JOIN category ON category.id = exercise.category_id
       ${whereClause}
       ORDER BY exercise.name`,
       values,
-    );
-
-    return rows;
-  }
-
-  async read(id: number): Promise<Exercise | undefined> {
-    const [rows] = await databaseClient.query<ExerciseRow[]>(
-      `SELECT
-        exercise.id, exercise.slug, exercise.name, exercise.description,
-        category.name AS categoryName,
-        difficulty.name AS difficultyName
-      FROM exercise
-      JOIN category ON category.id = exercise.category_id
-      JOIN difficulty ON difficulty.id = exercise.difficulty_id
-      WHERE exercise.id = ?`,
-      [id],
-    );
-
-    return rows[0];
-  }
-
-  async readMuscles(exerciseId: number): Promise<ExerciseMuscle[]> {
-    const [rows] = await databaseClient.query<ExerciseMuscleRow[]>(
-      `SELECT muscle_group.id AS muscleGroupId, muscle_group.name, exercise_muscle.role
-      FROM exercise_muscle
-      JOIN muscle_group ON muscle_group.id = exercise_muscle.muscle_group_id
-      WHERE exercise_muscle.exercise_id = ?`,
-      [exerciseId],
-    );
-
-    return rows;
-  }
-
-  async readEquipment(exerciseId: number): Promise<ExerciseEquipment[]> {
-    const [rows] = await databaseClient.query<ExerciseEquipmentRow[]>(
-      `SELECT equipment.id AS equipmentId, equipment.name
-      FROM exercise_equipment
-      JOIN equipment ON equipment.id = exercise_equipment.equipment_id
-      WHERE exercise_equipment.exercise_id = ?`,
-      [exerciseId],
     );
 
     return rows;

@@ -1,10 +1,6 @@
 import type { RequestHandler } from "express";
 import exerciseRepository from "./exerciseRepository";
-import type { ExerciseDetail, ExerciseSummary } from "./exerciseTypes";
-
-type ExerciseIdParams = {
-  id: string;
-};
+import type { ExerciseSummary } from "./exerciseTypes";
 
 const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
   req,
@@ -15,12 +11,15 @@ const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
     const categoryId = req.query.categoryId
       ? Number(req.query.categoryId)
       : undefined;
+
     const difficultyId = req.query.difficultyId
       ? Number(req.query.difficultyId)
       : undefined;
+
     const equipmentId = req.query.equipmentId
       ? Number(req.query.equipmentId)
       : undefined;
+
     const search = req.query.search ? String(req.query.search) : undefined;
 
     const exercises = await exerciseRepository.readAll(
@@ -30,41 +29,15 @@ const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
       search,
     );
 
-    res.json(exercises);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const read: RequestHandler<ExerciseIdParams, ExerciseDetail> = async (
-  req,
-  res,
-  next,
-) => {
-  try {
-    const exerciseId = Number(req.params.id);
-    const exercise = await exerciseRepository.read(exerciseId);
-
-    if (exercise == null) {
-      res.sendStatus(404);
-      return;
-    }
-
-    const [muscles, equipment] = await Promise.all([
-      exerciseRepository.readMuscles(exerciseId),
-      exerciseRepository.readEquipment(exerciseId),
-    ]);
-
-    const exerciseDetail: ExerciseDetail = {
+    const exercisesWithImage: ExerciseSummary[] = exercises.map((exercise) => ({
       ...exercise,
-      muscles,
-      equipment,
-    };
+      imageUrl: `/assets/images/${exercise.slug}.jpg`,
+    }));
 
-    res.json(exerciseDetail);
+    res.json(exercisesWithImage);
   } catch (err) {
     next(err);
   }
 };
 
-export default { browse, read };
+export default { browse };

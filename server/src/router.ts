@@ -11,7 +11,6 @@ const router = express.Router();
 /* ************************************************************************* */
 
 router.get("/api/exercises", exerciseActions.browse);
-router.get("/api/exercises/:id", exerciseActions.read);
 
 router.get("/api/categories", filtersActions.browseCategories);
 router.get("/api/difficulties", filtersActions.browseDifficulties);
