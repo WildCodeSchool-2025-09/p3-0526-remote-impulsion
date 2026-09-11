@@ -1,5 +1,5 @@
-import databaseClient from "../../../database/client";
 import type { RowDataPacket } from "mysql2/promise";
+import databaseClient from "../../../database/client";
 
 export type ReferenceItem = {
   id: number;
