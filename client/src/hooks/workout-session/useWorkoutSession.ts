@@ -17,7 +17,7 @@ const useWorkoutSession = (sessionId: number) => {
           await workoutSessionService.getWorkoutSessionById(sessionId);
         setSession(sessionData);
       } catch {
-        setError("Impossible de charger les séances");
+        setError("Impossible de charger la séance");
       } finally {
         setLoading(false);
       }

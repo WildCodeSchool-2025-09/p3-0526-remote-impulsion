@@ -5,11 +5,16 @@ import arrowRight from "../assets/icons/fleches/arrow-right.svg";
 
 type PreparedSessionsListProps = {
   sessions: WorkoutSession[];
+  limit?: number;
 };
 
-const PreparedSessionsList = ({ sessions }: PreparedSessionsListProps) => {
+const PreparedSessionsList = ({
+  sessions,
+  limit,
+}: PreparedSessionsListProps) => {
   const sessionsList = sessions.filter((s) => s.exerciseCount >= 1);
-  const maxSessions = sessionsList.slice(0, 3);
+  const visibleSessions = limit ? sessionsList.slice(0, limit) : sessionsList;
+
   return (
     <div>
       <h2>SÉANCES PRÉPARÉES</h2>
@@ -21,14 +26,14 @@ const PreparedSessionsList = ({ sessions }: PreparedSessionsListProps) => {
         </p>
       ) : (
         <ul>
-          {maxSessions.map((session) => (
+          {visibleSessions.map((session) => (
             <li key={session.id}>
               <PreparedSessionCard session={session} />
             </li>
           ))}
         </ul>
       )}
-      {sessionsList.length >= 4 && (
+      {limit && sessionsList.length >= 4 && (
         <Link to="/sessions">
           Voir toutes <img src={arrowRight} alt="" />
         </Link>

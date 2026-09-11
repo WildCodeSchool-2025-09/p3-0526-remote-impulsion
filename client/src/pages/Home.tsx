@@ -53,7 +53,7 @@ function Home() {
       </section>
 
       <section>
-        <PreparedSessionsList sessions={sessions} />
+        <PreparedSessionsList sessions={sessions} limit={3} />
       </section>
     </>
   );
