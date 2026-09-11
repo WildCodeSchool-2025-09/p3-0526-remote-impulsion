@@ -1,4 +1,3 @@
-```tsx
 import { useState } from "react";
 import EmptyState from "../components/EmptyState";
 import ExerciseCard from "../components/ExerciseCard";
@@ -161,4 +160,3 @@ function Exercises() {
 }
 
 export default Exercises;
-```;
