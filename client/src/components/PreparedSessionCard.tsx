@@ -1,4 +1,5 @@
 import type { WorkoutSession } from "../types/workoutSession";
+import { Link } from "react-router";
 
 type PreparedSessionCardProps = {
   session: WorkoutSession;
@@ -21,7 +22,7 @@ const PreparedSessionCard = ({ session }: PreparedSessionCardProps) => {
           {session.exerciseCount}{" "}
           {session.exerciseCount === 1 ? "exercice" : "exercices"}
         </p>
-        <button type="button">Voir la séance</button>
+        <Link to={`/sessions/${session.id}`}>Voir la séance</Link>
       </div>
     </>
   );

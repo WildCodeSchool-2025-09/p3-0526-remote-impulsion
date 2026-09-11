@@ -1,10 +1,13 @@
 import { useNavigate } from "react-router";
 import HomeSessionAction from "../components/HomeSessionAction";
 import PreparedSessionsList from "../components/PreparedSessionsList";
+import useCreatePreparedSession from "../hooks/workout-session/useCreatePreparedSession";
 import usePreparedSessions from "../hooks/workout-session/usePreparedSessions";
 
 function Home() {
   const { sessions, loading, error } = usePreparedSessions();
+  const { createPreparedSession, loading: createLoading } =
+    useCreatePreparedSession();
   const navigate = useNavigate();
 
   if (loading) {
@@ -14,9 +17,20 @@ function Home() {
   if (error) {
     return <p>{error}</p>;
   }
+
   const emptySession = sessions.find((session) => session.exerciseCount === 0);
-  const handleSessionAction = () => {
-    navigate("/sessions/new");
+
+  const handleSessionAction = async () => {
+    if (emptySession) {
+      navigate(`/sessions/${emptySession.id}`);
+      return;
+    }
+
+    const newSessionId = await createPreparedSession();
+
+    if (newSessionId !== null) {
+      navigate(`/sessions/${newSessionId}`);
+    }
   };
 
   return (
@@ -34,7 +48,7 @@ function Home() {
             emptySession ? "AJOUTER DES EXERCICES" : "CRÉER UNE SÉANCE"
           }
           onAction={handleSessionAction}
-          isLoading={false}
+          isLoading={createLoading}
         />
       </section>
 

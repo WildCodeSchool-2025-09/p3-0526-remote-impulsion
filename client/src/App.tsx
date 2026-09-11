@@ -6,7 +6,7 @@ import History from "./pages/History";
 import Home from "./pages/Home";
 import Programs from "./pages/Programs";
 import Sessions from "./pages/Sessions";
-import NewSession from "./pages/NewSession";
+import SessionId from "./pages/SessionID";
 
 const router = createBrowserRouter([
   {
@@ -15,10 +15,10 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "exercises", element: <Exercises /> },
-      { path: "sessions", element: <Sessions /> },
       { path: "programs", element: <Programs /> },
       { path: "history", element: <History /> },
-      { path: "sessions/new", element: <NewSession /> },
+      { path: "sessions", element: <Sessions /> },
+      { path: "sessions/:id", element: <SessionId /> },
     ],
   },
 ]);
