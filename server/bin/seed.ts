@@ -71,17 +71,17 @@ const seed = async () => {
       await Promise.all(seeder.promises);
     }
 
+    // Close the database connection
+    database.end();
+
     console.info(
       `${process.env.DB_NAME} filled from '${path.normalize(fixturesPath)}' 🌱`,
     );
   } catch (err) {
     const { message, stack } = err as Error;
     console.error("Error filling the database:", message, stack);
-    process.exitCode = 1;
-  } finally {
-    await database.end();
   }
 };
 
 // Run the seed function
-void seed();
+seed();
