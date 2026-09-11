@@ -34,10 +34,11 @@ function Home() {
   };
 
   return (
-    <>
+    <div className="w-full max-w-2xl md:py-4 lg:px-4">
       <section>
-        <h1 className="text-2xl font-display italic font-extrabold uppercase">
-          Prêt pour ta séance ?
+        <h1 className="font-display font-extrabold text-4xl uppercase italic leading-none md:text-5xl">
+          <span className="block lg:inline">Prêt pour</span>{" "}
+          <span className="text-info">ta séance</span> ?
         </h1>
 
         <HomeSessionAction
@@ -57,7 +58,7 @@ function Home() {
       <section>
         <PreparedSessionsList sessions={sessions} limit={3} />
       </section>
-    </>
+    </div>
   );
 }
 
