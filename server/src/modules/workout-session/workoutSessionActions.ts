@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
-import workoutSessionRepository from "./workoutSessionRepository";
 import { getCurrentUserId } from "../../helpers/currentUser";
+import workoutSessionRepository from "./workoutSessionRepository";
 
 const add: RequestHandler = async (req, res, next) => {
   try {

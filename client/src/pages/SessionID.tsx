@@ -1,4 +1,4 @@
-import { useNavigate, useParams, Link } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";

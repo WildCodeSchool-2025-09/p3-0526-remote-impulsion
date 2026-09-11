@@ -1,7 +1,7 @@
-import type { WorkoutSession } from "../types/workoutSession";
-import PreparedSessionCard from "./PreparedSessionCard";
 import { Link } from "react-router";
 import arrowRight from "../assets/icons/fleches/arrow-right.svg";
+import type { WorkoutSession } from "../types/workoutSession";
+import PreparedSessionCard from "./PreparedSessionCard";
 
 type PreparedSessionsListProps = {
   sessions: WorkoutSession[];

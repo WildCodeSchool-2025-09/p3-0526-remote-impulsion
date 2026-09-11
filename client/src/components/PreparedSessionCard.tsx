@@ -1,5 +1,5 @@
-import type { WorkoutSession } from "../types/workoutSession";
 import { Link } from "react-router";
+import type { WorkoutSession } from "../types/workoutSession";
 
 type PreparedSessionCardProps = {
   session: WorkoutSession;

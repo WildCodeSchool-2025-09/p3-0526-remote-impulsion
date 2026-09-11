@@ -5,8 +5,8 @@ import Exercises from "./pages/Exercises";
 import History from "./pages/History";
 import Home from "./pages/Home";
 import Programs from "./pages/Programs";
-import Sessions from "./pages/Sessions";
 import SessionId from "./pages/SessionID";
+import Sessions from "./pages/Sessions";
 
 const router = createBrowserRouter([
   {
