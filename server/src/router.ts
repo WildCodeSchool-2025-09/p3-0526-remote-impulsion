@@ -15,6 +15,7 @@ import workoutSessionActions from "./modules/workout-session/workoutSessionActio
 
 router.post("/api/workout-sessions", workoutSessionActions.add);
 router.get("/api/workout-sessions", workoutSessionActions.browse);
+router.get("/api/workout-sessions/:id", workoutSessionActions.read);
 router.delete("/api/workout-sessions/:id", workoutSessionActions.destroy);
 
 export default router;

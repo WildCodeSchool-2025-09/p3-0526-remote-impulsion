@@ -18,10 +18,24 @@ const postWorkSessions = async (): Promise<number> => {
   return sessionId;
 };
 
+const getWorkoutSessionById = async (
+  sessionId: number,
+): Promise<WorkoutSession> => {
+  const response = await fetch(`${API_URL}/api/workout-sessions/${sessionId}`);
+  const session = await response.json();
+
+  return session;
+};
+
 const deleteWorkSessions = async (sessionId: number): Promise<void> => {
   await fetch(`${API_URL}/api/workout-sessions/${sessionId}`, {
     method: "DELETE",
   });
 };
 
-export default { getWorkoutSessions, postWorkSessions, deleteWorkSessions };
+export default {
+  getWorkoutSessions,
+  postWorkSessions,
+  getWorkoutSessionById,
+  deleteWorkSessions,
+};

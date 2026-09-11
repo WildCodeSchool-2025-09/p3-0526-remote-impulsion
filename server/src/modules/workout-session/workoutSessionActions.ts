@@ -33,6 +33,23 @@ const browse: RequestHandler = async (req, res, next) => {
   }
 };
 
+const read: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId();
+    const sessionId = Number.parseInt(req.params.id);
+    const session = await workoutSessionRepository.read(sessionId, userId);
+
+    if (session == null) {
+      res.sendStatus(404);
+      return;
+    }
+
+    res.json(session);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const destroy: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
@@ -52,4 +69,4 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, browse, destroy };
+export default { add, browse, read, destroy };
