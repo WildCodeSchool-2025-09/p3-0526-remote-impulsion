@@ -7,12 +7,31 @@ type ExerciseIdParams = {
 };
 
 const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
-  _req,
+  req,
   res,
   next,
 ) => {
   try {
-    const exercises = await exerciseRepository.readAll();
+    const categoryId = req.query.categoryId
+      ? Number(req.query.categoryId)
+      : undefined;
+
+    const difficultyId = req.query.difficultyId
+      ? Number(req.query.difficultyId)
+      : undefined;
+
+    const equipmentId = req.query.equipmentId
+      ? Number(req.query.equipmentId)
+      : undefined;
+
+    const search = req.query.search ? String(req.query.search) : undefined;
+
+    const exercises = await exerciseRepository.readAll(
+      categoryId,
+      difficultyId,
+      equipmentId,
+      search,
+    );
 
     const exercisesWithImage: ExerciseSummary[] = exercises.map((exercise) => ({
       ...exercise,
