@@ -11,24 +11,26 @@ type ExerciseDetailSheetProps = {
 
 function ExerciseDetailSkeleton() {
   return (
-    <div className="space-y-6" aria-label="Chargement de la fiche exercice">
-      <Skeleton className="aspect-[4/3] w-full" />
-      <div className="flex gap-2">
-        <Skeleton className="h-6 w-24" />
-        <Skeleton className="h-6 w-20" />
-      </div>
+    <div className="space-y-5" aria-label="Chargement de la fiche exercice">
+      <Skeleton className="h-36 w-full sm:h-44" />
       <div className="space-y-3">
-        <Skeleton className="h-5 w-32" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-      <div className="space-y-3">
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-11/12" />
-        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-4 w-24" />
+        {["step-one", "step-two", "step-three", "step-four"].map((step) => (
+          <div key={step} className="flex items-center gap-3">
+            <Skeleton className="size-6 shrink-0 rounded-full" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        ))}
       </div>
     </div>
   );
+}
+
+function getInstructionSteps(description: string) {
+  return description
+    .split(/\r?\n/)
+    .map((line) => line.trim().replace(/^\d+\.\s*/, ""))
+    .filter(Boolean);
 }
 
 function MuscleList({
@@ -66,70 +68,56 @@ function ExerciseDetailContent({ exercise }: { exercise: ExerciseDetail }) {
   const secondaryMuscles = exercise.muscles.filter(
     (muscle) => muscle.role === "secondary",
   );
+  const instructionSteps = getInstructionSteps(exercise.description);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <img
         src={`${import.meta.env.VITE_API_URL}${exercise.imageUrl}`}
         alt={`Illustration de ${exercise.name}`}
-        className="aspect-[4/3] w-full rounded-box bg-base-300 object-cover"
+        className="h-36 w-full rounded-field border border-base-300 bg-white object-contain sm:h-44"
         onError={(event) => {
           event.currentTarget.onerror = null;
           event.currentTarget.src = `${import.meta.env.VITE_API_URL}/assets/images/placeholder-exercise.png`;
         }}
       />
 
-      <div className="flex flex-wrap gap-2">
-        <span className="badge badge-primary badge-outline">
-          {exercise.category}
-        </span>
-        <span className="badge badge-neutral">{exercise.difficulty}</span>
-      </div>
-
-      <section className="space-y-3" aria-labelledby="equipment-title">
+      <section className="space-y-3" aria-labelledby="instructions-title">
         <h3
-          id="equipment-title"
-          className="font-display font-bold text-base-content text-lg uppercase"
+          id="instructions-title"
+          className="font-semibold text-accent text-xs uppercase tracking-[0.18em]"
         >
-          Matériel nécessaire
+          Exécution
         </h3>
-        {exercise.equipment.length === 0 ? (
-          <p className="text-base-content/70 text-sm">Aucun matériel</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {exercise.equipment.map((item) => (
+        <ol className="space-y-3">
+          {instructionSteps.map((instruction, index) => (
+            <li key={instruction} className="flex items-start gap-3">
               <span
-                key={item.equipmentId}
-                className="rounded-selector bg-base-300 px-3 py-1 text-base-content text-sm"
+                aria-hidden="true"
+                className="grid size-6 shrink-0 place-items-center rounded-full bg-secondary/20 font-semibold text-info text-xs"
               >
-                {item.name}
+                {index + 1}
               </span>
-            ))}
-          </div>
-        )}
+              <span className="pt-0.5 text-base-content/75 text-sm leading-5">
+                {instruction}
+              </span>
+            </li>
+          ))}
+        </ol>
       </section>
 
-      <section className="space-y-4" aria-labelledby="muscles-title">
+      <section
+        className="space-y-3 border-base-300 border-t pt-5"
+        aria-labelledby="muscles-title"
+      >
         <h3
           id="muscles-title"
-          className="font-display font-bold text-base-content text-lg uppercase"
+          className="font-semibold text-accent text-xs uppercase tracking-[0.18em]"
         >
           Muscles sollicités
         </h3>
         <MuscleList title="Principaux" muscles={primaryMuscles} />
         <MuscleList title="Secondaires" muscles={secondaryMuscles} />
-      </section>
-
-      <section className="space-y-3" aria-labelledby="description-title">
-        <h3
-          id="description-title"
-          className="font-display font-bold text-base-content text-lg uppercase"
-        >
-          Instructions
-        </h3>
-        <p className="whitespace-pre-line text-base-content/80 text-sm leading-6">
-          {exercise.description}
-        </p>
       </section>
     </div>
   );
@@ -142,6 +130,7 @@ function ExerciseDetailSheet({
   const { exerciseDetail, isLoading, error, notFound, retry } =
     useExerciseDetail(exerciseId);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (exerciseId === null) {
@@ -157,6 +146,36 @@ function ExerciseDetailSheet({
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || dialogRef.current === null) {
+        return;
+      }
+
+      const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      const firstFocusableElement = focusableElements[0];
+      const lastFocusableElement =
+        focusableElements[focusableElements.length - 1];
+
+      if (
+        firstFocusableElement === undefined ||
+        lastFocusableElement === undefined
+      ) {
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === firstFocusableElement) {
+        event.preventDefault();
+        lastFocusableElement.focus();
+      } else if (
+        !event.shiftKey &&
+        document.activeElement === lastFocusableElement
+      ) {
+        event.preventDefault();
+        firstFocusableElement.focus();
       }
     }
 
@@ -187,27 +206,40 @@ function ExerciseDetailSheet({
       />
 
       <dialog
+        ref={dialogRef}
         open
         aria-modal="true"
         aria-labelledby="exercise-detail-title"
-        className="relative z-10 m-0 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[2rem] border-base-300 border-t bg-base-200 p-0 text-base-content shadow-2xl md:max-h-none md:max-w-xl md:rounded-none md:border-t-0 md:border-l"
+        className="relative z-10 m-0 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[2rem] border-base-300 border-t bg-base-200 p-0 text-base-content shadow-2xl md:h-dvh md:max-h-dvh md:max-w-xl md:rounded-none md:border-t-0 md:border-l"
       >
         <div
           aria-hidden="true"
           className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-base-content/20 md:hidden"
         />
 
-        <header className="flex items-start justify-between gap-4 border-base-300 border-b px-5 py-4 md:px-7 md:py-6">
+        <header className="flex shrink-0 items-start justify-between gap-4 border-base-300 border-b px-5 py-4 md:px-7 md:py-6">
           <div className="min-w-0">
-            <p className="mb-1 font-semibold text-primary text-xs uppercase tracking-[0.18em]">
-              Fiche exercice
-            </p>
             <h2
               id="exercise-detail-title"
-              className="truncate font-display font-extrabold text-2xl text-base-content uppercase italic md:text-3xl"
+              className="font-display font-extrabold text-2xl text-base-content uppercase italic leading-none md:text-3xl"
             >
               {exerciseDetail?.name ?? "Exercice"}
             </h2>
+            {exerciseDetail !== null && (
+              <p className="mt-2 flex flex-wrap items-center gap-x-2 text-neutral text-xs">
+                <span>{exerciseDetail.category}</span>
+                <span aria-hidden="true">·</span>
+                <span>
+                  {exerciseDetail.equipment.length === 0
+                    ? "Sans matériel"
+                    : exerciseDetail.equipment
+                        .map((item) => item.name)
+                        .join(", ")}
+                </span>
+                <span aria-hidden="true">·</span>
+                <span>{exerciseDetail.difficulty}</span>
+              </p>
+            )}
           </div>
 
           <button
@@ -221,7 +253,7 @@ function ExerciseDetailSheet({
           </button>
         </header>
 
-        <div className="overflow-y-auto px-5 py-6 md:px-7">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
           {isLoading && <ExerciseDetailSkeleton />}
 
           {!isLoading && error !== null && (
