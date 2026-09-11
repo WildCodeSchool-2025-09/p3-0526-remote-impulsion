@@ -36,7 +36,9 @@ function Home() {
   return (
     <>
       <section>
-        <h1>PRÊT POUR TA SÉANCE ?</h1>
+        <h1 className="text-2xl font-display italic font-extrabold uppercase">
+          Prêt pour ta séance ?
+        </h1>
 
         <HomeSessionAction
           subtitle={
