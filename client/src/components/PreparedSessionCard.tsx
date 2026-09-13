@@ -1,18 +1,13 @@
 import { Link } from "react-router";
 import type { WorkoutSession } from "../types/workoutSession";
+import { formatSessionDateShort } from "../utils/formatSessionDate";
 
 type PreparedSessionCardProps = {
   session: WorkoutSession;
 };
 
 const PreparedSessionCard = ({ session }: PreparedSessionCardProps) => {
-  const formattedDate = new Date(session.createdAt).toLocaleDateString(
-    "fr-FR",
-    {
-      day: "numeric",
-      month: "short",
-    },
-  );
+  const formattedDate = formatSessionDateShort(session.createdAt);
 
   return (
     <div className="grid h-full grid-cols-[1fr_auto] items-center gap-x-4 rounded-box border border-base-300 bg-base-200 p-4">

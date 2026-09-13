@@ -10,7 +10,7 @@ const useCreatePreparedSession = () => {
     setError(null);
 
     try {
-      const sessionId = await workoutSessionService.postWorkSessions();
+      const sessionId = await workoutSessionService.postWorkoutSession();
       return sessionId;
     } catch {
       setError("Impossible de créer la séance");

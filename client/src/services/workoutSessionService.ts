@@ -14,7 +14,7 @@ const getWorkoutSessions = async (): Promise<WorkoutSession[]> => {
   return sessions;
 };
 
-const postWorkSessions = async (): Promise<number> => {
+const postWorkoutSession = async (): Promise<number> => {
   const response = await fetch(`${API_URL}/api/workout-sessions`, {
     method: "POST",
   });
@@ -42,7 +42,7 @@ const getWorkoutSessionById = async (
   return session;
 };
 
-const deleteWorkSessions = async (sessionId: number): Promise<void> => {
+const deleteWorkoutSession = async (sessionId: number): Promise<void> => {
   const response = await fetch(`${API_URL}/api/workout-sessions/${sessionId}`, {
     method: "DELETE",
   });
@@ -54,7 +54,7 @@ const deleteWorkSessions = async (sessionId: number): Promise<void> => {
 
 export default {
   getWorkoutSessions,
-  postWorkSessions,
+  postWorkoutSession,
   getWorkoutSessionById,
-  deleteWorkSessions,
+  deleteWorkoutSession,
 };

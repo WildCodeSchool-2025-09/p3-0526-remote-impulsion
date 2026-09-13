@@ -10,7 +10,7 @@ const useDeletePreparedSession = () => {
     setError(null);
 
     try {
-      await workoutSessionService.deleteWorkSessions(sessionId);
+      await workoutSessionService.deleteWorkoutSession(sessionId);
 
       return true;
     } catch {

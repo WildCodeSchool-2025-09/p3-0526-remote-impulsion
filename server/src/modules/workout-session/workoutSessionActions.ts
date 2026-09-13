@@ -37,6 +37,12 @@ const read: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
     const sessionId = Number.parseInt(req.params.id);
+
+    if (Number.isNaN(sessionId)) {
+      res.sendStatus(400);
+      return;
+    }
+
     const session = await workoutSessionRepository.read(sessionId, userId);
 
     if (session == null) {
@@ -54,6 +60,12 @@ const destroy: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
     const sessionId = Number.parseInt(req.params.id);
+
+    if (Number.isNaN(sessionId)) {
+      res.sendStatus(400);
+      return;
+    }
+
     const nbRowsAffected = await workoutSessionRepository.delete(
       sessionId,
       userId,
@@ -63,6 +75,7 @@ const destroy: RequestHandler = async (req, res, next) => {
       res.sendStatus(404);
       return;
     }
+
     res.sendStatus(204);
   } catch (err) {
     next(err);
