@@ -60,7 +60,8 @@ class WorkoutSessionRepository {
     const [result] = await databaseClient.query<Result>(
       `DELETE FROM workout_session
         WHERE id = ?
-        AND user_id = ?`,
+        AND user_id = ?
+        AND status = 'prepared'`,
       [sessionId, userId],
     );
     return result.affectedRows;
