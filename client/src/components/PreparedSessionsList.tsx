@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import ArrowRightIcon from "../assets/icons/fleches/arrow-right.svg?react";
+import ArrowRightIcon from "../assets/icons/arrows/arrow-right.svg?react";
 import CalendarIcon from "../assets/icons/navigation/calendar-month.svg?react";
 import type { WorkoutSession } from "../types/workoutSession";
 import PreparedSessionCard from "./PreparedSessionCard";

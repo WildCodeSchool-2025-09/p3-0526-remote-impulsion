@@ -1,12 +1,13 @@
 import { Link, useNavigate, useParams } from "react-router";
 
-import TrashIcon from "../assets/icons/actions/corbeille.svg?react";
+import { useState } from "react";
 import PlayIcon from "../assets/icons/actions/play-circle.svg?react";
 import PlusIcon from "../assets/icons/actions/plus.svg?react";
+import TrashIcon from "../assets/icons/actions/trash.svg?react";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
+import DeleteSessionModal from "../components/DeleteSessionModal";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
-import { formatSessionDateLong } from "../utils/formatSessionDate";
 
 function SessionId() {
   const { id } = useParams();
@@ -14,6 +15,8 @@ function SessionId() {
 
   const sessionId = Number(id);
   const { session, loading, error } = useWorkoutSession(sessionId);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const {
     deletePreparedSession,
@@ -33,7 +36,13 @@ function SessionId() {
     return <p>Séance introuvable.</p>;
   }
 
-  const formattedDate = formatSessionDateLong(session.createdAt);
+  const formattedDate = new Date(session.createdAt).toLocaleDateString(
+    "fr-FR",
+    {
+      day: "numeric",
+      month: "long",
+    },
+  );
 
   const handleDelete = async () => {
     const deleted = await deletePreparedSession(session.id);
@@ -52,7 +61,7 @@ function SessionId() {
 
         <button
           type="button"
-          onClick={handleDelete}
+          onClick={() => setIsDeleteModalOpen(true)}
           disabled={deleteLoading}
           className="-my-2 -mr-2 grid size-10 shrink-0 place-items-center rounded-full text-error transition-colors hover:bg-error/15 focus-visible:outline-2 focus-visible:outline-error focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60 lg:m-0 lg:flex lg:size-auto lg:gap-2 lg:rounded-lg lg:border lg:border-error/50 lg:px-4 lg:py-2 lg:font-semibold lg:text-sm lg:hover:bg-error/10"
         >
@@ -130,6 +139,12 @@ function SessionId() {
           </button>
         </div>
       </div>
+      {isDeleteModalOpen && (
+        <DeleteSessionModal
+          onCancel={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDelete}
+        />
+      )}
     </div>
   );
 }
