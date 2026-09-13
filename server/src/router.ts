@@ -13,17 +13,13 @@ router.get("/api/health", (_req, res) => {
 
 router.get("/api/exercises", exerciseActions.browse);
 
-<<<<<<< HEAD
 router.post("/api/workout-sessions", workoutSessionActions.add);
 router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/:id", workoutSessionActions.read);
 router.delete("/api/workout-sessions/:id", workoutSessionActions.destroy);
-=======
+
 router.get("/api/categories", filtersActions.browseCategories);
 router.get("/api/difficulties", filtersActions.browseDifficulties);
 router.get("/api/equipment", filtersActions.browseEquipment);
-
-/* ************************************************************************* */
->>>>>>> dev
 
 export default router;
