@@ -6,6 +6,10 @@ type ExerciseIdParams = {
   id: string;
 };
 
+function buildImageUrl(slug: string) {
+  return `/assets/images/${slug}.jpg`;
+}
+
 const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
   req,
   res,
@@ -35,7 +39,7 @@ const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
 
     const exercisesWithImage: ExerciseSummary[] = exercises.map((exercise) => ({
       ...exercise,
-      imageUrl: `/assets/images/${exercise.slug}.jpg`,
+      imageUrl: buildImageUrl(exercise.slug),
     }));
 
     res.json(exercisesWithImage);
@@ -53,7 +57,7 @@ const read: RequestHandler<ExerciseIdParams, ExerciseDetail> = async (
     const exerciseId = Number(req.params.id);
 
     if (!Number.isInteger(exerciseId) || exerciseId <= 0) {
-      res.sendStatus(404);
+      res.sendStatus(400);
       return;
     }
 
@@ -71,7 +75,7 @@ const read: RequestHandler<ExerciseIdParams, ExerciseDetail> = async (
 
     const exerciseDetail: ExerciseDetail = {
       ...exercise,
-      imageUrl: `/assets/images/${exercise.slug}.jpg`,
+      imageUrl: buildImageUrl(exercise.slug),
       muscles,
       equipment,
     };

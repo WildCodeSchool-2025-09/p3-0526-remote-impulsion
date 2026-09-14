@@ -23,6 +23,34 @@ describe("GET /api/exercises", () => {
   });
 });
 
+describe("GET /api/exercises/:id", () => {
+  test("renvoie le détail d'un exercice existant", async () => {
+    const response = await request(app).get("/api/exercises/1");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        id: 1,
+        imageUrl: expect.stringMatching(/^\/assets\/images\/.+\.jpg$/),
+        muscles: expect.any(Array),
+        equipment: expect.any(Array),
+      }),
+    );
+  });
+
+  test("renvoie le statut 400 pour un identifiant invalide", async () => {
+    const response = await request(app).get("/api/exercises/abc");
+
+    expect(response.status).toBe(400);
+  });
+
+  test("renvoie le statut 404 pour un exercice inexistant", async () => {
+    const response = await request(app).get("/api/exercises/2147483647");
+
+    expect(response.status).toBe(404);
+  });
+});
+
 describe("GET /api/exercises - recherche et filtres", () => {
   test("la recherche est insensible à la casse et aux accents", async () => {
     const [lower, upper, accented] = await Promise.all([
