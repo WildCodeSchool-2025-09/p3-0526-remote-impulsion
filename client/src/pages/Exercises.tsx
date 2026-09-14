@@ -2,6 +2,7 @@ import { useState } from "react";
 import EmptyState from "../components/EmptyState";
 import ExerciseCard from "../components/ExerciseCard";
 import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
+import ExerciseDetailSheet from "../components/ExerciseDetailSheet";
 import FilterPanel from "../components/FilterPanel";
 import NoResultsState from "../components/NoResultsState";
 import SearchField from "../components/SearchField";
@@ -38,9 +39,20 @@ function Exercises() {
   } = useFilters();
 
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(
+    null,
+  );
 
   function togglePanel(panel: OpenPanel) {
     setOpenPanel((current) => (current === panel ? null : panel));
+  }
+
+  function handleOpenExerciseDetail(exerciseId: number) {
+    setSelectedExerciseId(exerciseId);
+  }
+
+  function handleCloseExerciseDetail() {
+    setSelectedExerciseId(null);
   }
 
   if (error) {
@@ -149,12 +161,20 @@ function Exercises() {
           ) : (
             <div className="flex flex-col gap-2">
               {exercises.map((exercise) => (
-                <ExerciseCard key={exercise.id} exercise={exercise} />
+                <ExerciseCard
+                  key={exercise.id}
+                  exercise={exercise}
+                  onSelect={handleOpenExerciseDetail}
+                />
               ))}
             </div>
           )}
         </>
       )}
+      <ExerciseDetailSheet
+        exerciseId={selectedExerciseId}
+        onClose={handleCloseExerciseDetail}
+      />
     </section>
   );
 }

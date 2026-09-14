@@ -1,5 +1,4 @@
 import express from "express";
-
 import exerciseActions from "./modules/exercise/exerciseActions";
 import workoutSessionActions from "./modules/workout-session/workoutSessionActions";
 
@@ -7,11 +6,8 @@ import filtersActions from "./modules/filters/filtersActions";
 
 const router = express.Router();
 
-router.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
 router.get("/api/exercises", exerciseActions.browse);
+router.get("/api/exercises/:id", exerciseActions.read);
 
 router.post("/api/workout-sessions", workoutSessionActions.add);
 router.get("/api/workout-sessions", workoutSessionActions.browse);
