@@ -56,6 +56,50 @@ const read: RequestHandler = async (req, res, next) => {
   }
 };
 
+const start: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId();
+    const sessionId = Number.parseInt(req.params.id);
+
+    if (Number.isNaN(sessionId)) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const session = await workoutSessionRepository.read(sessionId, userId);
+
+    if (session == null) {
+      res.sendStatus(404);
+      return;
+    }
+    const currentSession = await workoutSessionRepository.readCurrent(userId);
+    if (currentSession) {
+      res.status(409).json({
+        currentSessionId: currentSession.id,
+      });
+      return;
+    }
+    if (session.exerciseCount === 0) {
+      res.sendStatus(422);
+      return;
+    }
+
+    const affectedRows = await workoutSessionRepository.start(
+      sessionId,
+      userId,
+    );
+
+    if (affectedRows === 0) {
+      res.sendStatus(409);
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const destroy: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
@@ -82,4 +126,4 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, browse, read, destroy };
+export default { add, browse, read, start, destroy };

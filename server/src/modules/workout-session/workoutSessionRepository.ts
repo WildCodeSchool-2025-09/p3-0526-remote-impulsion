@@ -56,6 +56,33 @@ class WorkoutSessionRepository {
     return rows[0];
   }
 
+  async readCurrent(userId: number) {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT *
+      FROM workout_session
+      WHERE workout_session.user_id = ?
+      AND workout_session.status = 'in_progress'
+      LIMIT 1`,
+      [userId],
+    );
+
+    return rows[0];
+  }
+
+  async start(sessionId: number, userId: number) {
+    const [result] = await databaseClient.query<Result>(
+      `UPDATE workout_session
+      SET status = 'in_progress',
+      started_at = NOW()
+      WHERE id = ?
+      AND user_id = ?
+      AND status = 'prepared'`,
+      [sessionId, userId],
+    );
+
+    return result.affectedRows;
+  }
+
   async delete(sessionId: number, userId: number) {
     const [result] = await databaseClient.query<Result>(
       `DELETE FROM workout_session
