@@ -15,7 +15,7 @@ import NavItem from "./navigation/NavItem";
 const NAV_ITEMS = [
   { to: "/", label: "Accueil", icon: HomeIcon, end: true },
   { to: "/exercises", label: "Exercices", icon: BarbellIcon, end: false },
-  { to: "/session", label: "Séance", icon: PlayIcon, end: false },
+  { to: "/sessions", label: "Séances", icon: PlayIcon, end: false },
   { to: "/programs", label: "Programmes", icon: CalendarIcon, end: false },
   { to: "/history", label: "Historique", icon: HistoryIcon, end: false },
 ];
