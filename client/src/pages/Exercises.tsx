@@ -229,6 +229,12 @@ function Exercises({
       <ExerciseDetailSheet
         exerciseId={selectedExerciseId}
         onClose={handleCloseExerciseDetail}
+        selectionMode={selectionMode}
+        isSelected={
+          selectedExerciseId !== null &&
+          selectedIds.includes(selectedExerciseId)
+        }
+        onToggleSelect={toggleSelection}
       />
     </section>
   );
