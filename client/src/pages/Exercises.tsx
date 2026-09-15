@@ -45,6 +45,15 @@ function Exercises({
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(
     null,
   );
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  function toggleSelection(id: number) {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  }
 
   function togglePanel(panel: OpenPanel) {
     setOpenPanel((current) => (current === panel ? null : panel));
