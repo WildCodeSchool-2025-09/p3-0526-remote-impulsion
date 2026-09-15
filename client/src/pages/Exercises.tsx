@@ -15,7 +15,10 @@ type OpenPanel = "category" | "equipment" | "difficulty" | null;
 function Exercises({
   selectionMode,
   onValidate,
-}: { selectionMode?: boolean; onValidate?: (selectedIds: number[]) => void }) {
+}: {
+  selectionMode?: boolean;
+  onValidate?: (selectedIds: number[]) => void;
+}) {
   const {
     exercises,
     isLoading,
@@ -65,6 +68,14 @@ function Exercises({
 
   function handleCloseExerciseDetail() {
     setSelectedExerciseId(null);
+  }
+
+  function handleClearSelection() {
+    setSelectedIds([]);
+  }
+
+  function handleValidate() {
+    onValidate?.(selectedIds);
   }
 
   if (error) {
@@ -177,12 +188,44 @@ function Exercises({
                   key={exercise.id}
                   exercise={exercise}
                   onSelect={handleOpenExerciseDetail}
+                  selectionMode={selectionMode}
+                  isSelected={selectedIds.includes(exercise.id)}
+                  onToggleSelect={toggleSelection}
                 />
               ))}
             </div>
           )}
         </>
       )}
+
+      {selectionMode && (
+        <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-between gap-3 border-t border-[#334155] bg-[#1E293B] px-4 py-3">
+          <span className="text-sm text-[#94A3B8]">
+            {selectedIds.length} sélectionné{selectedIds.length > 1 ? "s" : ""}
+            {selectedIds.length > 0 && (
+              <>
+                {" · "}
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="font-semibold text-[#60A5FA]"
+                >
+                  Vider
+                </button>
+              </>
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={handleValidate}
+            disabled={selectedIds.length === 0}
+            className="rounded-lg bg-[#FF6B35] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Valider
+          </button>
+        </div>
+      )}
+
       <ExerciseDetailSheet
         exerciseId={selectedExerciseId}
         onClose={handleCloseExerciseDetail}
