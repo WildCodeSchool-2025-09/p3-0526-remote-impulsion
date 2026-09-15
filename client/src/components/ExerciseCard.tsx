@@ -1,18 +1,20 @@
 import type { ExerciseSummary } from "../types/exercise";
 
+type ExerciseCardProps = {
+  exercise: ExerciseSummary;
+  onSelect: (id: number) => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
+};
+
 function ExerciseCard({
   exercise,
   onSelect,
   selectionMode,
   isSelected,
   onToggleSelect,
-}: {
-  exercise: ExerciseSummary;
-  onSelect: (id: number) => void;
-  selectionMode?: boolean;
-  isSelected?: boolean;
-  onToggleSelect?: (id: number) => void;
-}) {
+}: ExerciseCardProps) {
   return (
     <div className="relative flex w-full flex-col items-start gap-2 rounded-box border border-base-300 bg-base-200 p-3">
       {selectionMode && (

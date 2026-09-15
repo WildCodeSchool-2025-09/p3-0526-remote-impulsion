@@ -12,13 +12,12 @@ import useFilters from "../hooks/useFilters";
 
 type OpenPanel = "category" | "equipment" | "difficulty" | null;
 
-function Exercises({
-  selectionMode,
-  onValidate,
-}: {
+type ExercisesProps = {
   selectionMode?: boolean;
   onValidate?: (selectedIds: number[]) => void;
-}) {
+};
+
+function Exercises({ selectionMode, onValidate }: ExercisesProps) {
   const {
     exercises,
     isLoading,
@@ -50,12 +49,13 @@ function Exercises({
   );
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-  function toggleSelection(id: number) {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
-    } else {
-      setSelectedIds([...selectedIds, id]);
-    }
+  function handleToggleSelection(id: number) {
+    setSelectedIds((previousSelectedIds) => {
+      if (previousSelectedIds.includes(id)) {
+        return previousSelectedIds.filter((selectedId) => selectedId !== id);
+      }
+      return [...previousSelectedIds, id];
+    });
   }
 
   function togglePanel(panel: OpenPanel) {
@@ -190,7 +190,7 @@ function Exercises({
                   onSelect={handleOpenExerciseDetail}
                   selectionMode={selectionMode}
                   isSelected={selectedIds.includes(exercise.id)}
-                  onToggleSelect={toggleSelection}
+                  onToggleSelect={handleToggleSelection}
                 />
               ))}
             </div>
@@ -234,7 +234,7 @@ function Exercises({
           selectedExerciseId !== null &&
           selectedIds.includes(selectedExerciseId)
         }
-        onToggleSelect={toggleSelection}
+        onToggleSelect={handleToggleSelection}
       />
     </section>
   );
