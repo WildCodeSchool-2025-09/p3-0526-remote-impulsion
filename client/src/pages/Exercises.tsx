@@ -12,7 +12,10 @@ import useFilters from "../hooks/useFilters";
 
 type OpenPanel = "category" | "equipment" | "difficulty" | null;
 
-function Exercises() {
+function Exercises({
+  selectionMode,
+  onValidate,
+}: { selectionMode?: boolean; onValidate?: (selectedIds: number[]) => void }) {
   const {
     exercises,
     isLoading,
