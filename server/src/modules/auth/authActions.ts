@@ -46,6 +46,14 @@ const register: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    const existingEmail = await authRepository.readByEmail(email);
+    if (existingEmail) {
+      res
+        .status(409)
+        .json({ errors: { email: "Cet e-mail est déjà utilisé" } });
+      return;
+    }
+
     const existingUsername = await authRepository.readByUsername(username);
     if (existingUsername) {
       res
@@ -57,8 +65,6 @@ const register: RequestHandler = async (req, res, next) => {
     const hashedPassword = await argon2.hash(password);
 
     await authRepository.create(username, email, hashedPassword);
-
-    res.sendStatus(201);
 
     res.sendStatus(201);
   } catch (err) {
