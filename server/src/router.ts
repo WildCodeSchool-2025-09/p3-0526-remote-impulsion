@@ -1,7 +1,7 @@
 import express from "express";
 import exerciseActions from "./modules/exercise/exerciseActions";
-import workoutSessionActions from "./modules/workout-session/workoutSessionActions";
 import filtersActions from "./modules/filters/filtersActions";
+import workoutSessionActions from "./modules/workout-session/workoutSessionActions";
 
 const router = express.Router();
 

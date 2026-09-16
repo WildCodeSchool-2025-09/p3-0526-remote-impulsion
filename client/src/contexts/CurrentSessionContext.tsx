@@ -1,4 +1,10 @@
-import { createContext, useEffect, useState, type ReactNode } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import workoutSessionService from "../services/workoutSessionService";
 import type { WorkoutSession } from "../types/workoutSession";
 
@@ -19,14 +25,14 @@ export const CurrentSessionProvider = ({
     null,
   );
 
-  const refreshCurrentSession = async () => {
+  const refreshCurrentSession = useCallback(async () => {
     const session = await workoutSessionService.getCurrentSession();
     setCurrentSession(session);
-  };
+  }, []);
 
   useEffect(() => {
     refreshCurrentSession();
-  }, []);
+  }, [refreshCurrentSession]);
 
   return (
     <CurrentSessionContext.Provider
