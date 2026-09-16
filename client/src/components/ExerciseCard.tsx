@@ -2,49 +2,58 @@ import type { ExerciseSummary } from "../types/exercise";
 
 type ExerciseCardProps = {
   exercise: ExerciseSummary;
-  onSelect: (exerciseId: number) => void;
+  onSelect: (id: number) => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
 };
 
-function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) {
+function ExerciseCard({
+  exercise,
+  onSelect,
+  selectionMode,
+  isSelected,
+  onToggleSelect,
+}: ExerciseCardProps) {
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(exercise.id)}
-      className="group flex w-full items-center gap-3 rounded-xl border border-[#334155] bg-[#1E293B] p-3 text-left transition hover:border-[#FF6B35]/60 hover:bg-[#243247]"
-    >
-      <span
-        aria-hidden="true"
-        className="h-5 w-5 shrink-0 rounded-md border-2 border-[#64748B] transition group-hover:border-[#FF6B35]"
-      />
+    <div className="relative flex w-full flex-col items-start gap-2 rounded-box border border-base-300 bg-base-200 p-3">
+      {selectionMode && (
+        <button
+          type="button"
+          onClick={() => onToggleSelect?.(exercise.id)}
+          aria-pressed={isSelected}
+          aria-label={
+            isSelected
+              ? "Désélectionner cet exercice"
+              : "Sélectionner cet exercice"
+          }
+          className={`absolute right-3 top-3 z-10 h-6 w-6 rounded border-2 ${
+            isSelected
+              ? "border-primary bg-primary"
+              : "border-base-content/40 bg-base-100"
+          }`}
+        />
+      )}
 
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#0F172A]">
+      <button
+        type="button"
+        onClick={() => onSelect(exercise.id)}
+        className="flex w-full flex-col items-start gap-2 text-left"
+      >
         <img
           src={`${import.meta.env.VITE_API_URL}${exercise.imageUrl}`}
           alt={exercise.name}
-          className="h-full w-full object-cover"
+          className="aspect-square w-full rounded-field object-cover"
           onError={(event) => {
             event.currentTarget.src = `${import.meta.env.VITE_API_URL}/assets/images/placeholder-exercise.png`;
           }}
         />
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <h2 className="truncate text-sm font-bold text-[#F8FAFC]">
+        <h2 className="font-body text-sm font-semibold text-base-content">
           {exercise.name}
         </h2>
-
-        <p className="mt-1 truncate text-xs text-[#94A3B8]">
-          {exercise.category}
-        </p>
-      </div>
-
-      <span
-        aria-hidden="true"
-        className="shrink-0 text-xl text-[#64748B] transition group-hover:text-[#FF6B35]"
-      >
-        ›
-      </span>
-    </button>
+        <span className="badge badge-sm">{exercise.category}</span>
+      </button>
+    </div>
   );
 }
 
