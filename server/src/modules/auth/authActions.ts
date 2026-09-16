@@ -1,7 +1,7 @@
 import argon2 from "argon2";
 import type { RequestHandler } from "express";
-import type { RegisterPayload } from "./AuthTypes";
 import authRepository from "./authRepository";
+import type { RegisterPayload } from "./authTypes";
 
 const register: RequestHandler = async (req, res, next) => {
   try {
