@@ -4,7 +4,6 @@ import express from "express";
 import authActions from "./modules/auth/authActions";
 
 const app = express();
-router.post("/api/auth/register", authActions.register);
 
 // Configure it
 
