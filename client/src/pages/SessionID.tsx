@@ -1,12 +1,14 @@
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
-import { useState } from "react";
 import PlayIcon from "../assets/icons/actions/play-circle.svg?react";
 import PlusIcon from "../assets/icons/actions/plus.svg?react";
 import TrashIcon from "../assets/icons/actions/trash.svg?react";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
 import DeleteSessionModal from "../components/DeleteSessionModal";
+import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
+import useStartSession from "../hooks/workout-session/useStartSession";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
 
 function SessionId() {
@@ -24,12 +26,27 @@ function SessionId() {
     error: deleteError,
   } = useDeletePreparedSession();
 
+  const {
+    startSession,
+    loading: startLoading,
+    error: startError,
+    currentSessionId,
+  } = useStartSession();
+
+  const currentSessionContext = useContext(CurrentSessionContext);
+
+  useEffect(() => {
+    if (currentSessionId !== null) {
+      navigate(`/sessions/${currentSessionId}`);
+    }
+  }, [currentSessionId, navigate]);
+
   if (loading) {
     return <p>Chargement...</p>;
   }
 
-  if (error || deleteError) {
-    return <p>{error || deleteError}</p>;
+  if (error || deleteError || startError) {
+    return <p>{error || deleteError || startError}</p>;
   }
 
   if (!session) {
@@ -49,6 +66,14 @@ function SessionId() {
 
     if (deleted) {
       navigate("/sessions");
+    }
+  };
+
+  const handleStart = async () => {
+    const started = await startSession(session.id);
+
+    if (started && currentSessionContext) {
+      await currentSessionContext.refreshCurrentSession();
     }
   };
 
@@ -103,6 +128,7 @@ function SessionId() {
               <h3 className="mb-1 font-display font-extrabold text-base-content text-xl uppercase italic md:text-2xl">
                 Aucun exercice
               </h3>
+
               <p className="mx-auto max-w-sm text-base-content/75 text-sm leading-6">
                 Ajoute au moins un exercice pour pouvoir démarrer cette séance.
               </p>
@@ -131,14 +157,16 @@ function SessionId() {
 
           <button
             type="button"
-            disabled={session.exerciseCount === 0}
+            onClick={handleStart}
+            disabled={session.exerciseCount === 0 || startLoading}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 font-semibold text-primary-content transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:opacity-100 md:w-auto md:px-5 md:py-2.5 md:text-sm"
           >
             <PlayIcon aria-hidden="true" className="size-5 md:size-4" />
-            Démarrer la séance
+            {startLoading ? "Démarrage..." : "Démarrer la séance"}
           </button>
         </div>
       </div>
+
       {isDeleteModalOpen && (
         <DeleteSessionModal
           onCancel={() => setIsDeleteModalOpen(false)}
