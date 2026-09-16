@@ -162,31 +162,20 @@ describe("US13 - Ajouter des exercices à une séance", () => {
     },
   );
 
-  test("ajoute les exercices à la suite et valide la transaction", async () => {
-    const connection = {
-      beginTransaction: jest.fn().mockResolvedValue(undefined),
-      query: jest
-        .fn()
-        .mockResolvedValueOnce([[{ status: "prepared" }], []])
-        .mockResolvedValueOnce([[{ id: 3 }, { id: 8 }], []])
-        .mockResolvedValueOnce([[], []])
-        .mockResolvedValueOnce([[{ maxPosition: 2 }], []])
-        .mockResolvedValueOnce([{ affectedRows: 2 }, []]),
-      commit: jest.fn().mockResolvedValue(undefined),
-      rollback: jest.fn().mockResolvedValue(undefined),
-      release: jest.fn(),
-    };
-
-    jest
-      .spyOn(databaseClient, "getConnection")
-      .mockResolvedValue(connection as never);
+  test("ajoute les exercices à la suite", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValueOnce([[{ status: "prepared" }], []] as never)
+      .mockResolvedValueOnce([[{ id: 3 }, { id: 8 }], []] as never)
+      .mockResolvedValueOnce([[], []] as never)
+      .mockResolvedValueOnce([[{ maxPosition: 2 }], []] as never)
+      .mockResolvedValueOnce([{ affectedRows: 2 }, []] as never);
 
     const result = await workoutSessionRepository.addExercises(7, 1, [3, 8]);
 
     expect(result).toBe("created");
-    expect(connection.beginTransaction).toHaveBeenCalled();
 
-    const [insertSql, insertParams] = connection.query.mock.calls[4];
+    const [insertSql, insertParams] = queryMock.mock.calls[4];
 
     expect(String(insertSql)).toMatch(/INSERT INTO workout_session_exercise/);
     expect(insertParams).toEqual([
@@ -195,36 +184,17 @@ describe("US13 - Ajouter des exercices à une séance", () => {
         [7, 8, 4],
       ],
     ]);
-
-    expect(connection.commit).toHaveBeenCalled();
-    expect(connection.rollback).not.toHaveBeenCalled();
-    expect(connection.release).toHaveBeenCalled();
   });
 
-  test("annule la transaction si une requête échoue", async () => {
+  test("transmet une erreur de base de données", async () => {
     const databaseError = new Error("Database failure");
 
-    const connection = {
-      beginTransaction: jest.fn().mockResolvedValue(undefined),
-      query: jest
-        .fn()
-        .mockResolvedValueOnce([[{ status: "prepared" }], []])
-        .mockRejectedValueOnce(databaseError),
-      commit: jest.fn().mockResolvedValue(undefined),
-      rollback: jest.fn().mockResolvedValue(undefined),
-      release: jest.fn(),
-    };
-
     jest
-      .spyOn(databaseClient, "getConnection")
-      .mockResolvedValue(connection as never);
-
+      .spyOn(databaseClient, "query")
+      .mockResolvedValueOnce([[{ status: "prepared" }], []] as never)
+      .mockRejectedValueOnce(databaseError);
     await expect(
       workoutSessionRepository.addExercises(7, 1, [3, 8]),
     ).rejects.toThrow("Database failure");
-
-    expect(connection.commit).not.toHaveBeenCalled();
-    expect(connection.rollback).toHaveBeenCalled();
-    expect(connection.release).toHaveBeenCalled();
   });
 });

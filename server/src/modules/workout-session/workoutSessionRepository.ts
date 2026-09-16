@@ -67,90 +67,71 @@ class WorkoutSessionRepository {
     | "exercise_not_found"
     | "duplicate_exercise"
   > {
-    const connection = await databaseClient.getConnection();
-
-    try {
-      await connection.beginTransaction();
-
-      const [sessionRows] = await connection.query<Rows>(
-        `SELECT status
+    const [sessionRows] = await databaseClient.query<Rows>(
+      `SELECT status
        FROM workout_session
        WHERE id = ?
-         AND user_id = ?
-       FOR UPDATE`,
-        [sessionId, userId],
-      );
+         AND user_id = ?`,
+      [sessionId, userId],
+    );
 
-      const session = sessionRows[0];
+    const session = sessionRows[0];
 
-      if (session === undefined) {
-        await connection.rollback();
-        return "session_not_found";
-      }
+    if (session === undefined) {
+      return "session_not_found";
+    }
 
-      if (session.status !== "prepared") {
-        await connection.rollback();
-        return "session_not_prepared";
-      }
+    if (session.status !== "prepared") {
+      return "session_not_prepared";
+    }
 
-      const placeholders = exerciseIds.map(() => "?").join(", ");
+    const placeholders = exerciseIds.map(() => "?").join(", ");
 
-      const [exerciseRows] = await connection.query<Rows>(
-        `SELECT id
+    const [exerciseRows] = await databaseClient.query<Rows>(
+      `SELECT id
        FROM exercise
        WHERE id IN (${placeholders})`,
-        exerciseIds,
-      );
+      exerciseIds,
+    );
 
-      if (exerciseRows.length !== exerciseIds.length) {
-        await connection.rollback();
-        return "exercise_not_found";
-      }
+    if (exerciseRows.length !== exerciseIds.length) {
+      return "exercise_not_found";
+    }
 
-      const [existingRows] = await connection.query<Rows>(
-        `SELECT exercise_id
+    const [existingRows] = await databaseClient.query<Rows>(
+      `SELECT exercise_id
        FROM workout_session_exercise
        WHERE workout_session_id = ?
          AND exercise_id IN (${placeholders})`,
-        [sessionId, ...exerciseIds],
-      );
+      [sessionId, ...exerciseIds],
+    );
 
-      if (existingRows.length > 0) {
-        await connection.rollback();
-        return "duplicate_exercise";
-      }
+    if (existingRows.length > 0) {
+      return "duplicate_exercise";
+    }
 
-      const [positionRows] = await connection.query<Rows>(
-        `SELECT COALESCE(MAX(position), 0) AS maxPosition
+    const [positionRows] = await databaseClient.query<Rows>(
+      `SELECT COALESCE(MAX(position), 0) AS maxPosition
        FROM workout_session_exercise
        WHERE workout_session_id = ?`,
-        [sessionId],
-      );
+      [sessionId],
+    );
 
-      const maxPosition = Number(positionRows[0].maxPosition);
+    const maxPosition = Number(positionRows[0].maxPosition);
 
-      const values = exerciseIds.map((exerciseId, index) => [
-        sessionId,
-        exerciseId,
-        maxPosition + index + 1,
-      ]);
+    const values = exerciseIds.map((exerciseId, index) => [
+      sessionId,
+      exerciseId,
+      maxPosition + index + 1,
+    ]);
 
-      await connection.query<Result>(
-        `INSERT INTO workout_session_exercise
+    await databaseClient.query<Result>(
+      `INSERT INTO workout_session_exercise
         (workout_session_id, exercise_id, position)
        VALUES ?`,
-        [values],
-      );
-
-      await connection.commit();
-
-      return "created";
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
-    }
+      [values],
+    );
+    return "created";
   }
 
   async delete(sessionId: number, userId: number) {
