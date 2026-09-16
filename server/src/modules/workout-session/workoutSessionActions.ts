@@ -100,6 +100,17 @@ const start: RequestHandler = async (req, res, next) => {
   }
 };
 
+const readCurrent: RequestHandler = async (_req, res, next) => {
+  try {
+    const userId = getCurrentUserId();
+    const session = await workoutSessionRepository.readCurrent(userId);
+
+    res.json(session ?? null);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const destroy: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
@@ -126,4 +137,4 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, browse, read, start, destroy };
+export default { add, browse, read, readCurrent, start, destroy };
