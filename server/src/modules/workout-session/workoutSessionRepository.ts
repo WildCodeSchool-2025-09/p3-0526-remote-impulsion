@@ -58,11 +58,21 @@ class WorkoutSessionRepository {
 
   async readCurrent(userId: number) {
     const [rows] = await databaseClient.query<Rows>(
-      `SELECT *
-      FROM workout_session
-      WHERE workout_session.user_id = ?
+      `SELECT
+      workout_session.id,
+      workout_session.user_id AS userId,
+      workout_session.created_at AS createdAt,
+      workout_session.started_at AS startedAt,
+      workout_session.ended_at AS endedAt,
+      workout_session.status,
+      COUNT(workout_session_exercise.id) AS exerciseCount
+    FROM workout_session
+    LEFT JOIN workout_session_exercise
+      ON workout_session.id = workout_session_exercise.workout_session_id
+    WHERE workout_session.user_id = ?
       AND workout_session.status = 'in_progress'
-      LIMIT 1`,
+    GROUP BY workout_session.id
+    LIMIT 1`,
       [userId],
     );
 
