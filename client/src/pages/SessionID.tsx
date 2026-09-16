@@ -11,6 +11,7 @@ import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useStartSession from "../hooks/workout-session/useStartSession";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
+import { formatSessionDateLong } from "../utils/formatSessionDate";
 
 function SessionId() {
   const { id } = useParams();
@@ -54,13 +55,7 @@ function SessionId() {
     return <p>Séance introuvable.</p>;
   }
 
-  const formattedDate = new Date(session.createdAt).toLocaleDateString(
-    "fr-FR",
-    {
-      day: "numeric",
-      month: "long",
-    },
-  );
+  const formattedDate = formatSessionDateLong(session.createdAt);
 
   const handleDelete = async () => {
     const deleted = await deletePreparedSession(session.id);

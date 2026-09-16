@@ -59,7 +59,7 @@ const startWorkoutSession = async (sessionId: number) => {
     throw new Error("Impossible de démarrer la séance");
   }
   return {
-    status: "started",
+    result: "started",
   };
 };
 
