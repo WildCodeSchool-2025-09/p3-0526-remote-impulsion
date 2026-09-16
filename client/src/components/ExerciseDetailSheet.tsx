@@ -7,11 +7,17 @@ import LocalErrorState from "./feedback/LocalErrorState";
 type ExerciseDetailSheetProps = {
   exerciseId: number | null;
   onClose: () => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
 };
 
 function ExerciseDetailSheet({
   exerciseId,
   onClose,
+  selectionMode,
+  isSelected,
+  onToggleSelect,
 }: ExerciseDetailSheetProps) {
   const { exerciseDetail, isLoading, error, notFound, retry } =
     useExerciseDetail(exerciseId);
@@ -80,6 +86,13 @@ function ExerciseDetailSheet({
   if (exerciseId === null) {
     return null;
   }
+
+  const showSelectionAction =
+    selectionMode &&
+    !isLoading &&
+    error === null &&
+    !notFound &&
+    exerciseDetail !== null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 backdrop-blur-sm md:items-stretch md:justify-end">
@@ -167,6 +180,25 @@ function ExerciseDetailSheet({
               <ExerciseDetailContent exercise={exerciseDetail} />
             )}
         </div>
+
+        {showSelectionAction && (
+          <footer className="shrink-0 border-base-300 border-t px-5 py-4 md:px-7">
+            <button
+              type="button"
+              onClick={() => onToggleSelect?.(exerciseId)}
+              aria-pressed={isSelected}
+              className={`w-full rounded-lg px-4 py-3 font-semibold text-sm transition ${
+                isSelected
+                  ? "border border-primary bg-primary/10 text-primary"
+                  : "bg-primary text-primary-content"
+              }`}
+            >
+              {isSelected
+                ? "Retirer de la sélection"
+                : "Sélectionner cet exercice"}
+            </button>
+          </footer>
+        )}
       </dialog>
     </div>
   );
