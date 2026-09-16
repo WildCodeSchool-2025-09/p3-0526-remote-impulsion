@@ -2,8 +2,8 @@ import express from "express";
 import exerciseActions from "./modules/exercise/exerciseActions";
 import workoutSessionActions from "./modules/workout-session/workoutSessionActions";
 
-import filtersActions from "./modules/filters/filtersActions";
 import authActions from "./modules/auth/authActions";
+import filtersActions from "./modules/filters/filtersActions";
 
 const router = express.Router();
 
