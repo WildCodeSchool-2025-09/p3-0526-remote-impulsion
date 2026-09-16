@@ -1,5 +1,5 @@
+import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import databaseClient from "../../../database/client";
-import type { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 
 type UserRow = { id: number } & RowDataPacket;
 

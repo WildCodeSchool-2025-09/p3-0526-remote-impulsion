@@ -6,9 +6,9 @@ import History from "./pages/History";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Programs from "./pages/Programs";
+import Register from "./pages/Register";
 import SessionId from "./pages/SessionID";
 import Sessions from "./pages/Sessions";
-import Register from "./pages/Register";
 
 const router = createBrowserRouter([
   {

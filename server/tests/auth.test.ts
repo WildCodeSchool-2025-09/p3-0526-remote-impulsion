@@ -1,7 +1,7 @@
 import "dotenv/config";
 import request from "supertest";
-import app from "../src/app";
 import databaseClient from "../database/client";
+import app from "../src/app";
 
 const unique = Date.now();
 const validUser = {
