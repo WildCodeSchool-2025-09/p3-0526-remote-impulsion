@@ -2,6 +2,71 @@ import type { RequestHandler } from "express";
 import { getCurrentUserId } from "../../helpers/currentUser";
 import workoutSessionRepository from "./workoutSessionRepository";
 
+type WorkoutSessionIdParams = {
+  id: string;
+};
+
+type AddExercisesBody = {
+  exerciseIds: number[];
+};
+
+const addExercises: RequestHandler<
+  WorkoutSessionIdParams,
+  unknown,
+  AddExercisesBody
+> = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId();
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const exerciseIds = req.body?.exerciseIds;
+    const hasOnlyValidExerciseIds =
+      Array.isArray(exerciseIds) &&
+      exerciseIds.length > 0 &&
+      exerciseIds.every(
+        (exerciseId) => Number.isInteger(exerciseId) && exerciseId > 0,
+      );
+
+    if (!hasOnlyValidExerciseIds) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const uniqueExerciseIds = new Set(exerciseIds);
+    if (uniqueExerciseIds.size !== exerciseIds.length) {
+      res.sendStatus(400);
+      return;
+    }
+    const result = await workoutSessionRepository.addExercises(
+      sessionId,
+      userId,
+      exerciseIds,
+    );
+
+    if (result === "session_not_found" || result === "exercise_not_found") {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (result === "session_not_prepared" || result === "duplicate_exercise") {
+      res.sendStatus(409);
+      return;
+    }
+
+    res.status(201).json({
+      id: sessionId,
+      exerciseIds,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const add: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
@@ -82,4 +147,4 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, browse, read, destroy };
+export default { add, addExercises, browse, read, destroy };

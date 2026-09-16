@@ -10,6 +10,10 @@ router.get("/api/exercises", exerciseActions.browse);
 router.get("/api/exercises/:id", exerciseActions.read);
 
 router.post("/api/workout-sessions", workoutSessionActions.add);
+router.post(
+  "/api/workout-sessions/:id/exercises",
+  workoutSessionActions.addExercises,
+);
 router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/:id", workoutSessionActions.read);
 router.delete("/api/workout-sessions/:id", workoutSessionActions.destroy);

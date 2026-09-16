@@ -99,3 +99,132 @@ describe("US11 - Workout sessions", () => {
     expect(params).toEqual([7, 1]);
   });
 });
+
+describe("US13 - Ajouter des exercices à une séance", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("ajoute plusieurs exercices à une séance préparée", async () => {
+    const addExercisesMock = jest
+      .spyOn(workoutSessionRepository, "addExercises")
+      .mockResolvedValue("created");
+
+    const response = await request(app)
+      .post("/api/workout-sessions/7/exercises")
+      .send({ exerciseIds: [3, 8, 15] });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual({
+      id: 7,
+      exerciseIds: [3, 8, 15],
+    });
+
+    expect(addExercisesMock).toHaveBeenCalledWith(7, 1, [3, 8, 15]);
+  });
+
+  test.each([
+    ["un body sans exerciseIds", {}],
+    ["une liste vide", { exerciseIds: [] }],
+    ["un identifiant négatif", { exerciseIds: [3, -1] }],
+    ["un doublon", { exerciseIds: [3, 3] }],
+  ])("refuse %s", async (_description, body) => {
+    const addExercisesMock = jest.spyOn(
+      workoutSessionRepository,
+      "addExercises",
+    );
+
+    const response = await request(app)
+      .post("/api/workout-sessions/7/exercises")
+      .send(body);
+
+    expect(response.status).toBe(400);
+    expect(addExercisesMock).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    [404, "session_not_found"],
+    [404, "exercise_not_found"],
+    [409, "session_not_prepared"],
+    [409, "duplicate_exercise"],
+  ] as const)(
+    "renvoie %i lorsque le repository retourne %s",
+    async (expectedStatus, repositoryResult) => {
+      jest
+        .spyOn(workoutSessionRepository, "addExercises")
+        .mockResolvedValue(repositoryResult);
+
+      const response = await request(app)
+        .post("/api/workout-sessions/7/exercises")
+        .send({ exerciseIds: [3, 8] });
+
+      expect(response.status).toBe(expectedStatus);
+    },
+  );
+
+  test("ajoute les exercices à la suite et valide la transaction", async () => {
+    const connection = {
+      beginTransaction: jest.fn().mockResolvedValue(undefined),
+      query: jest
+        .fn()
+        .mockResolvedValueOnce([[{ status: "prepared" }], []])
+        .mockResolvedValueOnce([[{ id: 3 }, { id: 8 }], []])
+        .mockResolvedValueOnce([[], []])
+        .mockResolvedValueOnce([[{ maxPosition: 2 }], []])
+        .mockResolvedValueOnce([{ affectedRows: 2 }, []]),
+      commit: jest.fn().mockResolvedValue(undefined),
+      rollback: jest.fn().mockResolvedValue(undefined),
+      release: jest.fn(),
+    };
+
+    jest
+      .spyOn(databaseClient, "getConnection")
+      .mockResolvedValue(connection as never);
+
+    const result = await workoutSessionRepository.addExercises(7, 1, [3, 8]);
+
+    expect(result).toBe("created");
+    expect(connection.beginTransaction).toHaveBeenCalled();
+
+    const [insertSql, insertParams] = connection.query.mock.calls[4];
+
+    expect(String(insertSql)).toMatch(/INSERT INTO workout_session_exercise/);
+    expect(insertParams).toEqual([
+      [
+        [7, 3, 3],
+        [7, 8, 4],
+      ],
+    ]);
+
+    expect(connection.commit).toHaveBeenCalled();
+    expect(connection.rollback).not.toHaveBeenCalled();
+    expect(connection.release).toHaveBeenCalled();
+  });
+
+  test("annule la transaction si une requête échoue", async () => {
+    const databaseError = new Error("Database failure");
+
+    const connection = {
+      beginTransaction: jest.fn().mockResolvedValue(undefined),
+      query: jest
+        .fn()
+        .mockResolvedValueOnce([[{ status: "prepared" }], []])
+        .mockRejectedValueOnce(databaseError),
+      commit: jest.fn().mockResolvedValue(undefined),
+      rollback: jest.fn().mockResolvedValue(undefined),
+      release: jest.fn(),
+    };
+
+    jest
+      .spyOn(databaseClient, "getConnection")
+      .mockResolvedValue(connection as never);
+
+    await expect(
+      workoutSessionRepository.addExercises(7, 1, [3, 8]),
+    ).rejects.toThrow("Database failure");
+
+    expect(connection.commit).not.toHaveBeenCalled();
+    expect(connection.rollback).toHaveBeenCalled();
+    expect(connection.release).toHaveBeenCalled();
+  });
+});

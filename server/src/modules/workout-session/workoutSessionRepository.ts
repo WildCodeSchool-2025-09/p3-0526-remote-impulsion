@@ -56,6 +56,103 @@ class WorkoutSessionRepository {
     return rows[0];
   }
 
+  async addExercises(
+    sessionId: number,
+    userId: number,
+    exerciseIds: number[],
+  ): Promise<
+    | "created"
+    | "session_not_found"
+    | "session_not_prepared"
+    | "exercise_not_found"
+    | "duplicate_exercise"
+  > {
+    const connection = await databaseClient.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const [sessionRows] = await connection.query<Rows>(
+        `SELECT status
+       FROM workout_session
+       WHERE id = ?
+         AND user_id = ?
+       FOR UPDATE`,
+        [sessionId, userId],
+      );
+
+      const session = sessionRows[0];
+
+      if (session === undefined) {
+        await connection.rollback();
+        return "session_not_found";
+      }
+
+      if (session.status !== "prepared") {
+        await connection.rollback();
+        return "session_not_prepared";
+      }
+
+      const placeholders = exerciseIds.map(() => "?").join(", ");
+
+      const [exerciseRows] = await connection.query<Rows>(
+        `SELECT id
+       FROM exercise
+       WHERE id IN (${placeholders})`,
+        exerciseIds,
+      );
+
+      if (exerciseRows.length !== exerciseIds.length) {
+        await connection.rollback();
+        return "exercise_not_found";
+      }
+
+      const [existingRows] = await connection.query<Rows>(
+        `SELECT exercise_id
+       FROM workout_session_exercise
+       WHERE workout_session_id = ?
+         AND exercise_id IN (${placeholders})`,
+        [sessionId, ...exerciseIds],
+      );
+
+      if (existingRows.length > 0) {
+        await connection.rollback();
+        return "duplicate_exercise";
+      }
+
+      const [positionRows] = await connection.query<Rows>(
+        `SELECT COALESCE(MAX(position), 0) AS maxPosition
+       FROM workout_session_exercise
+       WHERE workout_session_id = ?`,
+        [sessionId],
+      );
+
+      const maxPosition = Number(positionRows[0].maxPosition);
+
+      const values = exerciseIds.map((exerciseId, index) => [
+        sessionId,
+        exerciseId,
+        maxPosition + index + 1,
+      ]);
+
+      await connection.query<Result>(
+        `INSERT INTO workout_session_exercise
+        (workout_session_id, exercise_id, position)
+       VALUES ?`,
+        [values],
+      );
+
+      await connection.commit();
+
+      return "created";
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
   async delete(sessionId: number, userId: number) {
     const [result] = await databaseClient.query<Result>(
       `DELETE FROM workout_session
