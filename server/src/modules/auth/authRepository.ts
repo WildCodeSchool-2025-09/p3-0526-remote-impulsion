@@ -24,7 +24,7 @@ class AuthRepository {
 
   async create(username: string, email: string, hashedPassword: string) {
     const [result] = await databaseClient.query<ResultSetHeader>(
-      "INSERT INTO user(username, email, hashedPassword) VALUES (?,?,?)",
+      "INSERT INTO user(username, email, password) VALUES (?,?,?)",
       [username, email, hashedPassword],
     );
 
