@@ -5,7 +5,8 @@ import PlayIcon from "../assets/icons/actions/play-circle.svg?react";
 import PlusIcon from "../assets/icons/actions/plus.svg?react";
 import TrashIcon from "../assets/icons/actions/trash.svg?react";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
-import DeleteSessionModal from "../components/DeleteSessionModal";
+import Chrono from "../components/Chrono";
+import ConfirmModal from "../components/ConfirmModal";
 import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useStartSession from "../hooks/workout-session/useStartSession";
@@ -77,24 +78,39 @@ function SessionId() {
     }
   };
 
+  const isInProgress =
+    session.status === "in_progress" ||
+    currentSessionContext?.currentSession?.id === session.id;
+
+  const isPrepared = session.status === "prepared" && !isInProgress;
+
+  const startedAt =
+    currentSessionContext?.currentSession?.id === session.id
+      ? currentSessionContext.currentSession.startedAt
+      : session.startedAt;
+
   return (
     <div className="w-full max-w-3xl md:py-4 lg:px-4">
       <div className="flex items-center justify-between gap-2 lg:border-base-300 lg:border-b lg:pb-6">
         <h1 className="font-display font-extrabold text-2xl uppercase italic lg:text-4xl">
-          Séance du {formattedDate}
+          {isInProgress ? "Séance en cours" : `Séance du ${formattedDate}`}
         </h1>
 
-        <button
-          type="button"
-          onClick={() => setIsDeleteModalOpen(true)}
-          disabled={deleteLoading}
-          className="-my-2 -mr-2 grid size-10 shrink-0 place-items-center rounded-full text-error transition-colors hover:bg-error/15 focus-visible:outline-2 focus-visible:outline-error focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60 lg:m-0 lg:flex lg:size-auto lg:gap-2 lg:rounded-lg lg:border lg:border-error/50 lg:px-4 lg:py-2 lg:font-semibold lg:text-sm lg:hover:bg-error/10"
-        >
-          <TrashIcon aria-hidden="true" className="size-5 lg:size-4" />
-          <span className="sr-only lg:not-sr-only">
-            {deleteLoading ? "Suppression..." : "Supprimer la séance"}
-          </span>
-        </button>
+        {isPrepared && (
+          <button
+            type="button"
+            onClick={() => setIsDeleteModalOpen(true)}
+            disabled={deleteLoading}
+            className="-my-2 -mr-2 grid size-10 shrink-0 place-items-center rounded-full text-error transition-colors hover:bg-error/15 focus-visible:outline-2 focus-visible:outline-error focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60 lg:m-0 lg:flex lg:size-auto lg:gap-2 lg:rounded-lg lg:border lg:border-error/50 lg:px-4 lg:py-2 lg:font-semibold lg:text-sm lg:hover:bg-error/10"
+          >
+            <TrashIcon aria-hidden="true" className="size-5 lg:size-4" />
+
+            <span className="sr-only lg:not-sr-only">
+              {deleteLoading ? "Suppression..." : "Supprimer la séance"}
+            </span>
+          </button>
+        )}
+        {isInProgress && startedAt && <Chrono startedAt={startedAt} />}
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-4">
@@ -155,20 +171,27 @@ function SessionId() {
             Ajouter des exercices
           </Link>
 
-          <button
-            type="button"
-            onClick={handleStart}
-            disabled={session.exerciseCount === 0 || startLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 font-semibold text-primary-content transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:opacity-100 md:w-auto md:px-5 md:py-2.5 md:text-sm"
-          >
-            <PlayIcon aria-hidden="true" className="size-5 md:size-4" />
-            {startLoading ? "Démarrage..." : "Démarrer la séance"}
-          </button>
+          {isPrepared && (
+            <button
+              type="button"
+              onClick={handleStart}
+              disabled={session.exerciseCount === 0 || startLoading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 font-semibold text-primary-content transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:opacity-100 md:w-auto md:px-5 md:py-2.5 md:text-sm"
+            >
+              <PlayIcon aria-hidden="true" className="size-5 md:size-4" />
+
+              {startLoading ? "Démarrage..." : "Démarrer la séance"}
+            </button>
+          )}
         </div>
       </div>
 
-      {isDeleteModalOpen && (
-        <DeleteSessionModal
+      {isPrepared && isDeleteModalOpen && (
+        <ConfirmModal
+          title="Supprimer cette séance ?"
+          message="Cette séance préparée sera définitivement supprimée."
+          confirmLabel="Supprimer"
+          cancelLabel="Conserver"
           onCancel={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDelete}
         />

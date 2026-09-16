@@ -1,8 +1,12 @@
+import { useContext } from "react";
+import CurrentSessionCard from "../components/CurrentSessionCard";
 import PreparedSessionsList from "../components/PreparedSessionsList";
+import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import usePreparedSessions from "../hooks/workout-session/usePreparedSessions";
 
 function Sessions() {
   const { sessions, loading, error } = usePreparedSessions();
+  const currentSession = useContext(CurrentSessionContext)?.currentSession;
 
   if (loading) {
     return <p>Chargement...</p>;
@@ -17,6 +21,8 @@ function Sessions() {
       <h1 className="font-display font-extrabold text-2xl uppercase italic">
         Mes séances
       </h1>
+
+      {currentSession && <CurrentSessionCard session={currentSession} />}
 
       <PreparedSessionsList sessions={sessions} />
     </div>
