@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 import { getCurrentUserId } from "../../helpers/currentUser";
+import { buildImageUrl } from "../../helpers/imageUrl";
 import workoutSessionRepository from "./workoutSessionRepository";
 
 type WorkoutSessionIdParams = {
@@ -119,7 +120,7 @@ const read: RequestHandler = async (req, res, next) => {
       ...session,
       exercises: session.exercises.map((exercise) => ({
         ...exercise,
-        imageUrl: `/assets/images/${exercise.slug}.jpg`,
+        imageUrl: buildImageUrl(exercise.slug),
       })),
     };
 
