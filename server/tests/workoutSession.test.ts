@@ -123,6 +123,59 @@ describe("US13 - Ajouter des exercices à une séance", () => {
     expect(addExercisesMock).toHaveBeenCalledWith(7, 1, [3, 8, 15]);
   });
 
+  test("renvoie les exercices de la séance dans leur ordre", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValueOnce([
+        [
+          {
+            id: 7,
+            userId: 1,
+            status: "prepared",
+            exerciseCount: 2,
+          },
+        ],
+        [],
+      ] as never)
+      .mockResolvedValueOnce([
+        [
+          { id: 3, name: "Squat", position: 1 },
+          { id: 8, name: "Développé couché", position: 2 },
+        ],
+        [],
+      ] as never);
+
+    const session = await workoutSessionRepository.read(7, 1);
+
+    expect(session?.exercises).toEqual([
+      { id: 3, name: "Squat", position: 1 },
+      { id: 8, name: "Développé couché", position: 2 },
+    ]);
+    expect(queryMock.mock.calls[1][1]).toEqual([7]);
+  });
+
+  test("construit l'URL de l'image des exercices de la séance", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      exerciseCount: 1,
+      exercises: [
+        {
+          id: 3,
+          slug: "squat",
+          name: "Squat",
+          position: 1,
+        },
+      ],
+    } as never);
+
+    const response = await request(app).get("/api/workout-sessions/7");
+
+    expect(response.status).toBe(200);
+    expect(response.body.exercises[0].imageUrl).toBe(
+      "/assets/images/squat.jpg",
+    );
+  });
+
   test.each([
     ["un body sans exerciseIds", {}],
     ["une liste vide", { exerciseIds: [] }],

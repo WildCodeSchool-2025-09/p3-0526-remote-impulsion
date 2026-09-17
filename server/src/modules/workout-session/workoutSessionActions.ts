@@ -115,7 +115,15 @@ const read: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    res.json(session);
+    const sessionWithImages = {
+      ...session,
+      exercises: session.exercises.map((exercise) => ({
+        ...exercise,
+        imageUrl: `/assets/images/${exercise.slug}.jpg`,
+      })),
+    };
+
+    res.json(sessionWithImages);
   } catch (err) {
     next(err);
   }

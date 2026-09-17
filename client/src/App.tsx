@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router";
 
 import Layout from "./components/Layout";
+import AddExercisesToSession from "./pages/AddExercisesToSession";
 import Exercises from "./pages/Exercises";
 import History from "./pages/History";
 import Home from "./pages/Home";
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       { path: "history", element: <History /> },
       { path: "sessions", element: <Sessions /> },
       { path: "sessions/:id", element: <SessionId /> },
+      {
+        path: "sessions/:id/exercises",
+        element: <AddExercisesToSession />,
+      },
       { path: "profile", element: <Profile /> },
     ],
   },

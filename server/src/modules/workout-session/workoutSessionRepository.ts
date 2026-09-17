@@ -35,7 +35,7 @@ class WorkoutSessionRepository {
   }
 
   async read(sessionId: number, userId: number) {
-    const [rows] = await databaseClient.query<Rows>(
+    const [sessionRows] = await databaseClient.query<Rows>(
       `SELECT
         workout_session.id,
         workout_session.user_id AS userId,
@@ -53,7 +53,36 @@ class WorkoutSessionRepository {
       [userId, sessionId],
     );
 
-    return rows[0];
+    const session = sessionRows[0];
+
+    if (session === undefined) {
+      return undefined;
+    }
+
+    const [exerciseRows] = await databaseClient.query<Rows>(
+      `SELECT
+        workout_session_exercise.id AS sessionExerciseId,
+        exercise.id,
+        exercise.slug,
+        exercise.name,
+        category.name AS category,
+        workout_session_exercise.position,
+        workout_session_exercise.target_sets AS targetSets,
+        workout_session_exercise.target_reps AS targetReps,
+        workout_session_exercise.target_weight_kg AS targetWeightKg,
+        workout_session_exercise.target_duration_seconds AS targetDurationSeconds,
+        workout_session_exercise.rest_seconds AS restSeconds
+      FROM workout_session_exercise
+      JOIN exercise
+        ON exercise.id = workout_session_exercise.exercise_id
+      JOIN category
+        ON category.id = exercise.category_id
+      WHERE workout_session_exercise.workout_session_id = ?
+      ORDER BY workout_session_exercise.position`,
+      [sessionId],
+    );
+
+    return { ...session, exercises: exerciseRows };
   }
 
   async addExercises(
