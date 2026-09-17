@@ -9,6 +9,7 @@ type ExerciseDetailSheetProps = {
   onClose: () => void;
   selectionMode?: boolean;
   isSelected?: boolean;
+  isUnavailable?: boolean;
   onToggleSelect?: (id: number) => void;
 };
 
@@ -17,6 +18,7 @@ function ExerciseDetailSheet({
   onClose,
   selectionMode,
   isSelected,
+  isUnavailable,
   onToggleSelect,
 }: ExerciseDetailSheetProps) {
   const { exerciseDetail, isLoading, error, notFound, retry } =
@@ -186,16 +188,19 @@ function ExerciseDetailSheet({
             <button
               type="button"
               onClick={() => onToggleSelect?.(exerciseId)}
+              disabled={isUnavailable}
               aria-pressed={isSelected}
-              className={`w-full rounded-lg px-4 py-3 font-semibold text-sm transition ${
+              className={`w-full rounded-lg px-4 py-3 font-semibold text-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
                 isSelected
                   ? "border border-primary bg-primary/10 text-primary"
                   : "bg-primary text-primary-content"
               }`}
             >
-              {isSelected
-                ? "Retirer de la sélection"
-                : "Sélectionner cet exercice"}
+              {isUnavailable
+                ? "Déjà ajouté à la séance"
+                : isSelected
+                  ? "Retirer de la sélection"
+                  : "Sélectionner cet exercice"}
             </button>
           </footer>
         )}

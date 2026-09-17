@@ -1,14 +1,11 @@
 import type { RequestHandler } from "express";
+import { buildImageUrl } from "../../helpers/imageUrl";
 import exerciseRepository from "./exerciseRepository";
 import type { ExerciseDetail, ExerciseSummary } from "./exerciseTypes";
 
 type ExerciseIdParams = {
   id: string;
 };
-
-function buildImageUrl(slug: string) {
-  return `/assets/images/${slug}.jpg`;
-}
 
 const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
   req,
