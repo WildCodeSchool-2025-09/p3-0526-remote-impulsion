@@ -58,6 +58,9 @@ function Exercises({
     null,
   );
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const exerciseGridClassName = selectionMode
+    ? "grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4"
+    : "grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
   function handleToggleSelection(id: number) {
     if (excludedIds.includes(id)) {
@@ -204,7 +207,7 @@ function Exercises({
           </div>
 
           {isLoading ? (
-            <div className="flex flex-col gap-2">
+            <div className={exerciseGridClassName}>
               {Array.from({ length: 6 }).map((_, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: les skeletons sont statiques
                 <ExerciseCardSkeleton key={index} />
@@ -213,13 +216,7 @@ function Exercises({
           ) : exercises.length === 0 ? (
             <NoResultsState onReset={resetFilters} />
           ) : (
-            <div
-              className={
-                selectionMode
-                  ? "grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4"
-                  : "flex flex-col gap-2"
-              }
-            >
+            <div className={exerciseGridClassName}>
               {exercises.map((exercise) => (
                 <ExerciseCard
                   key={exercise.id}
