@@ -1,8 +1,6 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
-import PlayIcon from "../assets/icons/actions/play-circle.svg?react";
-import PlusIcon from "../assets/icons/actions/plus.svg?react";
 import TrashIcon from "../assets/icons/actions/trash.svg?react";
 import ChevronLeftIcon from "../assets/icons/chevrons/chevron-left.svg?react";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
@@ -10,6 +8,7 @@ import Chrono from "../components/Chrono";
 import DeleteSessionModal from "../components/DeleteSessionModal";
 import PreparedExerciseCard from "../components/PreparedExerciseCard";
 import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
+import { useMessages } from "../contexts/MessageContext";
 import { useMobileNav } from "../contexts/MobileNavContext";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useStartSession from "../hooks/workout-session/useStartSession";
@@ -39,13 +38,26 @@ function SessionId() {
 
   const currentSessionContext = useContext(CurrentSessionContext);
   const { isNavOpen } = useMobileNav();
+  const { showMessage } = useMessages();
+
+  useEffect(() => {
+    if (deleteError !== null) {
+      showMessage(deleteError, "error");
+    }
+  }, [deleteError, showMessage]);
+
+  useEffect(() => {
+    if (startError !== null) {
+      showMessage(startError, "error");
+    }
+  }, [startError, showMessage]);
 
   if (loading) {
     return <p>Chargement...</p>;
   }
 
-  if (error || deleteError || startError) {
-    return <p>{error || deleteError || startError}</p>;
+  if (error) {
+    return <p>{error}</p>;
   }
 
   if (!session) {
@@ -205,15 +217,13 @@ function SessionId() {
         >
           <Link
             to={`/sessions/${session.id}/exercises`}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-3 text-center font-semibold text-sm transition focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 md:flex-none md:px-5 md:py-2.5 ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-center font-semibold text-xs leading-tight transition focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 sm:text-sm md:flex-none md:px-5 ${
               exerciseCount === 0
                 ? "border-primary bg-primary text-primary-content hover:opacity-90"
                 : "border-base-content/40 bg-base-100 hover:border-base-content hover:bg-base-200 md:bg-transparent"
             }`}
           >
-            <PlusIcon aria-hidden="true" className="size-4 shrink-0" />
-            <span className="sm:hidden">Ajouter</span>
-            <span className="hidden sm:inline">Ajouter des exercices</span>
+            Ajouter des exercices
           </Link>
 
           {isPrepared && (
@@ -221,18 +231,9 @@ function SessionId() {
               type="button"
               onClick={handleStart}
               disabled={exerciseCount === 0 || startLoading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-3 py-3 text-center font-semibold text-primary-content text-sm transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:opacity-100 md:flex-none md:px-5 md:py-2.5"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-3 py-2.5 text-center font-semibold text-primary-content text-xs leading-tight transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:opacity-100 sm:text-sm md:flex-none md:px-5"
             >
-              <PlayIcon aria-hidden="true" className="size-4 shrink-0" />
-
-              {startLoading ? (
-                "Démarrage..."
-              ) : (
-                <>
-                  <span className="sm:hidden">Démarrer</span>
-                  <span className="hidden sm:inline">Démarrer la séance</span>
-                </>
-              )}
+              {startLoading ? "Démarrage..." : "Démarrer la séance"}
             </button>
           )}
         </div>
