@@ -5,7 +5,8 @@ import type { RegisterPayload } from "./authTypes";
 
 const register: RequestHandler = async (req, res, next) => {
   try {
-    const { username, email, password } = (req.body ?? {}) as Partial<RegisterPayload>;
+    const { username, email, password } = (req.body ??
+      {}) as Partial<RegisterPayload>;
 
     if (
       typeof username !== "string" ||
@@ -61,7 +62,9 @@ const register: RequestHandler = async (req, res, next) => {
 
     const existingEmail = await authRepository.readByEmail(email);
     if (existingEmail) {
-      res.status(409).json({ errors: { email: "Cet e-mail est déjà utilisé" } });
+      res
+        .status(409)
+        .json({ errors: { email: "Cet e-mail est déjà utilisé" } });
       return;
     }
 
