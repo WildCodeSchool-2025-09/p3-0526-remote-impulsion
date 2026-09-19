@@ -19,7 +19,7 @@ function ExerciseCard({
 }: ExerciseCardProps) {
   return (
     <div
-      className={`relative flex w-full flex-col items-start gap-2 rounded-box border bg-base-200 p-3 transition ${
+      className={`flex w-full items-center gap-3 rounded-xl border bg-base-200 px-3 py-2.5 transition ${
         isSelected ? "border-primary ring-2 ring-primary/30" : "border-base-300"
       } ${isUnavailable ? "opacity-55" : ""}`}
     >
@@ -36,7 +36,7 @@ function ExerciseCard({
                 ? "Désélectionner cet exercice"
                 : "Sélectionner cet exercice"
           }
-          className={`absolute right-3 top-3 z-10 grid size-7 place-items-center rounded-full border-2 font-bold text-xs transition ${
+          className={`grid size-6 shrink-0 place-items-center rounded-full border-2 font-bold text-xs transition ${
             isSelected
               ? "border-primary bg-primary text-primary-content"
               : "border-base-content/40 bg-base-100"
@@ -49,24 +49,26 @@ function ExerciseCard({
       <button
         type="button"
         onClick={() => onSelect(exercise.id)}
-        className="flex w-full flex-col items-start gap-2 text-left"
+        className="flex min-w-0 flex-1 items-center gap-3 text-left"
       >
         <img
           src={`${import.meta.env.VITE_API_URL}${exercise.imageUrl}`}
-          alt={exercise.name}
-          className={`w-full rounded-field object-cover ${
-            selectionMode ? "aspect-[4/3]" : "aspect-square"
-          }`}
+          alt=""
+          loading="lazy"
+          className="h-14 w-20 shrink-0 rounded-lg bg-base-100 object-contain"
           onError={(event) => {
             event.currentTarget.src = `${import.meta.env.VITE_API_URL}/assets/images/placeholder-exercise.png`;
           }}
         />
-        <h2 className="font-body text-sm font-semibold text-base-content">
-          {exercise.name}
-        </h2>
-        <span className="badge badge-sm">
-          {isUnavailable ? "Déjà ajouté" : exercise.category}
-        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-base-content text-sm">
+            {exercise.name}
+          </p>
+          <span className="badge badge-sm mt-1">
+            {isUnavailable ? "Déjà ajouté" : exercise.category}
+          </span>
+        </div>
       </button>
     </div>
   );
