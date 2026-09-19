@@ -151,6 +151,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
       { id: 3, name: "Squat", position: 1 },
       { id: 8, name: "Développé couché", position: 2 },
     ]);
+
     expect(queryMock.mock.calls[1][1]).toEqual([7]);
   });
 
@@ -246,8 +247,84 @@ describe("US13 - Ajouter des exercices à une séance", () => {
       .spyOn(databaseClient, "query")
       .mockResolvedValueOnce([[{ status: "prepared" }], []] as never)
       .mockRejectedValueOnce(databaseError);
+
     await expect(
       workoutSessionRepository.addExercises(7, 1, [3, 8]),
     ).rejects.toThrow("Database failure");
+  });
+});
+
+describe("US16 - Démarrer une séance", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("refuse un identifiant de séance invalide", async () => {
+    const response = await request(app).patch(
+      "/api/workout-sessions/12abc/start",
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  test("refuse de démarrer une séance vide", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      exerciseCount: 0,
+    } as never);
+
+    jest
+      .spyOn(workoutSessionRepository, "readCurrent")
+      .mockResolvedValue(undefined as never);
+
+    const response = await request(app).patch("/api/workout-sessions/7/start");
+
+    expect(response.status).toBe(422);
+  });
+
+  test("refuse le démarrage si une séance est déjà en cours", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      exerciseCount: 2,
+    } as never);
+
+    jest.spyOn(workoutSessionRepository, "readCurrent").mockResolvedValue({
+      id: 3,
+    } as never);
+
+    const response = await request(app).patch("/api/workout-sessions/7/start");
+
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual({ currentSessionId: 3 });
+  });
+
+  test("démarre une séance préparée contenant des exercices", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      exerciseCount: 2,
+    } as never);
+
+    jest
+      .spyOn(workoutSessionRepository, "readCurrent")
+      .mockResolvedValue(undefined as never);
+
+    jest.spyOn(workoutSessionRepository, "start").mockResolvedValue(1);
+
+    const response = await request(app).patch("/api/workout-sessions/7/start");
+
+    expect(response.status).toBe(204);
+  });
+
+  test("retourne la séance actuellement en cours", async () => {
+    jest.spyOn(workoutSessionRepository, "readCurrent").mockResolvedValue({
+      id: 7,
+      status: "in_progress",
+    } as never);
+
+    const response = await request(app).get("/api/workout-sessions/current");
+
+    expect(response.status).toBe(200);
+    expect(response.body.id).toBe(7);
+    expect(response.body.status).toBe("in_progress");
   });
 });

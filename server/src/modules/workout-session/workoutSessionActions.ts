@@ -75,20 +75,24 @@ const add: RequestHandler = async (req, res, next) => {
     const emptySession = sessions.find(
       (session) => session.exerciseCount === 0,
     );
+
     if (emptySession) {
       res.status(200).json({ id: emptySession.id });
       return;
     }
     const sessionId = await workoutSessionRepository.create(userId);
+
     res.status(201).json({ id: sessionId });
   } catch (err) {
     next(err);
   }
 };
+
 const browse: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
     const sessions = await workoutSessionRepository.readAllPrepared(userId);
+
     res.json(sessions);
   } catch (err) {
     next(err);
@@ -98,16 +102,20 @@ const browse: RequestHandler = async (req, res, next) => {
 const read: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
-    const sessionId = Number.parseInt(req.params.id);
-    if (Number.isNaN(sessionId)) {
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
       res.sendStatus(400);
       return;
     }
+
     const session = await workoutSessionRepository.read(sessionId, userId);
+
     if (session == null) {
       res.sendStatus(404);
       return;
     }
+
     const sessionWithImages = {
       ...session,
       exercises: session.exercises.map((exercise) => ({
@@ -115,6 +123,7 @@ const read: RequestHandler = async (req, res, next) => {
         imageUrl: buildImageUrl(exercise.slug),
       })),
     };
+
     res.json(sessionWithImages);
   } catch (err) {
     next(err);
@@ -124,12 +133,15 @@ const read: RequestHandler = async (req, res, next) => {
 const start: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
-    const sessionId = Number.parseInt(req.params.id);
-    if (Number.isNaN(sessionId)) {
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
       res.sendStatus(400);
       return;
     }
+
     const session = await workoutSessionRepository.read(sessionId, userId);
+
     if (session == null) {
       res.sendStatus(404);
       return;
@@ -150,10 +162,12 @@ const start: RequestHandler = async (req, res, next) => {
       sessionId,
       userId,
     );
+
     if (affectedRows === 0) {
       res.sendStatus(409);
       return;
     }
+
     res.sendStatus(204);
   } catch (err) {
     next(err);
@@ -174,19 +188,23 @@ const readCurrent: RequestHandler = async (_req, res, next) => {
 const destroy: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
-    const sessionId = Number.parseInt(req.params.id);
-    if (Number.isNaN(sessionId)) {
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
       res.sendStatus(400);
       return;
     }
+
     const nbRowsAffected = await workoutSessionRepository.delete(
       sessionId,
       userId,
     );
+
     if (nbRowsAffected === 0) {
       res.sendStatus(404);
       return;
     }
+
     res.sendStatus(204);
   } catch (err) {
     next(err);

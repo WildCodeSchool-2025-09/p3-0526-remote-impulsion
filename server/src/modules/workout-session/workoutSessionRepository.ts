@@ -53,7 +53,9 @@ class WorkoutSessionRepository {
       [userId, sessionId],
     );
 
-    const session = sessionRows[0];
+    const session = sessionRows[0] as
+      | (Rows[number] & { exerciseCount: number })
+      | undefined;
 
     if (session === undefined) {
       return undefined;
@@ -110,7 +112,7 @@ class WorkoutSessionRepository {
       return "session_not_found";
     }
 
-    if (session.status !== "prepared") {
+    if (session.status !== "prepared" && session.status !== "in_progress") {
       return "session_not_prepared";
     }
 

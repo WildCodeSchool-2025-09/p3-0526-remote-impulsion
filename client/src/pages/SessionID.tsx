@@ -6,9 +6,9 @@ import PlusIcon from "../assets/icons/actions/plus.svg?react";
 import TrashIcon from "../assets/icons/actions/trash.svg?react";
 import ArrowRightIcon from "../assets/icons/arrows/arrow-right.svg?react";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
-import PreparedExerciseCard from "../components/PreparedExerciseCard";
 import Chrono from "../components/Chrono";
-import ConfirmModal from "../components/ConfirmModal";
+import DeleteSessionModal from "../components/DeleteSessionModal";
+import PreparedExerciseCard from "../components/PreparedExerciseCard";
 import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useStartSession from "../hooks/workout-session/useStartSession";
@@ -64,6 +64,7 @@ function SessionId() {
       month: "long",
     },
   );
+
   const exercises = session.exercises ?? [];
   const exerciseCount = Number(session.exerciseCount);
 
@@ -125,12 +126,14 @@ function SessionId() {
             </span>
           </button>
         )}
+
         {isInProgress && startedAt && <Chrono startedAt={startedAt} />}
       </div>
 
       <div className="mt-5 flex items-start justify-between gap-4 border-base-300 border-b pb-5">
         <div>
           <p className="font-semibold capitalize">{formattedDate}</p>
+
           <span className="mt-2 inline-flex rounded-full bg-info/15 px-2.5 py-1 font-semibold text-info text-xs uppercase tracking-wide">
             Préparée · non démarrée
           </span>
@@ -223,11 +226,7 @@ function SessionId() {
       </div>
 
       {isPrepared && isDeleteModalOpen && (
-        <ConfirmModal
-          title="Supprimer cette séance ?"
-          message="Cette séance préparée sera définitivement supprimée."
-          confirmLabel="Supprimer"
-          cancelLabel="Conserver"
+        <DeleteSessionModal
           onCancel={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDelete}
         />
