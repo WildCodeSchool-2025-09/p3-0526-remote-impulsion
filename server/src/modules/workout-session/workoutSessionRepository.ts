@@ -189,17 +189,47 @@ class WorkoutSessionRepository {
   }
 
   async start(sessionId: number, userId: number) {
-    const [result] = await databaseClient.query<Result>(
-      `UPDATE workout_session
-      SET status = 'in_progress',
-      started_at = NOW()
-      WHERE id = ?
-      AND user_id = ?
-      AND status = 'prepared'`,
-      [sessionId, userId],
-    );
+    const connection = await databaseClient.getConnection();
 
-    return result.affectedRows;
+    try {
+      await connection.beginTransaction();
+
+      const [sessions] = await connection.query<Rows>(
+        `SELECT id, status
+         FROM workout_session
+         WHERE user_id = ?
+         FOR UPDATE`,
+        [userId],
+      );
+
+      const hasCurrentSession = sessions.some(
+        (session) => session.status === "in_progress",
+      );
+
+      if (hasCurrentSession) {
+        await connection.rollback();
+        return 0;
+      }
+
+      const [result] = await connection.query<Result>(
+        `UPDATE workout_session
+         SET status = 'in_progress',
+             started_at = NOW()
+         WHERE id = ?
+         AND user_id = ?
+         AND status = 'prepared'`,
+        [sessionId, userId],
+      );
+
+      await connection.commit();
+
+      return result.affectedRows;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
 
   async delete(sessionId: number, userId: number) {

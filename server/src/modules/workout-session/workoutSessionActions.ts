@@ -164,6 +164,15 @@ const start: RequestHandler = async (req, res, next) => {
     );
 
     if (affectedRows === 0) {
+      const runningSession = await workoutSessionRepository.readCurrent(userId);
+
+      if (runningSession) {
+        res.status(409).json({
+          currentSessionId: runningSession.id,
+        });
+        return;
+      }
+
       res.sendStatus(409);
       return;
     }
