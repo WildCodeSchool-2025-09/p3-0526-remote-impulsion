@@ -1,7 +1,6 @@
 // Load the express module to create a web application
 
 import express from "express";
-import authActions from "./modules/auth/authActions";
 
 const app = express();
 

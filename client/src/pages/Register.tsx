@@ -1,4 +1,5 @@
 import { useState } from "react";
+import authApi from "../services/authApi";
 
 function Register() {
   const [username, setUsername] = useState("");
@@ -6,31 +7,26 @@ function Register() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setIsSubmitting(true);
     setErrors({});
+    setIsSuccess(false);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/register`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, email, password }),
-        },
-      );
+      const result = await authApi.registerUser({ username, email, password });
 
-      if (response.status === 201) {
+      if (result.success) {
         setUsername("");
         setEmail("");
         setPassword("");
+        setIsSuccess(true);
         return;
       }
 
-      const data = await response.json();
-      setErrors(data.errors ?? { global: "Une erreur est survenue." });
+      setErrors(result.errors);
     } catch {
       setErrors({ global: "Impossible de contacter le serveur." });
     } finally {
@@ -44,8 +40,16 @@ function Register() {
         Créer un compte
       </h1>
 
+      {isSuccess && (
+        <p
+          role="status"
+          className="mb-4 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300"
+        >
+          Votre compte a bien été créé.
+        </p>
+      )}
+
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-        {" "}
         <div className="flex flex-col gap-1">
           <label htmlFor="username" className="text-sm font-semibold">
             Pseudonyme
@@ -55,12 +59,17 @@ function Register() {
             type="text"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
+            aria-invalid={errors.username !== undefined}
+            aria-describedby={errors.username ? "username-error" : undefined}
             className="rounded-lg border border-[#334155] bg-[#1E293B] px-3 py-2"
           />
           {errors.username && (
-            <p className="text-sm text-red-400">{errors.username}</p>
+            <p id="username-error" className="text-sm text-red-400">
+              {errors.username}
+            </p>
           )}
         </div>
+
         <div className="flex flex-col gap-1">
           <label htmlFor="email" className="text-sm font-semibold">
             E-mail
@@ -70,12 +79,17 @@ function Register() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            aria-invalid={errors.email !== undefined}
+            aria-describedby={errors.email ? "email-error" : undefined}
             className="rounded-lg border border-[#334155] bg-[#1E293B] px-3 py-2"
           />
           {errors.email && (
-            <p className="text-sm text-red-400">{errors.email}</p>
+            <p id="email-error" className="text-sm text-red-400">
+              {errors.email}
+            </p>
           )}
         </div>
+
         <div className="flex flex-col gap-1">
           <label htmlFor="password" className="text-sm font-semibold">
             Mot de passe
@@ -85,17 +99,23 @@ function Register() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            aria-invalid={errors.password !== undefined}
+            aria-describedby={errors.password ? "password-error" : undefined}
             className="rounded-lg border border-[#334155] bg-[#1E293B] px-3 py-2"
           />
           {errors.password && (
-            <p className="text-sm text-red-400">{errors.password}</p>
+            <p id="password-error" className="text-sm text-red-400">
+              {errors.password}
+            </p>
           )}
         </div>
+
         {errors.global && (
           <p role="alert" className="text-sm text-red-400">
             {errors.global}
           </p>
         )}
+
         <button
           type="submit"
           disabled={isSubmitting}

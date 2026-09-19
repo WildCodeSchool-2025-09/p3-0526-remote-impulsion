@@ -5,7 +5,20 @@ import type { RegisterPayload } from "./authTypes";
 
 const register: RequestHandler = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body as RegisterPayload;
+    const { username, email, password } = (req.body ?? {}) as Partial<RegisterPayload>;
+
+    if (
+      typeof username !== "string" ||
+      typeof email !== "string" ||
+      typeof password !== "string"
+    ) {
+      res.status(422).json({
+        errors: {
+          global: "Pseudonyme, e-mail et mot de passe sont obligatoires",
+        },
+      });
+      return;
+    }
 
     const errors: Record<string, string> = {};
 
@@ -48,9 +61,7 @@ const register: RequestHandler = async (req, res, next) => {
 
     const existingEmail = await authRepository.readByEmail(email);
     if (existingEmail) {
-      res
-        .status(409)
-        .json({ errors: { email: "Cet e-mail est déjà utilisé" } });
+      res.status(409).json({ errors: { email: "Cet e-mail est déjà utilisé" } });
       return;
     }
 
