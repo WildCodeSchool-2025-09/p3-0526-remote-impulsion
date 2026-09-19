@@ -35,23 +35,20 @@ function Register() {
   }
 
   return (
-    <section className="min-h-full bg-[#0F172A] px-4 py-8 text-[#F8FAFC]">
-      <h1 className="mb-6 font-display text-3xl font-extrabold italic uppercase">
+    <section className="min-h-full bg-base-100 px-4 py-8 text-base-content">
+      <h1 className="mb-6 font-display font-extrabold text-3xl uppercase italic">
         Créer un compte
       </h1>
 
       {isSuccess && (
-        <p
-          role="status"
-          className="mb-4 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300"
-        >
+        <output className="mb-4 block rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-success text-sm">
           Votre compte a bien été créé.
-        </p>
+        </output>
       )}
 
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <label htmlFor="username" className="text-sm font-semibold">
+          <label htmlFor="username" className="font-semibold text-sm">
             Pseudonyme
           </label>
           <input
@@ -61,17 +58,17 @@ function Register() {
             onChange={(event) => setUsername(event.target.value)}
             aria-invalid={errors.username !== undefined}
             aria-describedby={errors.username ? "username-error" : undefined}
-            className="rounded-lg border border-[#334155] bg-[#1E293B] px-3 py-2"
+            className="rounded-lg border border-base-300 bg-base-200 px-3 py-2"
           />
           {errors.username && (
-            <p id="username-error" className="text-sm text-red-400">
+            <p id="username-error" className="text-error text-sm">
               {errors.username}
             </p>
           )}
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="email" className="text-sm font-semibold">
+          <label htmlFor="email" className="font-semibold text-sm">
             E-mail
           </label>
           <input
@@ -81,17 +78,17 @@ function Register() {
             onChange={(event) => setEmail(event.target.value)}
             aria-invalid={errors.email !== undefined}
             aria-describedby={errors.email ? "email-error" : undefined}
-            className="rounded-lg border border-[#334155] bg-[#1E293B] px-3 py-2"
+            className="rounded-lg border border-base-300 bg-base-200 px-3 py-2"
           />
           {errors.email && (
-            <p id="email-error" className="text-sm text-red-400">
+            <p id="email-error" className="text-error text-sm">
               {errors.email}
             </p>
           )}
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="password" className="text-sm font-semibold">
+          <label htmlFor="password" className="font-semibold text-sm">
             Mot de passe
           </label>
           <input
@@ -101,17 +98,17 @@ function Register() {
             onChange={(event) => setPassword(event.target.value)}
             aria-invalid={errors.password !== undefined}
             aria-describedby={errors.password ? "password-error" : undefined}
-            className="rounded-lg border border-[#334155] bg-[#1E293B] px-3 py-2"
+            className="rounded-lg border border-base-300 bg-base-200 px-3 py-2"
           />
           {errors.password && (
-            <p id="password-error" className="text-sm text-red-400">
+            <p id="password-error" className="text-error text-sm">
               {errors.password}
             </p>
           )}
         </div>
 
         {errors.global && (
-          <p role="alert" className="text-sm text-red-400">
+          <p role="alert" className="text-error text-sm">
             {errors.global}
           </p>
         )}
@@ -119,7 +116,7 @@ function Register() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-lg bg-[#FF6B35] px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-primary px-4 py-3 font-semibold text-primary-content disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "Création en cours…" : "Créer mon compte"}
         </button>
