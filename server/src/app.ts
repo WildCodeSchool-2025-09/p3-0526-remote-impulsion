@@ -52,7 +52,7 @@ app.use(
 
 // Uncomment one or more of these options depending on the format of the data sent by your client:
 
-// app.use(express.json());
+app.use(express.json());
 // app.use(express.urlencoded());
 // app.use(express.text());
 // app.use(express.raw());
@@ -119,6 +119,18 @@ const logErrors: ErrorRequestHandler = (err, req, res, next) => {
 
 // Mount the logErrors middleware globally
 app.use(logErrors);
+
+// Define a middleware function to send a generic error response
+const sendErrorResponse: ErrorRequestHandler = (err, _req, res, next) => {
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+  res.status(500).json({ error: "Une erreur interne est survenue." });
+};
+
+// Mount the sendErrorResponse middleware globally
+app.use(sendErrorResponse);
 
 /* ************************************************************************* */
 

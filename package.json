@@ -1,14 +1,14 @@
 {
   "name": "p3-0526-remote-impulsion",
   "version": "0.0.1",
-  "description": "",
-  "homepage": "https://github.com/  (hit Enter to use an empty string)/p3-0526-remote-impulsion#readme",
+  "description": "Application de suivi sportif pour athlètes hybrides.",
+  "homepage": "https://github.com/WildCodeSchool-2025-09/p3-0526-remote-impulsion#readme",
   "bugs": {
-    "url": "https://github.com/  (hit Enter to use an empty string)/p3-0526-remote-impulsion/issues"
+    "url": "https://github.com/WildCodeSchool-2025-09/p3-0526-remote-impulsion/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/  (hit Enter to use an empty string)/p3-0526-remote-impulsion.git"
+    "url": "git+https://github.com/WildCodeSchool-2025-09/p3-0526-remote-impulsion.git"
   },
   "workspaces": ["client", "server"],
   "scripts": {
@@ -26,7 +26,7 @@
     "test": "npm run test --workspaces --if-present"
   },
   "keywords": [],
-  "author": "  (hit Enter to use an empty string)",
+  "author": "Yannick, Cynthia et Fabian",
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

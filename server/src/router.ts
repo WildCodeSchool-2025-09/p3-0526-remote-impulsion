@@ -1,18 +1,25 @@
 import express from "express";
+import exerciseActions from "./modules/exercise/exerciseActions";
+import workoutSessionActions from "./modules/workout-session/workoutSessionActions";
+
+import filtersActions from "./modules/filters/filtersActions";
 
 const router = express.Router();
 
-/* ************************************************************************* */
-// Define Your API Routes Here
-/* ************************************************************************* */
+router.get("/api/exercises", exerciseActions.browse);
+router.get("/api/exercises/:id", exerciseActions.read);
 
-// Define item-related routes
-import itemActions from "./modules/item/itemActions";
+router.post("/api/workout-sessions", workoutSessionActions.add);
+router.post(
+  "/api/workout-sessions/:id/exercises",
+  workoutSessionActions.addExercises,
+);
+router.get("/api/workout-sessions", workoutSessionActions.browse);
+router.get("/api/workout-sessions/:id", workoutSessionActions.read);
+router.delete("/api/workout-sessions/:id", workoutSessionActions.destroy);
 
-router.get("/api/items", itemActions.browse);
-router.get("/api/items/:id", itemActions.read);
-router.post("/api/items", itemActions.add);
-
-/* ************************************************************************* */
+router.get("/api/categories", filtersActions.browseCategories);
+router.get("/api/difficulties", filtersActions.browseDifficulties);
+router.get("/api/equipment", filtersActions.browseEquipment);
 
 export default router;
