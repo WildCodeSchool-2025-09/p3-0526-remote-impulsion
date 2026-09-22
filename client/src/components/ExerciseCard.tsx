@@ -9,6 +9,8 @@ type ExerciseCardProps = {
   onToggleSelect?: (id: number) => void;
 };
 
+const PLACEHOLDER = `${import.meta.env.VITE_API_URL}/assets/images/placeholder-exercise.png`;
+
 function ExerciseCard({
   exercise,
   onSelect,
@@ -17,6 +19,8 @@ function ExerciseCard({
   isUnavailable,
   onToggleSelect,
 }: ExerciseCardProps) {
+  const imageSrc = `${import.meta.env.VITE_API_URL}${exercise.imageUrl}`;
+
   if (!selectionMode) {
     return (
       <button
@@ -26,11 +30,12 @@ function ExerciseCard({
       >
         <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-white">
           <img
-            src={`${import.meta.env.VITE_API_URL}${exercise.imageUrl}`}
-            alt={exercise.name}
+            src={imageSrc}
+            alt=""
+            loading="lazy"
             className="size-full object-contain"
             onError={(event) => {
-              event.currentTarget.src = `${import.meta.env.VITE_API_URL}/assets/images/placeholder-exercise.png`;
+              event.currentTarget.src = PLACEHOLDER;
             }}
           />
         </div>
@@ -46,7 +51,7 @@ function ExerciseCard({
 
         <span
           aria-hidden="true"
-          className="shrink-0 text-xl text-neutral transition group-hover:text-primary"
+          className="shrink-0 text-neutral text-xl transition group-hover:text-primary"
         >
           ›
         </span>
@@ -56,56 +61,51 @@ function ExerciseCard({
 
   return (
     <div
-      className={`flex w-full items-center gap-3 rounded-xl border bg-base-200 px-3 py-2.5 transition ${
+      className={`relative flex w-full flex-col items-start gap-2 rounded-box border bg-base-200 p-3 transition ${
         isSelected ? "border-primary ring-2 ring-primary/30" : "border-base-300"
       } ${isUnavailable ? "opacity-55" : ""}`}
     >
-      {selectionMode && (
-        <button
-          type="button"
-          onClick={() => onToggleSelect?.(exercise.id)}
-          disabled={isUnavailable}
-          aria-pressed={isSelected}
-          aria-label={
-            isUnavailable
-              ? "Exercice déjà ajouté à la séance"
-              : isSelected
-                ? "Désélectionner cet exercice"
-                : "Sélectionner cet exercice"
-          }
-          className={`grid size-6 shrink-0 place-items-center rounded-full border-2 font-bold text-xs transition ${
-            isSelected
-              ? "border-primary bg-primary text-primary-content"
-              : "border-base-content/40 bg-base-100"
-          } disabled:cursor-not-allowed`}
-        >
-          {isSelected && <span aria-hidden="true">✓</span>}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => onToggleSelect?.(exercise.id)}
+        disabled={isUnavailable}
+        aria-pressed={isSelected}
+        aria-label={
+          isUnavailable
+            ? "Exercice déjà ajouté à la séance"
+            : isSelected
+              ? "Désélectionner cet exercice"
+              : "Sélectionner cet exercice"
+        }
+        className={`absolute top-3 right-3 z-10 grid size-7 place-items-center rounded-full border-2 font-bold text-xs transition ${
+          isSelected
+            ? "border-primary bg-primary text-primary-content"
+            : "border-base-content/40 bg-base-100"
+        } disabled:cursor-not-allowed`}
+      >
+        {isSelected && <span aria-hidden="true">✓</span>}
+      </button>
 
       <button
         type="button"
         onClick={() => onSelect(exercise.id)}
-        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        className="flex w-full flex-col items-start gap-2 text-left"
       >
         <img
-          src={`${import.meta.env.VITE_API_URL}${exercise.imageUrl}`}
+          src={imageSrc}
           alt=""
           loading="lazy"
-          className="h-14 w-20 shrink-0 rounded-lg bg-base-100 object-contain"
+          className="aspect-[4/3] w-full rounded-field bg-white object-contain"
           onError={(event) => {
-            event.currentTarget.src = `${import.meta.env.VITE_API_URL}/assets/images/placeholder-exercise.png`;
+            event.currentTarget.src = PLACEHOLDER;
           }}
         />
-
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-base-content text-sm">
-            {exercise.name}
-          </p>
-          <span className="badge badge-sm mt-1">
-            {isUnavailable ? "Déjà ajouté" : exercise.category}
-          </span>
-        </div>
+        <h2 className="font-body font-semibold text-base-content text-sm">
+          {exercise.name}
+        </h2>
+        <span className="badge badge-sm">
+          {isUnavailable ? "Déjà ajouté" : exercise.category}
+        </span>
       </button>
     </div>
   );
