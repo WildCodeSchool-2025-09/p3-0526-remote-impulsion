@@ -14,6 +14,10 @@ router.post(
   "/api/workout-sessions/:id/exercises",
   workoutSessionActions.addExercises,
 );
+router.patch(
+  "/api/workout-sessions/:id/exercises/order",
+  workoutSessionActions.reorderExercises,
+);
 router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/:id", workoutSessionActions.read);
 router.delete("/api/workout-sessions/:id", workoutSessionActions.destroy);

@@ -250,4 +250,62 @@ describe("US13 - Ajouter des exercices à une séance", () => {
       workoutSessionRepository.addExercises(7, 1, [3, 8]),
     ).rejects.toThrow("Database failure");
   });
+
+  describe("US14 - Ordonner les exercices d'une séance", () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test("réordonne les exercices d'une séance", async () => {
+      const reorderExercisesMock = jest
+        .spyOn(workoutSessionRepository, "reorderExercises")
+        .mockResolvedValue("reordered");
+
+      const response = await request(app)
+        .patch("/api/workout-sessions/7/exercises/order")
+        .send({ sessionExerciseIds: [18, 12, 25] });
+
+      expect(response.status).toBe(204);
+      expect(reorderExercisesMock).toHaveBeenCalledWith(7, 1, [18, 12, 25]);
+    });
+
+    test.each([
+      ["un body sans sessionExerciseIds", {}],
+      ["une liste vide", { sessionExerciseIds: [] }],
+      ["un identifiant négatif", { sessionExerciseIds: [18, -1, 25] }],
+      ["un doublon", { sessionExerciseIds: [18, 18, 25] }],
+    ])("refuse %s", async (_description, body) => {
+      const reorderExercisesMock = jest.spyOn(
+        workoutSessionRepository,
+        "reorderExercises",
+      );
+
+      const response = await request(app)
+        .patch("/api/workout-sessions/7/exercises/order")
+        .send(body);
+
+      expect(response.status).toBe(400);
+      expect(reorderExercisesMock).not.toHaveBeenCalled();
+    });
+    
+    test.each([
+      ["session_not_found", 404],
+      ["session_not_reorderable", 409],
+      ["invalid_exercise_list", 400],
+    ] as const)(
+      "retourne %s avec le statut HTTP %i",
+      async (repositoryResult, expectedStatus) => {
+        const reorderExercisesMock = jest
+          .spyOn(workoutSessionRepository, "reorderExercises")
+          .mockResolvedValue(repositoryResult);
+
+        const response = await request(app)
+          .patch("/api/workout-sessions/7/exercises/order")
+          .send({ sessionExerciseIds: [18, 12, 25] });
+
+        expect(response.status).toBe(expectedStatus);
+        expect(reorderExercisesMock).toHaveBeenCalledWith(7, 1, [18, 12, 25]);
+      },
+    );
+  });
 });

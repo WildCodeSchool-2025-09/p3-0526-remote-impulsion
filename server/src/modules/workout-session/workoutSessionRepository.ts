@@ -163,6 +163,74 @@ class WorkoutSessionRepository {
     return "created";
   }
 
+  async reorderExercises(
+    sessionId: number,
+    userId: number,
+    sessionExerciseIds: number[],
+  ) {
+    const [sessionRows] = await databaseClient.query<Rows>(
+      `SELECT status
+       FROM workout_session
+       WHERE id = ?
+         AND user_id = ?`,
+      [sessionId, userId],
+    );
+
+    const session = sessionRows[0];
+
+    if (session === undefined) {
+      return "session_not_found";
+    }
+
+    if (!["prepared", "in_progress"].includes(session.status)) {
+      return "session_not_reorderable";
+    }
+
+    const [exerciseRows] = await databaseClient.query<Rows>(
+      `SELECT id AS sessionExerciseId
+       FROM workout_session_exercise
+       WHERE workout_session_id = ?`,
+      [sessionId],
+    );
+
+    const existingSessionExerciseIds = new Set(
+      exerciseRows.map((exercise) => Number(exercise.sessionExerciseId)),
+    );
+
+    const containsExactlyTheSameExercises =
+      existingSessionExerciseIds.size === sessionExerciseIds.length &&
+      sessionExerciseIds.every((sessionExerciseId) =>
+        existingSessionExerciseIds.has(sessionExerciseId),
+      );
+
+    if (!containsExactlyTheSameExercises) {
+      return "invalid_exercise_list";
+    }
+
+    const temporaryOffset = sessionExerciseIds.length;
+
+    await databaseClient.query<Result>(
+      `UPDATE workout_session_exercise
+       SET position = position + ?
+       WHERE workout_session_id = ?
+       ORDER BY position DESC`,
+      [temporaryOffset, sessionId],
+    );
+
+    for (const [index, sessionExerciseId] of sessionExerciseIds.entries()) {
+      const newPosition = index + 1;
+
+      await databaseClient.query<Result>(
+        `UPDATE workout_session_exercise
+         SET position = ?
+         WHERE id = ?
+         AND workout_session_id = ?`,
+        [newPosition, sessionExerciseId, sessionId],
+      );
+    }
+    return "reordered";
+  }
+
   async delete(sessionId: number, userId: number) {
     const [result] = await databaseClient.query<Result>(
       `DELETE FROM workout_session
