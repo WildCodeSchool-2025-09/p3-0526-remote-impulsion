@@ -1,4 +1,5 @@
 import express from "express";
+import authActions from "./modules/auth/authActions";
 import exerciseActions from "./modules/exercise/exerciseActions";
 import filtersActions from "./modules/filters/filtersActions";
 import workoutSessionActions from "./modules/workout-session/workoutSessionActions";
@@ -22,5 +23,7 @@ router.delete("/api/workout-sessions/:id", workoutSessionActions.destroy);
 router.get("/api/categories", filtersActions.browseCategories);
 router.get("/api/difficulties", filtersActions.browseDifficulties);
 router.get("/api/equipment", filtersActions.browseEquipment);
+
+router.post("/api/auth/register", authActions.register);
 
 export default router;
