@@ -17,6 +17,43 @@ function ExerciseCard({
   isUnavailable,
   onToggleSelect,
 }: ExerciseCardProps) {
+  if (!selectionMode) {
+    return (
+      <button
+        type="button"
+        onClick={() => onSelect(exercise.id)}
+        className="group flex w-full items-center gap-3 rounded-xl border border-base-300 bg-base-200 p-3 text-left transition hover:border-primary/60 hover:bg-base-300 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
+      >
+        <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-white">
+          <img
+            src={`${import.meta.env.VITE_API_URL}${exercise.imageUrl}`}
+            alt={exercise.name}
+            className="size-full object-contain"
+            onError={(event) => {
+              event.currentTarget.src = `${import.meta.env.VITE_API_URL}/assets/images/placeholder-exercise.png`;
+            }}
+          />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate font-body font-bold text-base-content text-sm">
+            {exercise.name}
+          </h2>
+          <p className="mt-1 truncate text-neutral text-xs">
+            {exercise.category}
+          </p>
+        </div>
+
+        <span
+          aria-hidden="true"
+          className="shrink-0 text-xl text-neutral transition group-hover:text-primary"
+        >
+          ›
+        </span>
+      </button>
+    );
+  }
+
   return (
     <div
       className={`flex w-full items-center gap-3 rounded-xl border bg-base-200 px-3 py-2.5 transition ${
