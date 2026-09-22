@@ -1,6 +1,6 @@
-import type { WorkoutSessionExercise } from "../types/workoutSession";
 import ChevronDownIcon from "../assets/icons/chevrons/chevron-down.svg?react";
 import ChevronUpIcon from "../assets/icons/chevrons/chevron-up.svg?react";
+import type { WorkoutSessionExercise } from "../types/workoutSession";
 
 type PreparedExerciseCardProps = {
   exercise: WorkoutSessionExercise;
