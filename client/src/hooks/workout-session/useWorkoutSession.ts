@@ -8,6 +8,13 @@ const useWorkoutSession = (sessionId: number) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      setSession(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     const loadSessions = async () => {
       setLoading(true);
       setError(null);

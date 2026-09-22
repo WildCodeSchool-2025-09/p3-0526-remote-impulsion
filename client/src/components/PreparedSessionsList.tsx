@@ -1,6 +1,7 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import ArrowRightIcon from "../assets/icons/arrows/arrow-right.svg?react";
 import CalendarIcon from "../assets/icons/navigation/calendar-month.svg?react";
+import useCreatePreparedSession from "../hooks/workout-session/useCreatePreparedSession";
 import type { WorkoutSession } from "../types/workoutSession";
 import PreparedSessionCard from "./PreparedSessionCard";
 
@@ -13,8 +14,30 @@ const PreparedSessionsList = ({
   sessions,
   limit,
 }: PreparedSessionsListProps) => {
+  const navigate = useNavigate();
+  const { createPreparedSession, loading: createLoading } =
+    useCreatePreparedSession();
+
   const sessionsList = sessions.filter((s) => s.exerciseCount >= 1);
   const visibleSessions = limit ? sessionsList.slice(0, limit) : sessionsList;
+  const emptySession = sessions.find((s) => s.exerciseCount === 0);
+
+  const handleCreate = async () => {
+    if (createLoading) {
+      return;
+    }
+
+    if (emptySession) {
+      navigate(`/sessions/${emptySession.id}`);
+      return;
+    }
+
+    const newSessionId = await createPreparedSession();
+
+    if (newSessionId !== null) {
+      navigate(`/sessions/${newSessionId}`);
+    }
+  };
 
   return (
     <div className="mt-6 grid grid-cols-[1fr_auto] items-center gap-x-4">
@@ -22,36 +45,40 @@ const PreparedSessionsList = ({
         SÉANCES PRÉPARÉES
       </h2>
 
-      {sessionsList.length === 0 ? (
-        <div
-          className={`col-span-2 rounded-box border border-base-300 border-dashed text-base-content/75 text-sm leading-6 ${
-            limit
-              ? "mt-3 p-4"
-              : "mt-8 flex flex-col items-center gap-4 bg-linear-to-b from-primary/10 to-transparent px-6 py-10 text-center"
-          }`}
-        >
-          {!limit && (
-            <span
-              aria-hidden="true"
-              className="grid size-14 place-items-center rounded-full bg-primary/15 text-primary"
-            >
-              <CalendarIcon className="size-7" />
-            </span>
-          )}
+      {sessionsList.length === 0 && limit ? (
+        <div className="col-span-2 mt-3 rounded-box border border-base-300 border-dashed p-4 text-base-content/75 text-sm leading-6">
           <p className="max-w-md">
-            <span
-              className={
-                limit
-                  ? ""
-                  : "mb-1 block font-display font-extrabold text-base-content text-xl uppercase italic"
-              }
-            >
-              Aucune séance préparée.
-            </span>{" "}
-            Prépare une séance à l'avance pour la retrouver ici, prête à
-            démarrer.
+            Aucune séance préparée. Prépare une séance à l'avance pour la
+            retrouver ici, prête à démarrer.
           </p>
         </div>
+      ) : sessionsList.length === 0 ? (
+        <button
+          type="button"
+          onClick={handleCreate}
+          disabled={createLoading}
+          className="col-span-2 mt-8 flex w-full flex-col items-center gap-4 rounded-box border border-base-300 border-dashed bg-linear-to-b from-primary/10 to-transparent px-6 py-10 text-center text-base-content/75 text-sm leading-6 transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-wait"
+        >
+          <span
+            aria-hidden="true"
+            className="grid size-14 place-items-center rounded-full bg-primary/15 text-primary"
+          >
+            <CalendarIcon className="size-7" />
+          </span>
+
+          <p className="max-w-md">
+            <span className="mb-1 block font-display font-extrabold text-base-content text-xl uppercase italic">
+              {emptySession
+                ? "Séance en préparation."
+                : "Aucune séance préparée."}
+            </span>{" "}
+            {createLoading
+              ? "Création de la séance..."
+              : emptySession
+                ? "Ta séance est créée, ajoute maintenant tes exercices."
+                : "Prépare une séance à l'avance pour la retrouver ici, prête à démarrer."}
+          </p>
+        </button>
       ) : (
         <ul
           className={`col-span-2 mt-3 grid gap-3 ${

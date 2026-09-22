@@ -1,6 +1,72 @@
 import type { RequestHandler } from "express";
 import { getCurrentUserId } from "../../helpers/currentUser";
+import { buildImageUrl } from "../../helpers/imageUrl";
 import workoutSessionRepository from "./workoutSessionRepository";
+
+type WorkoutSessionIdParams = {
+  id: string;
+};
+
+type AddExercisesBody = {
+  exerciseIds: number[];
+};
+
+const addExercises: RequestHandler<
+  WorkoutSessionIdParams,
+  unknown,
+  AddExercisesBody
+> = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId();
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const exerciseIds = req.body?.exerciseIds;
+    const hasOnlyValidExerciseIds =
+      Array.isArray(exerciseIds) &&
+      exerciseIds.length > 0 &&
+      exerciseIds.every(
+        (exerciseId) => Number.isInteger(exerciseId) && exerciseId > 0,
+      );
+
+    if (!hasOnlyValidExerciseIds) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const uniqueExerciseIds = new Set(exerciseIds);
+    if (uniqueExerciseIds.size !== exerciseIds.length) {
+      res.sendStatus(400);
+      return;
+    }
+    const result = await workoutSessionRepository.addExercises(
+      sessionId,
+      userId,
+      exerciseIds,
+    );
+
+    if (result === "session_not_found" || result === "exercise_not_found") {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (result === "session_not_prepared" || result === "duplicate_exercise") {
+      res.sendStatus(409);
+      return;
+    }
+
+    res.status(201).json({
+      id: sessionId,
+      exerciseIds,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 const add: RequestHandler = async (req, res, next) => {
   try {
@@ -36,9 +102,9 @@ const browse: RequestHandler = async (req, res, next) => {
 const read: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
-    const sessionId = Number.parseInt(req.params.id);
+    const sessionId = Number(req.params.id);
 
-    if (Number.isNaN(sessionId)) {
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
       res.sendStatus(400);
       return;
     }
@@ -50,7 +116,15 @@ const read: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    res.json(session);
+    const sessionWithImages = {
+      ...session,
+      exercises: session.exercises.map((exercise) => ({
+        ...exercise,
+        imageUrl: buildImageUrl(exercise.slug),
+      })),
+    };
+
+    res.json(sessionWithImages);
   } catch (err) {
     next(err);
   }
@@ -59,9 +133,9 @@ const read: RequestHandler = async (req, res, next) => {
 const start: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
-    const sessionId = Number.parseInt(req.params.id);
+    const sessionId = Number(req.params.id);
 
-    if (Number.isNaN(sessionId)) {
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
       res.sendStatus(400);
       return;
     }
@@ -90,6 +164,15 @@ const start: RequestHandler = async (req, res, next) => {
     );
 
     if (affectedRows === 0) {
+      const runningSession = await workoutSessionRepository.readCurrent(userId);
+
+      if (runningSession) {
+        res.status(409).json({
+          currentSessionId: runningSession.id,
+        });
+        return;
+      }
+
       res.sendStatus(409);
       return;
     }
@@ -114,9 +197,9 @@ const readCurrent: RequestHandler = async (_req, res, next) => {
 const destroy: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
-    const sessionId = Number.parseInt(req.params.id);
+    const sessionId = Number(req.params.id);
 
-    if (Number.isNaN(sessionId)) {
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
       res.sendStatus(400);
       return;
     }
@@ -137,4 +220,4 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, browse, read, readCurrent, start, destroy };
+export default { add, addExercises, browse, read, readCurrent, start, destroy };

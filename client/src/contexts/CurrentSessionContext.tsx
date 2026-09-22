@@ -26,8 +26,13 @@ export const CurrentSessionProvider = ({
   );
 
   const refreshCurrentSession = useCallback(async () => {
-    const session = await workoutSessionService.getCurrentSession();
-    setCurrentSession(session);
+    try {
+      const session = await workoutSessionService.getCurrentSession();
+      setCurrentSession(session);
+    } catch (error) {
+      console.error("Impossible de charger la séance en cours", error);
+      setCurrentSession(null);
+    }
   }, []);
 
   useEffect(() => {

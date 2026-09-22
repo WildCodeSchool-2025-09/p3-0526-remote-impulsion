@@ -1,8 +1,10 @@
 import {
   type ReactNode,
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -45,7 +47,7 @@ export function MessageProvider({ children }: MessageProviderProps) {
     return () => window.clearTimeout(timeoutId);
   }, [currentMessage]);
 
-  function showMessage(text: string, tone: MessageTone) {
+  const showMessage = useCallback((text: string, tone: MessageTone) => {
     const newMessage: AppMessage = {
       id: crypto.randomUUID(),
       text,
@@ -53,24 +55,21 @@ export function MessageProvider({ children }: MessageProviderProps) {
     };
 
     setMessages((currentMessages) => [...currentMessages, newMessage]);
-  }
+  }, []);
 
-  function dismissMessage(id: string) {
+  const dismissMessage = useCallback((id: string) => {
     setMessages((currentMessages) =>
       currentMessages.filter((message) => message.id !== id),
     );
-  }
+  }, []);
+
+  const value = useMemo(
+    () => ({ currentMessage, showMessage, dismissMessage }),
+    [currentMessage, showMessage, dismissMessage],
+  );
 
   return (
-    <MessageContext.Provider
-      value={{
-        currentMessage,
-        showMessage,
-        dismissMessage,
-      }}
-    >
-      {children}
-    </MessageContext.Provider>
+    <MessageContext.Provider value={value}>{children}</MessageContext.Provider>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ArrowRightIcon from "../assets/icons/arrows/arrow-right.svg?react";
 import EmptyState from "../components/EmptyState";
 import ExerciseCard from "../components/ExerciseCard";
 import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
@@ -12,12 +13,30 @@ import useFilters from "../hooks/useFilters";
 
 type OpenPanel = "category" | "equipment" | "difficulty" | null;
 
+const SKELETON_IDS = [
+  "exercise-skeleton-1",
+  "exercise-skeleton-2",
+  "exercise-skeleton-3",
+  "exercise-skeleton-4",
+  "exercise-skeleton-5",
+  "exercise-skeleton-6",
+];
+
 type ExercisesProps = {
   selectionMode?: boolean;
+  excludedIds?: number[];
+  isSubmitting?: boolean;
+  onCancel?: () => void;
   onValidate?: (selectedIds: number[]) => void;
 };
 
-function Exercises({ selectionMode, onValidate }: ExercisesProps) {
+function Exercises({
+  selectionMode,
+  excludedIds = [],
+  isSubmitting,
+  onCancel,
+  onValidate,
+}: ExercisesProps) {
   const {
     exercises,
     isLoading,
@@ -48,8 +67,15 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
     null,
   );
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const exerciseGridClassName = selectionMode
+    ? "grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4"
+    : "flex flex-col gap-2";
 
   function handleToggleSelection(id: number) {
+    if (excludedIds.includes(id)) {
+      return;
+    }
+
     setSelectedIds((previousSelectedIds) => {
       if (previousSelectedIds.includes(id)) {
         return previousSelectedIds.filter((selectedId) => selectedId !== id);
@@ -80,7 +106,7 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
 
   if (error) {
     return (
-      <section className="min-h-full bg-[#0F172A] px-4 py-6">
+      <section className="min-h-full bg-base-100 px-4 py-6">
         <LocalErrorState
           message="Impossible de charger les exercices."
           onRetry={retry}
@@ -90,15 +116,32 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
   }
 
   return (
-    <section className="min-h-full bg-[#0F172A] px-4 pb-8 pt-5 text-[#F8FAFC]">
-      <header className="mb-5">
-        <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-[#06B6D4]">
-          Catalogue
-        </p>
+    <section
+      className={`min-h-full bg-base-100 px-4 pt-5 text-base-content ${
+        selectionMode ? "pb-28" : "pb-8"
+      }`}
+    >
+      <header className="mb-5 flex items-start gap-2">
+        {selectionMode && (
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Retour à la séance"
+            className="mt-2 grid size-9 shrink-0 place-items-center rounded-full transition-colors hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
+          >
+            <ArrowRightIcon aria-hidden="true" className="size-5 rotate-180" />
+          </button>
+        )}
 
-        <h1 className="font-display text-3xl font-extrabold italic uppercase tracking-wide">
-          Exercices
-        </h1>
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+            {selectionMode ? "Séance préparée" : "Catalogue"}
+          </p>
+
+          <h1 className="font-display text-3xl font-extrabold italic uppercase tracking-wide">
+            {selectionMode ? "Choisir des exercices" : "Exercices"}
+          </h1>
+        </div>
       </header>
 
       <div className="mb-3">
@@ -145,7 +188,7 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
             type="button"
             onClick={resetFilters}
             disabled={isCatalogEmpty}
-            className="rounded-full border border-[#334155] bg-[#1E293B] px-4 py-2 text-xs font-semibold text-[#94A3B8] transition hover:border-[#FF6B35] hover:text-[#FF6B35] disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full border border-base-300 bg-base-200 px-4 py-2 font-semibold text-neutral text-xs transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
             Réinitialiser
           </button>
@@ -155,7 +198,7 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
       {filtersError && (
         <div
           role="alert"
-          className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          className="mb-4 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-error text-sm"
         >
           Impossible de charger les filtres.
         </div>
@@ -166,23 +209,25 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
       ) : (
         <>
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#94A3B8]">
+            <p className="font-semibold text-neutral text-xs uppercase tracking-wider">
               {exercises.length} résultat
               {exercises.length > 1 ? "s" : ""}
             </p>
           </div>
 
           {isLoading ? (
-            <div className="flex flex-col gap-2">
-              {Array.from({ length: 6 }).map((_, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: les skeletons sont statiques
-                <ExerciseCardSkeleton key={index} />
+            <div className={exerciseGridClassName}>
+              {SKELETON_IDS.map((skeletonId) => (
+                <ExerciseCardSkeleton
+                  key={skeletonId}
+                  selectionMode={selectionMode}
+                />
               ))}
             </div>
           ) : exercises.length === 0 ? (
             <NoResultsState onReset={resetFilters} />
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className={exerciseGridClassName}>
               {exercises.map((exercise) => (
                 <ExerciseCard
                   key={exercise.id}
@@ -190,6 +235,7 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
                   onSelect={handleOpenExerciseDetail}
                   selectionMode={selectionMode}
                   isSelected={selectedIds.includes(exercise.id)}
+                  isUnavailable={excludedIds.includes(exercise.id)}
                   onToggleSelect={handleToggleSelection}
                 />
               ))}
@@ -199,30 +245,35 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
       )}
 
       {selectionMode && (
-        <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-between gap-3 border-t border-[#334155] bg-[#1E293B] px-4 py-3">
-          <span className="text-sm text-[#94A3B8]">
-            {selectedIds.length} sélectionné{selectedIds.length > 1 ? "s" : ""}
-            {selectedIds.length > 0 && (
-              <>
-                {" · "}
-                <button
-                  type="button"
-                  onClick={handleClearSelection}
-                  className="font-semibold text-[#60A5FA]"
-                >
-                  Vider
-                </button>
-              </>
-            )}
-          </span>
-          <button
-            type="button"
-            onClick={handleValidate}
-            disabled={selectedIds.length === 0}
-            className="rounded-lg bg-[#FF6B35] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Valider
-          </button>
+        <div className="fixed inset-x-0 bottom-0 z-20 border-base-300 border-t bg-base-200 px-4 py-3 lg:left-56">
+          <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
+            <span className="text-neutral text-sm">
+              {selectedIds.length} exercice
+              {selectedIds.length > 1 ? "s" : ""} sélectionné
+              {selectedIds.length > 1 ? "s" : ""}
+              {selectedIds.length > 0 && (
+                <>
+                  {" · "}
+                  <button
+                    type="button"
+                    onClick={handleClearSelection}
+                    disabled={isSubmitting}
+                    className="font-semibold text-info disabled:opacity-50"
+                  >
+                    Vider
+                  </button>
+                </>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={handleValidate}
+              disabled={selectedIds.length === 0 || isSubmitting}
+              className="rounded-lg bg-primary px-4 py-2 font-semibold text-primary-content text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSubmitting ? "Ajout..." : "Ajouter à ma séance"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -233,6 +284,10 @@ function Exercises({ selectionMode, onValidate }: ExercisesProps) {
         isSelected={
           selectedExerciseId !== null &&
           selectedIds.includes(selectedExerciseId)
+        }
+        isUnavailable={
+          selectedExerciseId !== null &&
+          excludedIds.includes(selectedExerciseId)
         }
         onToggleSelect={handleToggleSelection}
       />

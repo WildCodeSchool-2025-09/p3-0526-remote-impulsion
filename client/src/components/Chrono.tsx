@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ClockIcon from "../assets/icons/navigation/clock.svg?react";
+import ClockIcon from "../assets/icons/seance/clock.svg?react";
 
 type ChronoProps = {
   startedAt: string;
@@ -38,8 +38,8 @@ const Chrono = ({ startedAt }: ChronoProps) => {
   );
 
   return (
-    <div className="flex shrink-0 items-center gap-2 rounded-lg border border-accent/30 bg-accent/10 px-3 py-1.5 font-display font-extrabold text-accent text-lg italic tabular-nums lg:px-4 lg:py-2 lg:text-xl">
-      <ClockIcon aria-hidden="true" className="size-4 lg:size-5" />
+    <div className="flex shrink-0 items-center gap-2 font-display font-extrabold text-2xl text-base-content italic tabular-nums lg:text-3xl">
+      <ClockIcon aria-hidden="true" className="size-5 text-neutral lg:size-6" />
       {formatElapsedTime(totalSeconds)}
     </div>
   );

@@ -72,6 +72,25 @@ const deleteWorkoutSession = async (sessionId: number): Promise<void> => {
   }
 };
 
+const postExercisesToSession = async (
+  sessionId: number,
+  exerciseIds: number[],
+): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/exercises`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ exerciseIds }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error("Impossible d'ajouter les exercices");
+  }
+};
+
 export default {
   getWorkoutSessions,
   postWorkoutSession,
@@ -79,4 +98,5 @@ export default {
   getCurrentSession,
   startWorkoutSession,
   deleteWorkoutSession,
+  postExercisesToSession,
 };
