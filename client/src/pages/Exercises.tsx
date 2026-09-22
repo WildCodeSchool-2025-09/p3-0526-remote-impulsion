@@ -13,6 +13,15 @@ import useFilters from "../hooks/useFilters";
 
 type OpenPanel = "category" | "equipment" | "difficulty" | null;
 
+const SKELETON_IDS = [
+  "exercise-skeleton-1",
+  "exercise-skeleton-2",
+  "exercise-skeleton-3",
+  "exercise-skeleton-4",
+  "exercise-skeleton-5",
+  "exercise-skeleton-6",
+];
+
 type ExercisesProps = {
   selectionMode?: boolean;
   excludedIds?: number[];
@@ -60,7 +69,7 @@ function Exercises({
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const exerciseGridClassName = selectionMode
     ? "grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4"
-    : "grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+    : "flex flex-col gap-2";
 
   function handleToggleSelection(id: number) {
     if (excludedIds.includes(id)) {
@@ -208,9 +217,11 @@ function Exercises({
 
           {isLoading ? (
             <div className={exerciseGridClassName}>
-              {Array.from({ length: 6 }).map((_, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: les skeletons sont statiques
-                <ExerciseCardSkeleton key={index} />
+              {SKELETON_IDS.map((skeletonId) => (
+                <ExerciseCardSkeleton
+                  key={skeletonId}
+                  selectionMode={selectionMode}
+                />
               ))}
             </div>
           ) : exercises.length === 0 ? (
