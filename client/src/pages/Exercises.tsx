@@ -14,8 +14,6 @@ import LevelIcon from "../components/filters/LevelIcon";
 import useExercises from "../hooks/useExercises";
 import useFilters from "../hooks/useFilters";
 
-type OpenPanel = "category" | "equipment" | "difficulty" | null;
-
 const SKELETON_IDS = [
   "exercise-skeleton-1",
   "exercise-skeleton-2",
