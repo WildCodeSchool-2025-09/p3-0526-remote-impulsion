@@ -1,17 +1,12 @@
+import normalizeName from "../../utils/normalizeName";
+
 type LevelIconProps = {
   name: string;
   isSelected: boolean;
 };
 
-function normalize(name: string) {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
 function boltCount(name: string) {
-  const key = normalize(name);
+  const key = normalizeName(name);
 
   if (key.includes("avance") || key.includes("confirme")) {
     return 3;
@@ -26,10 +21,11 @@ function LevelIcon({ name, isSelected }: LevelIconProps) {
   const total = boltCount(name);
 
   return (
-    <span className="flex items-center gap-0.5" aria-hidden="true">
+    <span className="flex items-center gap-0.5">
       {[0, 1, 2].map((index) => (
         <svg
           key={index}
+          aria-hidden="true"
           viewBox="0 0 24 24"
           className={`h-5 w-5 ${
             index < total

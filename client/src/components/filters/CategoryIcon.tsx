@@ -6,6 +6,7 @@ import CoreIcon from "../../assets/icons/category/core.svg?react";
 import LegsIcon from "../../assets/icons/category/legs.svg?react";
 import ShouldersIcon from "../../assets/icons/category/shoulders.svg?react";
 import StretchingIcon from "../../assets/icons/category/stretching.svg?react";
+import normalizeName from "../../utils/normalizeName";
 
 type IconComponent = typeof ArmsIcon;
 
@@ -22,20 +23,13 @@ const ICONS: Record<string, IconComponent> = {
   etirement: StretchingIcon,
 };
 
-function normalize(name: string) {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
 type CategoryIconProps = {
   name: string;
   isSelected: boolean;
 };
 
 function CategoryIcon({ name, isSelected }: CategoryIconProps) {
-  const Icon = ICONS[normalize(name)];
+  const Icon = ICONS[normalizeName(name)];
 
   if (Icon === undefined) {
     return <div className="h-14" />;
