@@ -71,10 +71,30 @@ const postExercisesToSession = async (
   }
 };
 
+const reorderWorkoutSessionExercises = async (
+  sessionId: number,
+  sessionExerciseIds: number[],
+): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/exercises/order`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sessionExerciseIds }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error("Impossible d'ordonner les exercices");
+  }
+};
+
 export default {
   getWorkoutSessions,
   postWorkoutSession,
   getWorkoutSessionById,
   deleteWorkoutSession,
   postExercisesToSession,
+  reorderWorkoutSessionExercises,
 };

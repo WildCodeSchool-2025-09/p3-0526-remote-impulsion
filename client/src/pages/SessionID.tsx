@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PlayIcon from "../assets/icons/actions/play-circle.svg?react";
 import PlusIcon from "../assets/icons/actions/plus.svg?react";
 import TrashIcon from "../assets/icons/actions/trash.svg?react";
@@ -9,7 +9,9 @@ import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
 import DeleteSessionModal from "../components/DeleteSessionModal";
 import PreparedExerciseCard from "../components/PreparedExerciseCard";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
+import useReorderSessionExercises from "../hooks/workout-session/useReorderSessionExercises";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
+import type { WorkoutSessionExercise } from "../types/workoutSession";
 
 function SessionId() {
   const { id } = useParams();
@@ -17,8 +19,21 @@ function SessionId() {
 
   const sessionId = Number(id);
   const { session, loading, error } = useWorkoutSession(sessionId);
+  const [orderedExercises, setOrderedExercises] = useState<
+    WorkoutSessionExercise[]
+  >([]);
+
+  useEffect(() => {
+    setOrderedExercises(session?.exercises ?? []);
+  }, [session]);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const {
+    reorderSessionExercises,
+    loading: reorderLoading,
+    error: reorderError,
+  } = useReorderSessionExercises();
 
   const {
     deletePreparedSession,
@@ -30,8 +45,8 @@ function SessionId() {
     return <p>Chargement...</p>;
   }
 
-  if (error || deleteError) {
-    return <p>{error || deleteError}</p>;
+  if (error || deleteError || reorderError) {
+    return <p>{error || deleteError || reorderError}</p>;
   }
 
   if (!session) {
@@ -46,7 +61,7 @@ function SessionId() {
       month: "long",
     },
   );
-  const exercises = session.exercises ?? [];
+  const exercises = orderedExercises;
   const exerciseCount = Number(session.exerciseCount);
 
   const handleDelete = async () => {
@@ -55,6 +70,44 @@ function SessionId() {
     if (deleted) {
       navigate("/sessions");
     }
+  };
+
+  const handleMoveExercise = async (
+    currentIndex: number,
+    direction: -1 | 1,
+  ) => {
+    const targetIndex = currentIndex + direction;
+
+    if (targetIndex < 0 || targetIndex >= exercises.length) {
+      return;
+    }
+
+    const nextExercises = [...exercises];
+
+    [nextExercises[currentIndex], nextExercises[targetIndex]] = [
+      nextExercises[targetIndex],
+      nextExercises[currentIndex],
+    ];
+
+    const sessionExerciseIds = nextExercises.map(
+      (exercise) => exercise.sessionExerciseId,
+    );
+
+    const reordered = await reorderSessionExercises(
+      session.id,
+      sessionExerciseIds,
+    );
+
+    if (!reordered) {
+      return;
+    }
+
+    setOrderedExercises(
+      nextExercises.map((exercise, index) => ({
+        ...exercise,
+        position: index + 1,
+      })),
+    );
   };
 
   return (
@@ -137,10 +190,15 @@ function SessionId() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {exercises.map((exercise) => (
+            {exercises.map((exercise, index) => (
               <PreparedExerciseCard
                 key={exercise.sessionExerciseId}
                 exercise={exercise}
+                onMoveUp={() => handleMoveExercise(index, -1)}
+                onMoveDown={() => handleMoveExercise(index, 1)}
+                canMoveUp={index > 0}
+                canMoveDown={index < exercises.length - 1}
+                disabled={reorderLoading}
               />
             ))}
           </div>
