@@ -87,6 +87,29 @@ class WorkoutSessionRepository {
     return { ...session, exercises: exerciseRows };
   }
 
+  async readCurrent(userId: number) {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT
+      workout_session.id,
+      workout_session.user_id AS userId,
+      workout_session.created_at AS createdAt,
+      workout_session.started_at AS startedAt,
+      workout_session.ended_at AS endedAt,
+      workout_session.status,
+      COUNT(workout_session_exercise.id) AS exerciseCount
+    FROM workout_session
+    LEFT JOIN workout_session_exercise
+      ON workout_session.id = workout_session_exercise.workout_session_id
+    WHERE workout_session.user_id = ?
+      AND workout_session.status = 'in_progress'
+    GROUP BY workout_session.id
+    LIMIT 1`,
+      [userId],
+    );
+
+    return rows[0];
+  }
+
   async addExercises(
     sessionId: number,
     userId: number,
@@ -165,29 +188,6 @@ class WorkoutSessionRepository {
     return "created";
   }
 
-  async readCurrent(userId: number) {
-    const [rows] = await databaseClient.query<Rows>(
-      `SELECT
-      workout_session.id,
-      workout_session.user_id AS userId,
-      workout_session.created_at AS createdAt,
-      workout_session.started_at AS startedAt,
-      workout_session.ended_at AS endedAt,
-      workout_session.status,
-      COUNT(workout_session_exercise.id) AS exerciseCount
-    FROM workout_session
-    LEFT JOIN workout_session_exercise
-      ON workout_session.id = workout_session_exercise.workout_session_id
-    WHERE workout_session.user_id = ?
-      AND workout_session.status = 'in_progress'
-    GROUP BY workout_session.id
-    LIMIT 1`,
-      [userId],
-    );
-
-    return rows[0];
-  }
-
   async start(sessionId: number, userId: number) {
     const connection = await databaseClient.getConnection();
 
@@ -230,6 +230,30 @@ class WorkoutSessionRepository {
     } finally {
       connection.release();
     }
+  }
+
+  async abandon(sessionId: number, userId: number) {
+    const [result] = await databaseClient.query<Result>(
+      `UPDATE workout_session       
+      SET 
+        status = 'prepared',
+        started_at = NULL,
+        ended_at = NULL
+        WHERE workout_session.user_id = ?
+          AND workout_session.id = ? 
+          AND workout_session.status = 'in_progress'
+          AND NOT EXISTS (
+        SELECT 1
+          FROM exercise_set
+          JOIN workout_session_exercise
+            ON exercise_set.workout_session_exercise_id =
+              workout_session_exercise.id
+          WHERE workout_session_exercise.workout_session_id =
+              workout_session.id
+          AND exercise_set.is_completed = TRUE)`,
+      [userId, sessionId],
+    );
+    return result.affectedRows;
   }
 
   async delete(sessionId: number, userId: number) {

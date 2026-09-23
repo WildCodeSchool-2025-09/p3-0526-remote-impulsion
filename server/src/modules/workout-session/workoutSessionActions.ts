@@ -11,63 +11,6 @@ type AddExercisesBody = {
   exerciseIds: number[];
 };
 
-const addExercises: RequestHandler<
-  WorkoutSessionIdParams,
-  unknown,
-  AddExercisesBody
-> = async (req, res, next) => {
-  try {
-    const userId = getCurrentUserId();
-    const sessionId = Number(req.params.id);
-
-    if (!Number.isInteger(sessionId) || sessionId <= 0) {
-      res.sendStatus(400);
-      return;
-    }
-
-    const exerciseIds = req.body?.exerciseIds;
-    const hasOnlyValidExerciseIds =
-      Array.isArray(exerciseIds) &&
-      exerciseIds.length > 0 &&
-      exerciseIds.every(
-        (exerciseId) => Number.isInteger(exerciseId) && exerciseId > 0,
-      );
-
-    if (!hasOnlyValidExerciseIds) {
-      res.sendStatus(400);
-      return;
-    }
-
-    const uniqueExerciseIds = new Set(exerciseIds);
-    if (uniqueExerciseIds.size !== exerciseIds.length) {
-      res.sendStatus(400);
-      return;
-    }
-    const result = await workoutSessionRepository.addExercises(
-      sessionId,
-      userId,
-      exerciseIds,
-    );
-
-    if (result === "session_not_found" || result === "exercise_not_found") {
-      res.sendStatus(404);
-      return;
-    }
-
-    if (result === "session_not_prepared" || result === "duplicate_exercise") {
-      res.sendStatus(409);
-      return;
-    }
-
-    res.status(201).json({
-      id: sessionId,
-      exerciseIds,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
 const add: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
@@ -130,6 +73,74 @@ const read: RequestHandler = async (req, res, next) => {
   }
 };
 
+const readCurrent: RequestHandler = async (_req, res, next) => {
+  try {
+    const userId = getCurrentUserId();
+    const session = await workoutSessionRepository.readCurrent(userId);
+
+    res.json(session ?? null);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const addExercises: RequestHandler<
+  WorkoutSessionIdParams,
+  unknown,
+  AddExercisesBody
+> = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId();
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const exerciseIds = req.body?.exerciseIds;
+    const hasOnlyValidExerciseIds =
+      Array.isArray(exerciseIds) &&
+      exerciseIds.length > 0 &&
+      exerciseIds.every(
+        (exerciseId) => Number.isInteger(exerciseId) && exerciseId > 0,
+      );
+
+    if (!hasOnlyValidExerciseIds) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const uniqueExerciseIds = new Set(exerciseIds);
+    if (uniqueExerciseIds.size !== exerciseIds.length) {
+      res.sendStatus(400);
+      return;
+    }
+    const result = await workoutSessionRepository.addExercises(
+      sessionId,
+      userId,
+      exerciseIds,
+    );
+
+    if (result === "session_not_found" || result === "exercise_not_found") {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (result === "session_not_prepared" || result === "duplicate_exercise") {
+      res.sendStatus(409);
+      return;
+    }
+
+    res.status(201).json({
+      id: sessionId,
+      exerciseIds,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const start: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
@@ -183,12 +194,29 @@ const start: RequestHandler = async (req, res, next) => {
   }
 };
 
-const readCurrent: RequestHandler = async (_req, res, next) => {
+const abandon: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId();
-    const session = await workoutSessionRepository.readCurrent(userId);
+    const sessionId = Number(req.params.id);
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+    const session = await workoutSessionRepository.read(sessionId, userId);
 
-    res.json(session ?? null);
+    if (session === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    const sessionAbandon = await workoutSessionRepository.abandon(
+      sessionId,
+      userId,
+    );
+    if (sessionAbandon === 1) {
+      res.sendStatus(204);
+      return;
+    }
+    res.sendStatus(409);
   } catch (err) {
     next(err);
   }
@@ -220,4 +248,13 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, addExercises, browse, read, readCurrent, start, destroy };
+export default {
+  add,
+  browse,
+  read,
+  readCurrent,
+  addExercises,
+  start,
+  abandon,
+  destroy,
+};

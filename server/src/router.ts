@@ -18,6 +18,10 @@ router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/current", workoutSessionActions.readCurrent);
 router.get("/api/workout-sessions/:id", workoutSessionActions.read);
 router.patch("/api/workout-sessions/:id/start", workoutSessionActions.start);
+router.patch(
+  "/api/workout-sessions/:id/abandon",
+  workoutSessionActions.abandon,
+);
 router.delete("/api/workout-sessions/:id", workoutSessionActions.destroy);
 
 router.get("/api/categories", filtersActions.browseCategories);
