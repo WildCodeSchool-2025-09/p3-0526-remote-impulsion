@@ -20,9 +20,9 @@ function PreparedExerciseCard({
   disabled,
 }: PreparedExerciseCardProps) {
   return (
-    <article className="rounded-box border border-base-300 bg-base-200 p-4">
+    <article className="rounded-box border border-base-300 bg-linear-to-b from-base-300/35 to-base-200 p-4 transition-colors hover:border-primary/40">
       <div className="flex items-start gap-3">
-        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary/15 font-bold text-secondary text-sm">
+        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary/20 font-display font-extrabold text-base text-secondary italic ring-1 ring-secondary/30">
           {exercise.position}
         </span>
 

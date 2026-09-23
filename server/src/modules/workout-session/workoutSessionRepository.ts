@@ -53,7 +53,9 @@ class WorkoutSessionRepository {
       [userId, sessionId],
     );
 
-    const session = sessionRows[0];
+    const session = sessionRows[0] as
+      | (Rows[number] & { exerciseCount: number })
+      | undefined;
 
     if (session === undefined) {
       return undefined;
@@ -110,7 +112,7 @@ class WorkoutSessionRepository {
       return "session_not_found";
     }
 
-    if (session.status !== "prepared") {
+    if (session.status !== "prepared" && session.status !== "in_progress") {
       return "session_not_prepared";
     }
 
@@ -229,6 +231,73 @@ class WorkoutSessionRepository {
       );
     }
     return "reordered";
+  }
+
+  async readCurrent(userId: number) {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT
+      workout_session.id,
+      workout_session.user_id AS userId,
+      workout_session.created_at AS createdAt,
+      workout_session.started_at AS startedAt,
+      workout_session.ended_at AS endedAt,
+      workout_session.status,
+      COUNT(workout_session_exercise.id) AS exerciseCount
+    FROM workout_session
+    LEFT JOIN workout_session_exercise
+      ON workout_session.id = workout_session_exercise.workout_session_id
+    WHERE workout_session.user_id = ?
+      AND workout_session.status = 'in_progress'
+    GROUP BY workout_session.id
+    LIMIT 1`,
+      [userId],
+    );
+
+    return rows[0];
+  }
+
+  async start(sessionId: number, userId: number) {
+    const connection = await databaseClient.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const [sessions] = await connection.query<Rows>(
+        `SELECT id, status
+         FROM workout_session
+         WHERE user_id = ?
+         FOR UPDATE`,
+        [userId],
+      );
+
+      const hasCurrentSession = sessions.some(
+        (session) => session.status === "in_progress",
+      );
+
+      if (hasCurrentSession) {
+        await connection.rollback();
+        return 0;
+      }
+
+      const [result] = await connection.query<Result>(
+        `UPDATE workout_session
+         SET status = 'in_progress',
+             started_at = NOW()
+         WHERE id = ?
+         AND user_id = ?
+         AND status = 'prepared'`,
+        [sessionId, userId],
+      );
+
+      await connection.commit();
+
+      return result.affectedRows;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
 
   async delete(sessionId: number, userId: number) {

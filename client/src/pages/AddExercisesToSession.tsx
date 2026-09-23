@@ -33,7 +33,7 @@ function AddExercisesToSession() {
       return;
     }
 
-    showMessage("Les exercices ont été ajoutés à la séance.", "success");
+    showMessage("Exercices ajoutés à la séance", "success");
     navigate(`/sessions/${sessionId}`);
   }
 
