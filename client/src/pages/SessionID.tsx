@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PlayIcon from "../assets/icons/actions/play-circle.svg?react";
 import PlusIcon from "../assets/icons/actions/plus.svg?react";
 import TrashIcon from "../assets/icons/actions/trash.svg?react";
@@ -11,21 +11,14 @@ import PreparedExerciseCard from "../components/PreparedExerciseCard";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useReorderSessionExercises from "../hooks/workout-session/useReorderSessionExercises";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
-import type { WorkoutSessionExercise } from "../types/workoutSession";
 
 function SessionId() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const sessionId = Number(id);
-  const { session, loading, error } = useWorkoutSession(sessionId);
-  const [orderedExercises, setOrderedExercises] = useState<
-    WorkoutSessionExercise[]
-  >([]);
-
-  useEffect(() => {
-    setOrderedExercises(session?.exercises ?? []);
-  }, [session]);
+  const { session, loading, error, updateSessionExercises } =
+    useWorkoutSession(sessionId);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -45,8 +38,8 @@ function SessionId() {
     return <p>Chargement...</p>;
   }
 
-  if (error || deleteError || reorderError) {
-    return <p>{error || deleteError || reorderError}</p>;
+  if (error || deleteError) {
+    return <p>{error || deleteError}</p>;
   }
 
   if (!session) {
@@ -61,7 +54,7 @@ function SessionId() {
       month: "long",
     },
   );
-  const exercises = orderedExercises;
+  const exercises = session.exercises ?? [];
   const exerciseCount = Number(session.exerciseCount);
 
   const handleDelete = async () => {
@@ -102,7 +95,7 @@ function SessionId() {
       return;
     }
 
-    setOrderedExercises(
+    updateSessionExercises(
       nextExercises.map((exercise, index) => ({
         ...exercise,
         position: index + 1,
@@ -162,7 +155,14 @@ function SessionId() {
           {exerciseCount} {exerciseCount <= 1 ? "exercice" : "exercices"}
         </p>
       </div>
-
+      {reorderError && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-error/40 bg-error/10 px-4 py-3 text-error text-sm"
+        >
+          {reorderError}
+        </p>
+      )}
       <div
         className={`mt-3 ${
           exerciseCount === 0

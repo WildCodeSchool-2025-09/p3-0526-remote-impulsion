@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import workoutSessionService from "../../services/workoutSessionService";
-import type { WorkoutSession } from "../../types/workoutSession";
+import type {
+  WorkoutSession,
+  WorkoutSessionExercise,
+} from "../../types/workoutSession";
 
 const useWorkoutSession = (sessionId: number) => {
   const [session, setSession] = useState<WorkoutSession | null>(null);
@@ -33,7 +36,20 @@ const useWorkoutSession = (sessionId: number) => {
     loadSessions();
   }, [sessionId]);
 
-  return { session, loading, error };
+  const updateSessionExercises = (exercises: WorkoutSessionExercise[]) => {
+    setSession((currentSession) => {
+      if (currentSession === null) {
+        return null;
+      }
+
+      return {
+        ...currentSession,
+        exercises,
+      };
+    });
+  };
+
+  return { session, loading, error, updateSessionExercises };
 };
 
 export default useWorkoutSession;
