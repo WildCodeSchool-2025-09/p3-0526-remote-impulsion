@@ -63,6 +63,16 @@ const startWorkoutSession = async (sessionId: number) => {
   };
 };
 
+const abandonSession = async (sessionId: number): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/abandon`,
+    { method: "PATCH" },
+  );
+  if (!response.ok) {
+    throw new Error("Impossible d'abandonner la séance");
+  }
+};
+
 const deleteWorkoutSession = async (sessionId: number): Promise<void> => {
   const response = await fetch(`${API_URL}/api/workout-sessions/${sessionId}`, {
     method: "DELETE",
@@ -97,6 +107,7 @@ export default {
   getWorkoutSessionById,
   getCurrentSession,
   startWorkoutSession,
+  abandonSession,
   deleteWorkoutSession,
   postExercisesToSession,
 };

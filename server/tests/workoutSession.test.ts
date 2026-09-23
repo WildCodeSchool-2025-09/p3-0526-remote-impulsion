@@ -328,3 +328,38 @@ describe("US16 - Démarrer une séance", () => {
     expect(response.body.status).toBe("in_progress");
   });
 });
+
+describe("US22 - Abandonner une séance", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("refuse l'abandon lorsqu'une série est déjà validée", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      status: "in_progress",
+    } as never);
+
+    jest.spyOn(workoutSessionRepository, "abandon").mockResolvedValue(0);
+
+    const response = await request(app).patch(
+      "/api/workout-sessions/7/abandon",
+    );
+
+    expect(response.status).toBe(409);
+  });
+
+  test("le repository interdit l'abandon si une série est validée", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValue([{ affectedRows: 0 }, []] as never);
+
+    await workoutSessionRepository.abandon(7, 1);
+
+    const [sql, params] = queryMock.mock.calls[0];
+
+    expect(String(sql)).toMatch(/NOT EXISTS/);
+    expect(String(sql)).toMatch(/is_completed\s*=\s*TRUE/);
+    expect(params).toEqual([1, 7]);
+  });
+});

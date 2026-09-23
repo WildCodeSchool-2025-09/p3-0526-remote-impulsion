@@ -4,12 +4,14 @@ import { Link, useNavigate, useParams } from "react-router";
 import TrashIcon from "../assets/icons/actions/trash.svg?react";
 import ChevronLeftIcon from "../assets/icons/chevrons/chevron-left.svg?react";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
+import AbandonSessionModal from "../components/AbandonSessionModal";
 import Chrono from "../components/Chrono";
 import DeleteSessionModal from "../components/DeleteSessionModal";
 import PreparedExerciseCard from "../components/PreparedExerciseCard";
 import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import { useMessages } from "../contexts/MessageContext";
 import { useMobileNav } from "../contexts/MobileNavContext";
+import useAbandonSession from "../hooks/workout-session/useAbandonSession";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useStartSession from "../hooks/workout-session/useStartSession";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
@@ -22,6 +24,8 @@ function SessionId() {
   const { session, loading, error } = useWorkoutSession(sessionId);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAbandonModalOpen, setIsAbandonModalOpen] = useState(false);
+  const [isConflictDismissed, setIsConflictDismissed] = useState(false);
 
   const {
     deletePreparedSession,
@@ -35,6 +39,12 @@ function SessionId() {
     error: startError,
     currentSessionId,
   } = useStartSession();
+
+  const {
+    abandonSession,
+    isAbandoning,
+    error: abandonError,
+  } = useAbandonSession();
 
   const currentSessionContext = useContext(CurrentSessionContext);
   const { isNavOpen } = useMobileNav();
@@ -51,6 +61,12 @@ function SessionId() {
       showMessage(startError, "error");
     }
   }, [startError, showMessage]);
+
+  useEffect(() => {
+    if (abandonError !== null) {
+      showMessage(abandonError, "error");
+    }
+  }, [abandonError, showMessage]);
 
   if (loading) {
     return <p>Chargement...</p>;
@@ -85,10 +101,24 @@ function SessionId() {
   };
 
   const handleStart = async () => {
+    setIsConflictDismissed(false);
+
     const started = await startSession(session.id);
 
     if (started && currentSessionContext) {
       await currentSessionContext.refreshCurrentSession();
+    }
+  };
+
+  const handleAbandonCurrentSession = async () => {
+    if (currentSessionId === null) {
+      return;
+    }
+
+    const abandoned = await abandonSession(currentSessionId);
+
+    if (abandoned) {
+      setIsConflictDismissed(true);
     }
   };
 
@@ -135,9 +165,8 @@ function SessionId() {
         {isInProgress && (
           <button
             type="button"
-            disabled
-            title="L'abandon de séance n'est pas encore disponible"
-            className="-mr-1 flex shrink-0 cursor-not-allowed items-center gap-1.5 rounded-lg px-1.5 py-1.5 font-medium text-error text-sm"
+            onClick={() => setIsAbandonModalOpen(true)}
+            className="-mr-1 flex shrink-0 items-center gap-1.5 rounded-lg px-1.5 py-1.5 font-medium text-error text-sm transition-colors hover:bg-error/10 focus-visible:outline-2 focus-visible:outline-error focus-visible:outline-offset-2"
           >
             <span aria-hidden="true" className="text-base leading-none">
               &times;
@@ -245,35 +274,60 @@ function SessionId() {
           onConfirm={handleDelete}
         />
       )}
-      {currentSessionId !== null && currentSessionId !== session.id && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-base-100/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-box border border-base-300 bg-base-200 p-6 shadow-2xl">
-            <h2 className="font-display font-extrabold text-xl uppercase italic">
-              Séance déjà en cours
-            </h2>
-
-            <p className="mt-2 text-base-content/75">
-              Vous avez déjà une séance en cours.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => navigate(`/sessions/${currentSessionId}`)}
-              className="mt-5 w-full rounded-lg bg-primary px-4 py-3 font-semibold text-primary-content"
-            >
-              Reprendre la séance
-            </button>
-
-            <button
-              type="button"
-              disabled
-              className="mt-3 w-full cursor-not-allowed rounded-lg border border-base-300 px-4 py-3 font-semibold opacity-40"
-            >
-              Abandonner la séance
-            </button>
-          </div>
-        </div>
+      {isInProgress && isAbandonModalOpen && (
+        <AbandonSessionModal
+          sessionId={session.id}
+          onClose={() => setIsAbandonModalOpen(false)}
+          onAbandoned={() => {
+            setIsAbandonModalOpen(false);
+            navigate("/sessions");
+          }}
+        />
       )}
+
+      {currentSessionId !== null &&
+        currentSessionId !== session.id &&
+        !isConflictDismissed && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-base-100/60 p-6 backdrop-blur-sm">
+            <div className="relative w-full max-w-md rounded-box border border-base-300 bg-base-200 p-6 shadow-2xl">
+              <button
+                type="button"
+                aria-label="Fermer la fenêtre"
+                onClick={() => setIsConflictDismissed(true)}
+                disabled={isAbandoning}
+                className="absolute top-4 right-4 grid size-9 place-items-center rounded-full text-2xl leading-none transition-colors hover:bg-base-300 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-40"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+
+              <h2 className="text-balance pr-10 font-display font-extrabold text-xl uppercase italic">
+                Séance déjà en cours
+              </h2>
+
+              <p className="mt-2 text-base-content/75">
+                Vous avez déjà une séance en cours.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => navigate(`/sessions/${currentSessionId}`)}
+                disabled={isAbandoning}
+                className="mt-5 w-full rounded-lg bg-primary px-4 py-3 font-semibold text-primary-content disabled:cursor-wait disabled:opacity-60"
+              >
+                Reprendre la séance
+              </button>
+
+              <button
+                type="button"
+                onClick={handleAbandonCurrentSession}
+                disabled={isAbandoning}
+                className="mt-3 w-full rounded-lg border border-base-content/40 px-4 py-3 font-semibold transition-colors hover:border-base-content hover:bg-base-300 focus-visible:outline-2 focus-visible:outline-error focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60"
+              >
+                {isAbandoning ? "Abandon en cours..." : "Abandonner la séance"}
+              </button>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
