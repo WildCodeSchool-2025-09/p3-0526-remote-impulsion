@@ -25,5 +25,6 @@ router.get("/api/difficulties", filtersActions.browseDifficulties);
 router.get("/api/equipment", filtersActions.browseEquipment);
 
 router.post("/api/auth/register", authActions.register);
+router.post("/api/auth/login", authActions.login);
 
 export default router;
