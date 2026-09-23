@@ -1,4 +1,3 @@
-import SessionId from "../pages/SessionID";
 import type { WorkoutSession } from "../types/workoutSession";
 
 const API_URL = import.meta.env.VITE_API_URL;
