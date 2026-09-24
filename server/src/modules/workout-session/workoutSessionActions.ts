@@ -7,8 +7,71 @@ type WorkoutSessionIdParams = {
   id: string;
 };
 
+type ReorderExercisesBody = {
+  sessionExerciseIds: number[];
+};
+
 type AddExercisesBody = {
   exerciseIds: number[];
+};
+
+const reorderExercises: RequestHandler<
+  WorkoutSessionIdParams,
+  unknown,
+  ReorderExercisesBody
+> = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId();
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+    const sessionExerciseIds = req.body?.sessionExerciseIds;
+    const hasOnlyValidSessionExerciseIds =
+      Array.isArray(sessionExerciseIds) &&
+      sessionExerciseIds.length > 0 &&
+      sessionExerciseIds.every(
+        (sessionExerciseId) =>
+          Number.isInteger(sessionExerciseId) && sessionExerciseId > 0,
+      );
+
+    if (!hasOnlyValidSessionExerciseIds) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const uniqueSessionExerciseIds = new Set(sessionExerciseIds);
+    if (uniqueSessionExerciseIds.size !== sessionExerciseIds.length) {
+      res.sendStatus(400);
+      return;
+    }
+    const result = await workoutSessionRepository.reorderExercises(
+      sessionId,
+      userId,
+      sessionExerciseIds,
+    );
+
+    if (result === "session_not_found") {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (result === "session_not_reorderable") {
+      res.sendStatus(409);
+      return;
+    }
+
+    if (result === "invalid_exercise_list") {
+      res.sendStatus(400);
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
 };
 
 const addExercises: RequestHandler<
@@ -220,4 +283,13 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { add, addExercises, browse, read, readCurrent, start, destroy };
+export default {
+  add,
+  addExercises,
+  browse,
+  read,
+  readCurrent,
+  start,
+  reorderExercises,
+  destroy,
+};
