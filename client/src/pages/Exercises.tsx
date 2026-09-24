@@ -4,14 +4,15 @@ import EmptyState from "../components/EmptyState";
 import ExerciseCard from "../components/ExerciseCard";
 import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
 import ExerciseDetailSheet from "../components/ExerciseDetailSheet";
-import FilterPanel from "../components/FilterPanel";
 import NoResultsState from "../components/NoResultsState";
 import SearchField from "../components/SearchField";
 import LocalErrorState from "../components/feedback/LocalErrorState";
+import CategoryIcon from "../components/filters/CategoryIcon";
+import EquipmentIcon from "../components/filters/EquipmentIcon";
+import FilterGrid from "../components/filters/FilterGrid";
+import LevelIcon from "../components/filters/LevelIcon";
 import useExercises from "../hooks/useExercises";
 import useFilters from "../hooks/useFilters";
-
-type OpenPanel = "category" | "equipment" | "difficulty" | null;
 
 const SKELETON_IDS = [
   "exercise-skeleton-1",
@@ -62,7 +63,6 @@ function Exercises({
     error: filtersError,
   } = useFilters();
 
-  const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(
     null,
   );
@@ -82,10 +82,6 @@ function Exercises({
       }
       return [...previousSelectedIds, id];
     });
-  }
-
-  function togglePanel(panel: OpenPanel) {
-    setOpenPanel((current) => (current === panel ? null : panel));
   }
 
   function handleOpenExerciseDetail(exerciseId: number) {
@@ -134,11 +130,11 @@ function Exercises({
         )}
 
         <div>
-          <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+          <p className="mb-1 font-bold text-accent text-xs uppercase tracking-[0.2em]">
             {selectionMode ? "Séance préparée" : "Catalogue"}
           </p>
 
-          <h1 className="font-display text-3xl font-extrabold italic uppercase tracking-wide">
+          <h1 className="font-display font-extrabold text-3xl uppercase italic tracking-wide">
             {selectionMode ? "Choisir des exercices" : "Exercices"}
           </h1>
         </div>
@@ -152,35 +148,42 @@ function Exercises({
         />
       </div>
 
-      <div className="mb-5 flex flex-wrap items-start gap-2">
-        <FilterPanel
-          label="Zone musculaire"
+      <div className="mb-5 space-y-4 rounded-2xl border border-base-300 bg-base-100/40 p-3">
+        <FilterGrid
+          legend="Zone musculaire"
           options={categories}
           selectedId={selectedCategoryId}
           onSelect={setSelectedCategoryId}
-          isOpen={openPanel === "category"}
-          onToggle={() => togglePanel("category")}
           disabled={isCatalogEmpty}
+          columnsClassName="grid-cols-4"
+          renderIcon={(option, isSelected) => (
+            <CategoryIcon name={option.name} isSelected={isSelected} />
+          )}
         />
 
-        <FilterPanel
-          label="Matériel"
+        <FilterGrid
+          legend="Matériel"
           options={equipment}
           selectedId={selectedEquipmentId}
           onSelect={setSelectedEquipmentId}
-          isOpen={openPanel === "equipment"}
-          onToggle={() => togglePanel("equipment")}
           disabled={isCatalogEmpty}
+          columnsClassName="grid-cols-3 sm:grid-cols-6"
+          renderIcon={(option, isSelected) => (
+            <EquipmentIcon name={option.name} isSelected={isSelected} />
+          )}
         />
 
-        <FilterPanel
-          label="Difficulté"
+        <FilterGrid
+          legend="Niveau"
+          showLegend
           options={difficulties}
           selectedId={selectedDifficultyId}
           onSelect={setSelectedDifficultyId}
-          isOpen={openPanel === "difficulty"}
-          onToggle={() => togglePanel("difficulty")}
           disabled={isCatalogEmpty}
+          columnsClassName="grid-cols-3"
+          renderIcon={(option, isSelected) => (
+            <LevelIcon name={option.name} isSelected={isSelected} />
+          )}
         />
 
         {hasActiveFilter && (
@@ -188,7 +191,7 @@ function Exercises({
             type="button"
             onClick={resetFilters}
             disabled={isCatalogEmpty}
-            className="rounded-full border border-base-300 bg-base-200 px-4 py-2 font-semibold text-neutral text-xs transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-full border border-base-300 bg-base-200 px-4 py-2 font-semibold text-neutral text-xs transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
             Réinitialiser
           </button>

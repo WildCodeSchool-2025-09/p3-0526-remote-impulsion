@@ -25,7 +25,7 @@ class FiltersRepository {
 
   async readDifficulties() {
     const [rows] = await databaseClient.query<ReferenceRow[]>(
-      "SELECT id, name FROM difficulty ORDER BY name",
+      "SELECT id, name FROM difficulty ORDER BY id",
     );
     return rows;
   }
