@@ -2,6 +2,10 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import databaseClient from "../../../database/client";
 
 type UserRow = { id: number } & RowDataPacket;
+type UserCredentialsRow = {
+  id: number;
+  hashedPassword: string;
+} & RowDataPacket;
 
 class AuthRepository {
   async readByEmail(email: string) {
@@ -29,6 +33,15 @@ class AuthRepository {
     );
 
     return result.insertId;
+  }
+
+  async readCredentialsByEmail(email: string) {
+    const [rows] = await databaseClient.query<UserCredentialsRow[]>(
+      "SELECT id, password AS hashedPassword FROM user WHERE email = ?",
+      [email],
+    );
+
+    return rows[0];
   }
 }
 

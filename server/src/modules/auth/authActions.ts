@@ -1,7 +1,8 @@
 import argon2 from "argon2";
 import type { RequestHandler } from "express";
+import jwt from "jsonwebtoken";
 import authRepository from "./authRepository";
-import type { RegisterPayload } from "./authTypes";
+import type { LoginPayload, RegisterPayload } from "./authTypes";
 
 const register: RequestHandler = async (req, res, next) => {
   try {
@@ -86,4 +87,62 @@ const register: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { register };
+const login: RequestHandler = async (req, res, next) => {
+  try {
+    const { email, password } = (req.body ?? {}) as Partial<LoginPayload>;
+
+    if (typeof email !== "string" || typeof password !== "string") {
+      res.status(422).json({
+        errors: {
+          global: "E-mail et mot de passe sont obligatoires",
+        },
+      });
+      return;
+    }
+
+    const user = await authRepository.readCredentialsByEmail(email);
+
+    if (user === undefined) {
+      res.status(401).json({
+        errors: {
+          global: "Adresse e-mail ou mot de passe incorrect",
+        },
+      });
+      return;
+    }
+
+    const passwordIsValid = await argon2.verify(user.hashedPassword, password);
+
+    if (passwordIsValid === false) {
+      res.status(401).json({
+        errors: {
+          global: "Adresse e-mail ou mot de passe incorrect",
+        },
+      });
+      return;
+    }
+
+    const appSecret = process.env.APP_SECRET;
+
+    if (appSecret === undefined) {
+      throw new Error("APP_SECRET n'est pas configuré");
+    }
+
+    const token = jwt.sign({}, appSecret, {
+      subject: String(user.id),
+      expiresIn: "1h",
+    });
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 1000,
+    });
+
+    res.sendStatus(200);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { register, login };
