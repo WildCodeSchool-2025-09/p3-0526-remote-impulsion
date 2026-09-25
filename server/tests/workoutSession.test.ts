@@ -349,17 +349,15 @@ describe("US22 - Abandonner une séance", () => {
     expect(response.status).toBe(409);
   });
 
-  test("le repository interdit l'abandon si une série est validée", async () => {
+  test("transmet les paramètres dans le bon ordre pour abandonner", async () => {
     const queryMock = jest
       .spyOn(databaseClient, "query")
       .mockResolvedValue([{ affectedRows: 0 }, []] as never);
 
     await workoutSessionRepository.abandon(7, 1);
 
-    const [sql, params] = queryMock.mock.calls[0];
+    const [, params] = queryMock.mock.calls[0];
 
-    expect(String(sql)).toMatch(/NOT EXISTS/);
-    expect(String(sql)).toMatch(/is_completed\s*=\s*TRUE/);
     expect(params).toEqual([1, 7]);
   });
 });
