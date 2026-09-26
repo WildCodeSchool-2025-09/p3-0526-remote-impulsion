@@ -256,6 +256,44 @@ class WorkoutSessionRepository {
     return result.affectedRows;
   }
 
+  async readSummary(sessionId: number, userId: number) {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT
+        id,
+        status,
+        started_at AS date,
+        TIMESTAMPDIFF(SECOND, started_at, NOW()) AS durationSeconds,
+        (SELECT COUNT(*)
+         FROM exercise_set
+         WHERE is_completed = TRUE
+           AND workout_session_exercise_id IN (
+             SELECT id
+             FROM workout_session_exercise
+             WHERE workout_session_id = workout_session.id
+           )) AS completedSetCount
+       FROM workout_session
+       WHERE id = ?
+         AND user_id = ?`,
+      [sessionId, userId],
+    );
+
+    return rows[0];
+  }
+
+  async complete(sessionId: number, userId: number) {
+    const [result] = await databaseClient.query<Result>(
+      `UPDATE workout_session
+       SET status = 'completed',
+           ended_at = NOW()
+       WHERE id = ?
+         AND user_id = ?
+         AND status = 'in_progress'`,
+      [sessionId, userId],
+    );
+
+    return result.affectedRows;
+  }
+
   async delete(sessionId: number, userId: number) {
     const [result] = await databaseClient.query<Result>(
       `DELETE FROM workout_session
