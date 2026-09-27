@@ -22,3 +22,11 @@ export type WorkoutSession = {
 };
 
 export type WorkoutSessionStatus = "prepared" | "in_progress" | "completed";
+
+export type WorkoutSessionSummary = {
+  id: number;
+  status: WorkoutSessionStatus;
+  date: string;
+  durationSeconds: number;
+  completedSetCount: number;
+};
