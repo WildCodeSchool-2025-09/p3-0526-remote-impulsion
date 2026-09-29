@@ -8,7 +8,7 @@ const DeleteSessionModal = ({
   onConfirm,
 }: DeleteSessionModalProps) => {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-base-100/60 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-base-100/60 p-6 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-box border border-base-300 bg-base-200 p-6 shadow-2xl">
         <h2 className="font-display font-extrabold text-xl uppercase italic md:text-2xl">
           Supprimer cette séance ?
