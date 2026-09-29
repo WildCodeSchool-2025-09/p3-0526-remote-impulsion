@@ -58,6 +58,9 @@ app.use(express.json());
 // app.use(express.raw());
 
 /* ************************************************************************* */
+import cookieParser from "cookie-parser";
+
+app.use(cookieParser());
 
 // Import the API router
 import router from "./router";
