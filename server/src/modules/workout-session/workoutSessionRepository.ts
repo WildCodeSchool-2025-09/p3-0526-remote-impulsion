@@ -338,7 +338,7 @@ class WorkoutSessionRepository {
         id,
         status,
         started_at AS date,
-        TIMESTAMPDIFF(SECOND, started_at, NOW()) AS durationSeconds,
+        LEAST(TIMESTAMPDIFF(SECOND, started_at, NOW()), 21600) AS durationSeconds,
         (SELECT COUNT(*)
          FROM exercise_set
          WHERE is_completed = TRUE
@@ -346,7 +346,18 @@ class WorkoutSessionRepository {
              SELECT id
              FROM workout_session_exercise
              WHERE workout_session_id = workout_session.id
-           )) AS completedSetCount
+           )) AS completedSetCount,
+        (SELECT COUNT(*)
+         FROM workout_session_exercise
+         WHERE workout_session_id = workout_session.id) AS exerciseCount,
+        (SELECT COALESCE(SUM(repetitions * weight_kg), 0)
+         FROM exercise_set
+         WHERE is_completed = TRUE
+           AND workout_session_exercise_id IN (
+             SELECT id
+             FROM workout_session_exercise
+             WHERE workout_session_id = workout_session.id
+           )) AS totalVolumeKg
        FROM workout_session
        WHERE id = ?
          AND user_id = ?`,
@@ -360,7 +371,7 @@ class WorkoutSessionRepository {
     const [result] = await databaseClient.query<Result>(
       `UPDATE workout_session
        SET status = 'completed',
-           ended_at = NOW()
+           ended_at = LEAST(NOW(), started_at + INTERVAL 6 HOUR)
        WHERE id = ?
          AND user_id = ?
          AND status = 'in_progress'`,
