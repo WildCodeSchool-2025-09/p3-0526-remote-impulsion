@@ -257,6 +257,34 @@ const readCurrent: RequestHandler = async (req, res, next) => {
   }
 };
 
+const abandon: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId(req);
+    const sessionId = Number(req.params.id);
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+    const session = await workoutSessionRepository.read(sessionId, userId);
+
+    if (session === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    const sessionAbandon = await workoutSessionRepository.abandon(
+      sessionId,
+      userId,
+    );
+    if (sessionAbandon === 1) {
+      res.sendStatus(204);
+      return;
+    }
+    res.sendStatus(409);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const destroy: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId(req);
@@ -291,5 +319,6 @@ export default {
   readCurrent,
   start,
   reorderExercises,
+  abandon,
   destroy,
 };
