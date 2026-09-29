@@ -5,6 +5,7 @@ import AddExercisesToSession from "./pages/AddExercisesToSession";
 import Exercises from "./pages/Exercises";
 import History from "./pages/History";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Programs from "./pages/Programs";
 import Register from "./pages/Register";
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       },
       { path: "profile", element: <Profile /> },
       { path: "register", element: <Register /> },
+      { path: "login", element: <Login /> },
     ],
   },
 ]);

@@ -13,6 +13,7 @@ import { useMessages } from "../contexts/MessageContext";
 import { useMobileNav } from "../contexts/MobileNavContext";
 import useAbandonSession from "../hooks/workout-session/useAbandonSession";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
+import useReorderSessionExercises from "../hooks/workout-session/useReorderSessionExercises";
 import useStartSession from "../hooks/workout-session/useStartSession";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
 
@@ -21,11 +22,18 @@ function SessionId() {
   const navigate = useNavigate();
 
   const sessionId = Number(id);
-  const { session, loading, error } = useWorkoutSession(sessionId);
+  const { session, loading, error, updateSessionExercises } =
+    useWorkoutSession(sessionId);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAbandonModalOpen, setIsAbandonModalOpen] = useState(false);
   const [isConflictDismissed, setIsConflictDismissed] = useState(false);
+
+  const {
+    reorderSessionExercises,
+    loading: reorderLoading,
+    error: reorderError,
+  } = useReorderSessionExercises();
 
   const {
     deletePreparedSession,
@@ -98,6 +106,44 @@ function SessionId() {
     if (deleted) {
       navigate("/sessions");
     }
+  };
+
+  const handleMoveExercise = async (
+    currentIndex: number,
+    direction: -1 | 1,
+  ) => {
+    const targetIndex = currentIndex + direction;
+
+    if (targetIndex < 0 || targetIndex >= exercises.length) {
+      return;
+    }
+
+    const nextExercises = [...exercises];
+
+    [nextExercises[currentIndex], nextExercises[targetIndex]] = [
+      nextExercises[targetIndex],
+      nextExercises[currentIndex],
+    ];
+
+    const sessionExerciseIds = nextExercises.map(
+      (exercise) => exercise.sessionExerciseId,
+    );
+
+    const reordered = await reorderSessionExercises(
+      session.id,
+      sessionExerciseIds,
+    );
+
+    if (!reordered) {
+      return;
+    }
+
+    updateSessionExercises(
+      nextExercises.map((exercise, index) => ({
+        ...exercise,
+        position: index + 1,
+      })),
+    );
   };
 
   const handleStart = async () => {
@@ -197,7 +243,14 @@ function SessionId() {
           {exerciseCount} {exerciseCount <= 1 ? "exercice" : "exercices"}
         </p>
       </div>
-
+      {reorderError && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-error/40 bg-error/10 px-4 py-3 text-error text-sm"
+        >
+          {reorderError}
+        </p>
+      )}
       <div
         className={`mt-3 ${
           exerciseCount === 0
@@ -230,10 +283,15 @@ function SessionId() {
           </Link>
         ) : (
           <div className="flex flex-col gap-3">
-            {exercises.map((exercise) => (
+            {exercises.map((exercise, index) => (
               <PreparedExerciseCard
                 key={exercise.sessionExerciseId}
                 exercise={exercise}
+                onMoveUp={() => handleMoveExercise(index, -1)}
+                onMoveDown={() => handleMoveExercise(index, 1)}
+                canMoveUp={index > 0}
+                canMoveDown={index < exercises.length - 1}
+                disabled={reorderLoading}
               />
             ))}
           </div>
