@@ -33,6 +33,7 @@ function Login() {
       setIsSubmitting(false);
     }
   }
+  const hasLoginError = errors.global !== undefined;
 
   return (
     <section className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-4 py-10">
@@ -64,7 +65,8 @@ function Login() {
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              aria-invalid={errors.email !== undefined}
+              aria-invalid={hasLoginError}
+              aria-describedby={hasLoginError ? "login-error" : undefined}
               className="rounded-lg border border-base-300 bg-base-200 px-3 py-2.5 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
@@ -79,13 +81,15 @@ function Login() {
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              aria-invalid={errors.password !== undefined}
+              aria-invalid={hasLoginError}
+              aria-describedby={hasLoginError ? "login-error" : undefined}
               className="rounded-lg border border-base-300 bg-base-200 px-3 py-2.5 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
           {errors.global && (
             <p
+              id="login-error"
               role="alert"
               className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-error text-sm"
             >

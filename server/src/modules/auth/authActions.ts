@@ -91,7 +91,12 @@ const login: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = (req.body ?? {}) as Partial<LoginPayload>;
 
-    if (typeof email !== "string" || typeof password !== "string") {
+    if (
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      email.trim() === "" ||
+      password.trim() === ""
+    ) {
       res.status(422).json({
         errors: {
           global: "E-mail et mot de passe sont obligatoires",
@@ -100,7 +105,7 @@ const login: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const user = await authRepository.readCredentialsByEmail(email);
+    const user = await authRepository.readCredentialsByEmail(email.trim());
 
     if (user === undefined) {
       res.status(401).json({

@@ -9,6 +9,11 @@ const validUser = {
   email: `testeur${unique}@test.fr`,
   password: "MonMdp123!",
 };
+const loginUser = {
+  username: `connexion${unique}`,
+  email: `connexion${unique}@test.fr`,
+  password: "MonMdp123!",
+};
 
 describe("POST /api/auth/register", () => {
   afterAll(async () => {
@@ -74,5 +79,55 @@ describe("POST /api/auth/register", () => {
 
     expect(response.status).toBe(409);
     expect(response.body.errors.username).toBeDefined();
+  });
+});
+
+describe("POST /api/auth/login", () => {
+  beforeAll(async () => {
+    const response = await request(app)
+      .post("/api/auth/register")
+      .send(loginUser);
+
+    expect(response.status).toBe(201);
+  });
+
+  afterAll(async () => {
+    await databaseClient.query("DELETE FROM user WHERE email = ?", [
+      loginUser.email,
+    ]);
+    await databaseClient.end();
+  });
+
+  test("connecte un utilisateur avec des identifiants valides", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: loginUser.email,
+      password: loginUser.password,
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers["set-cookie"]?.[0]).toContain("auth_token=");
+    expect(response.headers["set-cookie"]?.[0]).toContain("HttpOnly");
+  });
+
+  test("refuse des identifiants incorrects", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: loginUser.email,
+      password: "MauvaisMotDePasse123!",
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body.errors.global).toBe(
+      "Adresse e-mail ou mot de passe incorrect",
+    );
+  });
+
+  test("refuse des champs vides", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: "   ",
+      password: "   ",
+    });
+
+    expect(response.status).toBe(422);
+    expect(response.body.errors.global).toBeDefined();
   });
 });
