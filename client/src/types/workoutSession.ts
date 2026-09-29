@@ -18,6 +18,7 @@ export type WorkoutSession = {
   endedAt: string | null;
   status: WorkoutSessionStatus;
   exerciseCount: number;
+  completedSetCount?: number;
   exercises?: WorkoutSessionExercise[];
 };
 
@@ -29,4 +30,6 @@ export type WorkoutSessionSummary = {
   date: string;
   durationSeconds: number;
   completedSetCount: number;
+  exerciseCount: number;
+  totalVolumeKg: number | string;
 };

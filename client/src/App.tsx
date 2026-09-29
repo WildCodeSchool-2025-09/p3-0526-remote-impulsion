@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import Programs from "./pages/Programs";
 import Register from "./pages/Register";
 import SessionId from "./pages/SessionID";
+import SessionSummary from "./pages/SessionSummary";
 import Sessions from "./pages/Sessions";
 
 const router = createBrowserRouter([
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: "history", element: <History /> },
       { path: "sessions", element: <Sessions /> },
       { path: "sessions/:id", element: <SessionId /> },
+      { path: "sessions/:id/summary", element: <SessionSummary /> },
       {
         path: "sessions/:id/exercises",
         element: <AddExercisesToSession />,
