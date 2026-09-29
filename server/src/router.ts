@@ -14,6 +14,10 @@ router.post(
   "/api/workout-sessions/:id/exercises",
   workoutSessionActions.addExercises,
 );
+router.patch(
+  "/api/workout-sessions/:id/exercises/order",
+  workoutSessionActions.reorderExercises,
+);
 router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/current", workoutSessionActions.readCurrent);
 router.get("/api/workout-sessions/:id", workoutSessionActions.read);
@@ -29,5 +33,6 @@ router.get("/api/difficulties", filtersActions.browseDifficulties);
 router.get("/api/equipment", filtersActions.browseEquipment);
 
 router.post("/api/auth/register", authActions.register);
+router.post("/api/auth/login", authActions.login);
 
 export default router;
