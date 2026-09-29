@@ -43,7 +43,15 @@ class WorkoutSessionRepository {
         workout_session.started_at AS startedAt,
         workout_session.ended_at AS endedAt,
         workout_session.status,
-        COUNT(workout_session_exercise.id) AS exerciseCount
+        COUNT(workout_session_exercise.id) AS exerciseCount,
+        (SELECT COUNT(*)
+         FROM exercise_set
+         WHERE is_completed = TRUE
+           AND workout_session_exercise_id IN (
+             SELECT id
+             FROM workout_session_exercise
+             WHERE workout_session_id = workout_session.id
+           )) AS completedSetCount
       FROM workout_session
       LEFT JOIN workout_session_exercise
         ON workout_session.id = workout_session_exercise.workout_session_id
