@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router";
 
 import Layout from "./components/Layout";
+import { useAuth } from "./contexts/AuthContext";
 import AddExercisesToSession from "./pages/AddExercisesToSession";
 import Exercises from "./pages/Exercises";
 import History from "./pages/History";
@@ -35,6 +36,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  const { isInitializing } = useAuth();
+
+  if (isInitializing) {
+    return <p>En cours de chargement...</p>;
+  }
   return <RouterProvider router={router} />;
 }
 
