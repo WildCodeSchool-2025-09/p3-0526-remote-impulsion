@@ -34,5 +34,6 @@ router.get("/api/equipment", filtersActions.browseEquipment);
 
 router.post("/api/auth/register", authActions.register);
 router.post("/api/auth/login", authActions.login);
+router.post("/api/auth/logout", authActions.logout);
 
 export default router;
