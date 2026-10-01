@@ -1,10 +1,26 @@
 /// <reference types="jest" />
 import "dotenv/config";
+import jwt from "jsonwebtoken";
 import request from "supertest";
 
 import databaseClient from "../database/client";
 import app from "../src/app";
 import workoutSessionRepository from "../src/modules/workout-session/workoutSessionRepository";
+
+const appSecret = process.env.APP_SECRET;
+
+if (appSecret === undefined) {
+  throw new Error("APP_SECRET n'est pas configuré");
+}
+
+const authToken = jwt.sign({}, appSecret, {
+  subject: "1",
+  expiresIn: "1h",
+});
+
+const authenticatedRequest = request
+  .agent(app)
+  .set("Cookie", `auth_token=${authToken}`);
 
 describe("US11 - Workout sessions", () => {
   afterEach(() => {
@@ -34,7 +50,7 @@ describe("US11 - Workout sessions", () => {
 
     jest.spyOn(workoutSessionRepository, "create").mockResolvedValue(42);
 
-    const response = await request(app).post("/api/workout-sessions");
+    const response = await authenticatedRequest.post("/api/workout-sessions");
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({ id: 42 });
@@ -49,7 +65,7 @@ describe("US11 - Workout sessions", () => {
       .spyOn(workoutSessionRepository, "create")
       .mockResolvedValue(99);
 
-    const response = await request(app).post("/api/workout-sessions");
+    const response = await authenticatedRequest.post("/api/workout-sessions");
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ id: 7 });
@@ -64,7 +80,7 @@ describe("US11 - Workout sessions", () => {
 
     jest.spyOn(workoutSessionRepository, "create").mockResolvedValue(8);
 
-    const response = await request(app).post("/api/workout-sessions");
+    const response = await authenticatedRequest.post("/api/workout-sessions");
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({ id: 8 });
@@ -73,7 +89,9 @@ describe("US11 - Workout sessions", () => {
   test("supprime une séance prepared", async () => {
     jest.spyOn(workoutSessionRepository, "delete").mockResolvedValue(1);
 
-    const response = await request(app).delete("/api/workout-sessions/7");
+    const response = await authenticatedRequest.delete(
+      "/api/workout-sessions/7",
+    );
 
     expect(response.status).toBe(204);
   });
@@ -81,7 +99,9 @@ describe("US11 - Workout sessions", () => {
   test("refuse la suppression lorsque le repository ne supprime aucune séance", async () => {
     jest.spyOn(workoutSessionRepository, "delete").mockResolvedValue(0);
 
-    const response = await request(app).delete("/api/workout-sessions/7");
+    const response = await authenticatedRequest.delete(
+      "/api/workout-sessions/7",
+    );
 
     expect(response.status).toBe(404);
   });
@@ -110,7 +130,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
       .spyOn(workoutSessionRepository, "addExercises")
       .mockResolvedValue("created");
 
-    const response = await request(app)
+    const response = await authenticatedRequest
       .post("/api/workout-sessions/7/exercises")
       .send({ exerciseIds: [3, 8, 15] });
 
@@ -169,7 +189,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
       ],
     } as never);
 
-    const response = await request(app).get("/api/workout-sessions/7");
+    const response = await authenticatedRequest.get("/api/workout-sessions/7");
 
     expect(response.status).toBe(200);
     expect(response.body.exercises[0].imageUrl).toBe(
@@ -188,7 +208,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
       "addExercises",
     );
 
-    const response = await request(app)
+    const response = await authenticatedRequest
       .post("/api/workout-sessions/7/exercises")
       .send(body);
 
@@ -208,7 +228,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
         .spyOn(workoutSessionRepository, "addExercises")
         .mockResolvedValue(repositoryResult);
 
-      const response = await request(app)
+      const response = await authenticatedRequest
         .post("/api/workout-sessions/7/exercises")
         .send({ exerciseIds: [3, 8] });
 
@@ -264,7 +284,7 @@ describe("US14 - Ordonner les exercices d'une séance", () => {
       .spyOn(workoutSessionRepository, "reorderExercises")
       .mockResolvedValue("reordered");
 
-    const response = await request(app)
+    const response = await authenticatedRequest
       .patch("/api/workout-sessions/7/exercises/order")
       .send({ sessionExerciseIds: [18, 12, 25] });
 
@@ -283,7 +303,7 @@ describe("US14 - Ordonner les exercices d'une séance", () => {
       "reorderExercises",
     );
 
-    const response = await request(app)
+    const response = await authenticatedRequest
       .patch("/api/workout-sessions/7/exercises/order")
       .send(body);
 
@@ -302,7 +322,7 @@ describe("US14 - Ordonner les exercices d'une séance", () => {
         .spyOn(workoutSessionRepository, "reorderExercises")
         .mockResolvedValue(repositoryResult);
 
-      const response = await request(app)
+      const response = await authenticatedRequest
         .patch("/api/workout-sessions/7/exercises/order")
         .send({ sessionExerciseIds: [18, 12, 25] });
 
@@ -318,7 +338,7 @@ describe("US16 - Démarrer une séance", () => {
   });
 
   test("refuse un identifiant de séance invalide", async () => {
-    const response = await request(app).patch(
+    const response = await authenticatedRequest.patch(
       "/api/workout-sessions/12abc/start",
     );
 
@@ -335,7 +355,9 @@ describe("US16 - Démarrer une séance", () => {
       .spyOn(workoutSessionRepository, "readCurrent")
       .mockResolvedValue(undefined as never);
 
-    const response = await request(app).patch("/api/workout-sessions/7/start");
+    const response = await authenticatedRequest.patch(
+      "/api/workout-sessions/7/start",
+    );
 
     expect(response.status).toBe(422);
   });
@@ -350,7 +372,9 @@ describe("US16 - Démarrer une séance", () => {
       id: 3,
     } as never);
 
-    const response = await request(app).patch("/api/workout-sessions/7/start");
+    const response = await authenticatedRequest.patch(
+      "/api/workout-sessions/7/start",
+    );
 
     expect(response.status).toBe(409);
     expect(response.body).toEqual({ currentSessionId: 3 });
@@ -368,7 +392,9 @@ describe("US16 - Démarrer une séance", () => {
 
     jest.spyOn(workoutSessionRepository, "start").mockResolvedValue(1);
 
-    const response = await request(app).patch("/api/workout-sessions/7/start");
+    const response = await authenticatedRequest.patch(
+      "/api/workout-sessions/7/start",
+    );
 
     expect(response.status).toBe(204);
   });
@@ -379,11 +405,29 @@ describe("US16 - Démarrer une séance", () => {
       status: "in_progress",
     } as never);
 
-    const response = await request(app).get("/api/workout-sessions/current");
+    const response = await authenticatedRequest.get(
+      "/api/workout-sessions/current",
+    );
 
     expect(response.status).toBe(200);
     expect(response.body.id).toBe(7);
     expect(response.body.status).toBe("in_progress");
+  });
+});
+
+describe("US05 - Protéger les données utilisateur", () => {
+  test("refuse une requête sans cookie d'authentification", async () => {
+    const response = await request(app).get("/api/workout-sessions");
+
+    expect(response.status).toBe(401);
+  });
+
+  test("refuse un JWT invalide", async () => {
+    const response = await request(app)
+      .get("/api/workout-sessions")
+      .set("Cookie", "auth_token=token-invalide");
+
+    expect(response.status).toBe(401);
   });
 });
 
@@ -400,7 +444,7 @@ describe("US22 - Abandonner une séance", () => {
 
     jest.spyOn(workoutSessionRepository, "abandon").mockResolvedValue(0);
 
-    const response = await request(app).patch(
+    const response = await authenticatedRequest.patch(
       "/api/workout-sessions/7/abandon",
     );
 

@@ -1,4 +1,5 @@
 import express from "express";
+import authenticate from "./middlewares/authMiddleware";
 import authActions from "./modules/auth/authActions";
 import exerciseActions from "./modules/exercise/exerciseActions";
 import filtersActions from "./modules/filters/filtersActions";
@@ -8,6 +9,8 @@ const router = express.Router();
 
 router.get("/api/exercises", exerciseActions.browse);
 router.get("/api/exercises/:id", exerciseActions.read);
+
+router.use("/api/workout-sessions", authenticate);
 
 router.post("/api/workout-sessions", workoutSessionActions.add);
 router.post(
