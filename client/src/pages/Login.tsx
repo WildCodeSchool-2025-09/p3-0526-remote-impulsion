@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { useAuth } from "../contexts/AuthContext";
 import { useMessages } from "../contexts/MessageContext";
 import authApi from "../services/authApi";
 
@@ -8,8 +9,11 @@ function Login() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setUser } = useAuth();
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = (location.state as { from?: string } | null)?.from ?? "/";
   const { showMessage } = useMessages();
 
   async function handleSubmit(event: React.FormEvent) {
@@ -21,8 +25,10 @@ function Login() {
       const result = await authApi.loginUser({ email, password });
 
       if (result.success) {
+        const currentUser = await authApi.fetchCurrentUser();
+        setUser(currentUser);
         showMessage("Connexion réussie", "success");
-        navigate("/");
+        navigate(redirectTo, { replace: true });
         return;
       }
 
