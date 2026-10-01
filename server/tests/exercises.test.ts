@@ -1,7 +1,12 @@
 import "dotenv/config";
 import request from "supertest";
+import databaseClient from "../database/client";
 import app from "../src/app";
 import exerciseRepository from "../src/modules/exercise/exerciseRepository";
+
+afterAll(async () => {
+  await databaseClient.end();
+});
 
 describe("GET /api/exercises", () => {
   test("renvoie le statut 200", async () => {
@@ -222,7 +227,7 @@ describe("Sources des panneaux de filtres", () => {
     expect(difficultiesResponse.status).toBe(200);
     expect(
       difficultiesResponse.body.map((item: { name: string }) => item.name),
-    ).toEqual(["Avancé", "Débutant", "Intermédiaire"]);
+    ).toEqual(["Débutant", "Intermédiaire", "Avancé"]);
     expect(equipmentResponse.body).toHaveLength(6);
     for (const item of [
       ...equipmentResponse.body,
