@@ -150,4 +150,45 @@ const login: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { register, login };
+const logout: RequestHandler = (_req, res) => {
+  res.clearCookie("auth_token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  res.sendStatus(204);
+};
+
+const isLogged: RequestHandler = async (req, res, next) => {
+  const hasToken = req.cookies.auth_token;
+
+  if (!hasToken) {
+    res.sendStatus(401);
+    return;
+  }
+
+  const appSecret = process.env.APP_SECRET;
+
+  if (appSecret === undefined) {
+    next(new Error("APP_SECRET n'est pas configuré"));
+    return;
+  }
+  try {
+    const payload = jwt.verify(hasToken, appSecret);
+    const userId = Number((payload as { sub?: string }).sub);
+
+    if (Number.isNaN(userId)) {
+      res.sendStatus(401);
+      return;
+    }
+
+    const user = await authRepository.readById(userId);
+
+    res.json(user);
+  } catch {
+    res.sendStatus(401);
+  }
+};
+
+export default { register, login, isLogged, logout };
