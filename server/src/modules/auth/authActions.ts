@@ -133,7 +133,7 @@ const login: RequestHandler = async (req, res, next) => {
       throw new Error("APP_SECRET n'est pas configuré");
     }
 
-    const token = jwt.sign({}, appSecret, {
+     const token = jwt.sign({}, appSecret, {
       subject: String(user.id),
       expiresIn: "1h",
     });
@@ -150,4 +150,14 @@ const login: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { register, login };
+const logout: RequestHandler = (_req, res) => {
+  res.clearCookie("auth_token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  res.sendStatus(204);
+};
+
+export default { register, login, logout };
