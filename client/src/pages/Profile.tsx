@@ -1,6 +1,29 @@
-import { Link } from "react-router";
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "../contexts/AuthContext";
+import { useMessages } from "../contexts/MessageContext";
+import authApi from "../services/authApi";
 
 function Profile() {
+  const { user, setUser } = useAuth();
+  const { showMessage } = useMessages();
+  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+
+    try {
+      await authApi.logoutUser();
+      setUser(null);
+      showMessage("Vous êtes déconnecté", "success");
+      navigate("/login", { replace: true });
+    } catch {
+      showMessage("Impossible de se déconnecter", "error");
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <section className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-4 py-10">
       <div className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-lg">
@@ -11,26 +34,33 @@ function Profile() {
           <h1 className="font-display font-extrabold text-3xl uppercase italic">
             Profil
           </h1>
-          <p className="mt-2 text-base-content/70 text-sm">
-            Connecte-toi pour retrouver tes séances et tes programmes.
-          </p>
         </header>
 
-        <div className="flex flex-col gap-3">
-          <Link
-            to="/login"
-            className="rounded-lg bg-primary px-4 py-3 text-center font-bold text-primary-content transition hover:brightness-110"
-          >
-            Se connecter
-          </Link>
+        {user !== null && (
+          <dl className="mb-6 flex flex-col gap-3">
+            <div>
+              <dt className="text-base-content/60 text-xs uppercase tracking-wider">
+                Pseudonyme
+              </dt>
+              <dd className="font-semibold">{user.username}</dd>
+            </div>
+            <div>
+              <dt className="text-base-content/60 text-xs uppercase tracking-wider">
+                E-mail
+              </dt>
+              <dd className="font-semibold">{user.email}</dd>
+            </div>
+          </dl>
+        )}
 
-          <Link
-            to="/register"
-            className="rounded-lg border border-base-300 bg-base-200 px-4 py-3 text-center font-semibold transition hover:border-primary hover:text-primary"
-          >
-            Créer un compte
-          </Link>
-        </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="w-full rounded-lg border border-error/40 bg-error/10 px-4 py-3 font-bold text-error transition hover:bg-error/20 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isLoggingOut ? "Déconnexion…" : "Se déconnecter"}
+        </button>
       </div>
     </section>
   );

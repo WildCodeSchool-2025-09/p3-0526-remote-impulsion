@@ -56,6 +56,13 @@ export type CurrentUser = {
   email: string;
 };
 
+async function logoutUser() {
+  await fetch(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+}
+
 async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
     credentials: "include",
@@ -72,4 +79,4 @@ async function fetchCurrentUser(): Promise<CurrentUser | null> {
   return response.json();
 }
 
-export default { registerUser, loginUser, fetchCurrentUser };
+export default { registerUser, loginUser, fetchCurrentUser, logoutUser };
