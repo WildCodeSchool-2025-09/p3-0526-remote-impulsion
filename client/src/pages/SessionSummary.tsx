@@ -51,8 +51,6 @@ function SessionSummary() {
   if (!summary)
     return <p className="text-base-content/75">Récapitulatif introuvable.</p>;
 
-  const totalVolumeKg = Number(summary.totalVolumeKg);
-
   return (
     <main className="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-xl flex-col gap-6 pb-24">
       <div className="flex items-start gap-1">
@@ -117,7 +115,7 @@ function SessionSummary() {
             Volume total
           </dt>
           <dd className="font-display font-extrabold text-2xl italic tabular-nums">
-            {totalVolumeKg.toLocaleString("fr-FR")} kg
+            {summary.totalVolumeKg.toLocaleString("fr-FR")} kg
           </dd>
         </div>
       </dl>

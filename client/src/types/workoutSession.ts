@@ -31,5 +31,5 @@ export type WorkoutSessionSummary = {
   durationSeconds: number;
   completedSetCount: number;
   exerciseCount: number;
-  totalVolumeKg: number | string;
+  totalVolumeKg: number;
 };
