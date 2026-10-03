@@ -16,7 +16,7 @@ const useHistorySessions = () => {
         const sessionsData = await workoutSessionService.getHistory();
         setSessions(sessionsData);
       } catch {
-        setError("Impossible de charger l'historique'");
+        setError("Impossible de charger l'historique");
       } finally {
         setLoading(false);
       }
