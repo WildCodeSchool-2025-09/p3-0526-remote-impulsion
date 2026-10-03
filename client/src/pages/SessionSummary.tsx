@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 import ChevronLeftIcon from "../assets/icons/chevrons/chevron-left.svg?react";
+import AlertCircleIcon from "../assets/icons/etats/alert-circle.svg?react";
 import InfoCircleIcon from "../assets/icons/etats/info-circle.svg?react";
 import { useMessages } from "../contexts/MessageContext";
 import useCompleteSession from "../hooks/workout-session/useCompleteSession";
@@ -40,12 +41,18 @@ function SessionSummary() {
 
   if (error)
     return (
-      <p
+      <div
         role="alert"
-        className="rounded-box border border-error/40 bg-error/10 px-4 py-3 text-error text-sm"
+        className="mx-auto flex min-h-[calc(100dvh-14rem)] w-full max-w-xl flex-col items-center justify-center gap-4 rounded-box border border-error/35 bg-[color-mix(in_oklab,var(--color-error)_10%,var(--color-base-100))] px-6 py-10 text-center"
       >
-        {error}
-      </p>
+        <AlertCircleIcon
+          aria-hidden="true"
+          className="size-12 shrink-0 text-error"
+        />
+        <p className="text-balance font-display font-extrabold text-lg text-error uppercase italic leading-tight">
+          {error}
+        </p>
+      </div>
     );
 
   if (!summary)
