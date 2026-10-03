@@ -57,6 +57,7 @@ const getSessionSummary = async (
 ): Promise<WorkoutSessionSummary> => {
   const response = await fetch(
     `${API_URL}/api/workout-sessions/${sessionId}/summary`,
+    { credentials: "include" },
   );
   if (!response.ok) {
     throw new Error("Impossible de charger le récapitulatif");
@@ -89,7 +90,7 @@ const startWorkoutSession = async (sessionId: number) => {
 const completeWorkoutSession = async (sessionId: number): Promise<void> => {
   const response = await fetch(
     `${API_URL}/api/workout-sessions/${sessionId}/complete`,
-    { method: "PATCH" },
+    { method: "PATCH", credentials: "include" },
   );
   if (!response.ok) {
     throw new Error("Impossible de valider la séance");
