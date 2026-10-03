@@ -24,7 +24,15 @@ router.patch(
 router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/current", workoutSessionActions.readCurrent);
 router.get("/api/workout-sessions/:id", workoutSessionActions.read);
+router.get(
+  "/api/workout-sessions/:id/summary",
+  workoutSessionActions.readSummary,
+);
 router.patch("/api/workout-sessions/:id/start", workoutSessionActions.start);
+router.patch(
+  "/api/workout-sessions/:id/complete",
+  workoutSessionActions.complete,
+);
 router.patch(
   "/api/workout-sessions/:id/abandon",
   workoutSessionActions.abandon,

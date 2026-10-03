@@ -1,6 +1,5 @@
 import { type PointerEvent, useState } from "react";
 import { NavLink, Outlet, useMatch } from "react-router";
-import ChevronDownIcon from "../assets/icons/chevrons/chevron-down.svg?react";
 import ChevronUpIcon from "../assets/icons/chevrons/chevron-up.svg?react";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
 import CalendarIcon from "../assets/icons/navigation/calendar-month.svg?react";
@@ -27,7 +26,11 @@ const NAV_ITEMS = [
 function Layout() {
   const { theme, toggleTheme } = useTheme();
 
-  const isSessionDetail = useMatch("/sessions/:id") !== null;
+  const sessionDetailMatch = useMatch("/sessions/:id");
+  const sessionSummaryMatch = useMatch("/sessions/:id/summary");
+
+  const isSessionDetail =
+    sessionDetailMatch !== null || sessionSummaryMatch !== null;
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   const handlePointerEnter = (event: PointerEvent<HTMLDivElement>) => {
@@ -148,13 +151,11 @@ function Layout() {
               aria-label={
                 isNavOpen ? "Masquer la navigation" : "Afficher la navigation"
               }
-              className="mx-auto flex h-7 w-20 items-center justify-center rounded-t-2xl bg-base-200 text-neutral transition-colors hover:text-base-content focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
+              className={`flex h-5 w-full items-center justify-center rounded-t-md bg-base-200/50 text-neutral/70 backdrop-blur-sm transition-opacity duration-300 hover:bg-base-200 hover:text-base-content focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 ${
+                isNavOpen ? "opacity-0" : "opacity-100"
+              }`}
             >
-              {isNavOpen ? (
-                <ChevronDownIcon aria-hidden="true" className="size-4" />
-              ) : (
-                <ChevronUpIcon aria-hidden="true" className="size-4" />
-              )}
+              <ChevronUpIcon aria-hidden="true" className="size-3" />
             </button>
           )}
 
