@@ -1,8 +1,81 @@
+import { useState } from "react";
+import LocalErrorState from "../components/feedback/LocalErrorState";
+import Skeleton from "../components/feedback/Skeleton";
+import HistoryEmptyState from "../components/history/HistoryEmptyState";
+import HistoryFilters from "../components/history/HistoryFilters";
+import HistoryNoResultsState from "../components/history/HistoryNoResultsState";
+import HistoryTabs from "../components/history/HistoryTabs";
+import SessionHistoryCard from "../components/history/SessionHistoryCard";
+import useHistorySessions from "../hooks/workout-session/useHistorySessions";
+import type { HistoryFilter } from "../types/filters";
+
+const SKELETON_PLACEHOLDERS = [1, 2, 3];
+
 function History() {
+  const { sessions, loading, error, reload } = useHistorySessions();
+  const [filter, setFilter] = useState<HistoryFilter>("all");
+
+  const today = new Date();
+  const sessionsMonth = sessions.filter((session) => {
+    const sessionDate = new Date(session.date);
+    return (
+      sessionDate.getMonth() === today.getMonth() &&
+      sessionDate.getFullYear() === today.getFullYear()
+    );
+  });
+
+  let sessionsToShow = sessions;
+  if (filter === "month") {
+    sessionsToShow = sessionsMonth;
+  }
+
+  let content: React.ReactNode;
+
+  if (loading) {
+    content = (
+      <ul className="mt-6 grid gap-3">
+        {SKELETON_PLACEHOLDERS.map((placeholder) => (
+          <li key={placeholder}>
+            <Skeleton className="h-20 w-full" />
+          </li>
+        ))}
+      </ul>
+    );
+  } else if (error !== null) {
+    content = <LocalErrorState message={error} onRetry={reload} />;
+  } else if (sessions.length === 0) {
+    content = <HistoryEmptyState />;
+  } else if (sessionsToShow.length === 0) {
+    content = <HistoryNoResultsState onReset={() => setFilter("all")} />;
+  } else {
+    content = (
+      <ul className="mt-6 grid gap-3">
+        {sessionsToShow.map((session) => (
+          <li key={session.id}>
+            <SessionHistoryCard session={session} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
-    <h1 className="text-2xl font-display italic font-extrabold uppercase">
-      Historique
-    </h1>
+    <section>
+      <div className="flex items-baseline justify-between gap-4">
+        <h1 className="font-display font-extrabold text-2xl uppercase italic">
+          Historique
+        </h1>
+        <p className="font-semibold text-base-content/60 text-xs uppercase tracking-widest">
+          {sessionsToShow.length}{" "}
+          {sessionsToShow.length <= 1 ? "séance" : "séances"}
+        </p>
+      </div>
+
+      <HistoryTabs />
+      <HistoryFilters filter={filter} setFilter={setFilter} />
+
+      {content}
+    </section>
   );
 }
 
