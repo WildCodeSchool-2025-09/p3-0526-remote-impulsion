@@ -43,7 +43,15 @@ class WorkoutSessionRepository {
         workout_session.started_at AS startedAt,
         workout_session.ended_at AS endedAt,
         workout_session.status,
-        COUNT(workout_session_exercise.id) AS exerciseCount
+        COUNT(workout_session_exercise.id) AS exerciseCount,
+        (SELECT COUNT(*)
+         FROM exercise_set
+         WHERE is_completed = TRUE
+           AND workout_session_exercise_id IN (
+             SELECT id
+             FROM workout_session_exercise
+             WHERE workout_session_id = workout_session.id
+           )) AS completedSetCount
       FROM workout_session
       LEFT JOIN workout_session_exercise
         ON workout_session.id = workout_session_exercise.workout_session_id
@@ -321,6 +329,75 @@ class WorkoutSessionRepository {
           AND exercise_set.is_completed = TRUE)`,
       [userId, sessionId],
     );
+    return result.affectedRows;
+  }
+
+  async readSummary(sessionId: number, userId: number) {
+    const [sessionRows] = await databaseClient.query<Rows>(
+      `SELECT
+        id,
+        status,
+        started_at AS date,
+        TIMESTAMPDIFF(SECOND, started_at, NOW()) AS durationSeconds
+       FROM workout_session
+       WHERE id = ?
+         AND user_id = ?`,
+      [sessionId, userId],
+    );
+
+    const session = sessionRows[0];
+
+    if (session === undefined) {
+      return undefined;
+    }
+    const [exerciseRows] = await databaseClient.query<Rows>(
+      `SELECT COUNT(*) AS exerciseCount
+       FROM workout_session_exercise
+       WHERE workout_session_id = ?`,
+      [sessionId],
+    );
+    const [setRows] = await databaseClient.query<Rows>(
+      `SELECT exercise_set.repetitions, exercise_set.weight_kg
+       FROM exercise_set
+       JOIN workout_session_exercise
+         ON workout_session_exercise.id = exercise_set.workout_session_exercise_id
+       WHERE workout_session_exercise.workout_session_id = ?
+         AND exercise_set.is_completed = TRUE`,
+      [sessionId],
+    );
+    let totalVolumeKg = 0;
+
+    for (const set of setRows) {
+      totalVolumeKg += Number(set.repetitions) * Number(set.weight_kg);
+    }
+    const maxDurationSeconds = 6 * 60 * 60;
+    const durationSeconds = Math.min(
+      Number(session.durationSeconds),
+      maxDurationSeconds,
+    );
+
+    return {
+      id: session.id,
+      status: session.status,
+      date: session.date,
+      durationSeconds,
+      exerciseCount: Number(exerciseRows[0].exerciseCount),
+      completedSetCount: setRows.length,
+      totalVolumeKg,
+    };
+  }
+
+  async complete(sessionId: number, userId: number) {
+    const [result] = await databaseClient.query<Result>(
+      `UPDATE workout_session
+       SET status = 'completed',
+           ended_at = LEAST(NOW(), started_at + INTERVAL 6 HOUR)
+       WHERE id = ?
+         AND user_id = ?
+         AND status = 'in_progress'`,
+      [sessionId, userId],
+    );
+
     return result.affectedRows;
   }
 
