@@ -606,6 +606,66 @@ class WorkoutSessionRepository {
     );
     return result.affectedRows;
   }
+
+  async createSet(
+    workoutSessionExerciseId: number,
+    repetitions: number | null,
+    weightKg: number | null,
+    durationSeconds: number | null,
+    isCompleted: boolean,
+  ) {
+    const connection = await databaseClient.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const [rows] = await connection.query<Rows>(
+        `SELECT COALESCE(MAX(set_number), 0) + 1 AS nextSetNumber
+         FROM exercise_set
+         WHERE workout_session_exercise_id = ?
+         FOR UPDATE`,
+        [workoutSessionExerciseId],
+      );
+
+      const nextSetNumber = Number(rows[0].nextSetNumber);
+
+      const [result] = await connection.query<Result>(
+        `INSERT INTO exercise_set
+          (workout_session_exercise_id, set_number, repetitions, weight_kg, duration_seconds, is_completed)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          workoutSessionExerciseId,
+          nextSetNumber,
+          repetitions,
+          weightKg,
+          durationSeconds,
+          isCompleted,
+        ],
+      );
+
+      await connection.commit();
+
+      return { id: result.insertId, setNumber: nextSetNumber };
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  async readSessionExerciseOwner(workoutSessionExerciseId: number) {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT workout_session.user_id AS userId
+       FROM workout_session_exercise
+       JOIN workout_session
+         ON workout_session_exercise.workout_session_id = workout_session.id
+       WHERE workout_session_exercise.id = ?`,
+      [workoutSessionExerciseId],
+    );
+
+    return rows[0];
+  }
 }
 
 export default new WorkoutSessionRepository();
