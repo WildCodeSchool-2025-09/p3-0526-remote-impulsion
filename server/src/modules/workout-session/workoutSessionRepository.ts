@@ -1,5 +1,6 @@
 import databaseClient from "../../../database/client";
 import type { Result, Rows } from "../../../database/client";
+import { DEFAULT_REST_SECONDS } from "../../helpers/restTime";
 
 class WorkoutSessionRepository {
   async create(userId: number) {
@@ -177,15 +178,54 @@ class WorkoutSessionRepository {
       sessionId,
       exerciseId,
       maxPosition + index + 1,
+      DEFAULT_REST_SECONDS,
     ]);
 
     await databaseClient.query<Result>(
       `INSERT INTO workout_session_exercise
-        (workout_session_id, exercise_id, position)
+        (workout_session_id, exercise_id, position, rest_seconds)
        VALUES ?`,
       [values],
     );
     return "created";
+  }
+
+  async updateExerciseRest(
+    sessionId: number,
+    sessionExerciseId: number,
+    userId: number,
+    restSeconds: number | null,
+  ): Promise<"updated" | "exercise_not_found" | "session_not_editable"> {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT workout_session.status
+       FROM workout_session_exercise
+       JOIN workout_session
+         ON workout_session.id = workout_session_exercise.workout_session_id
+       WHERE workout_session.id = ?
+         AND workout_session_exercise.id = ?
+         AND workout_session.user_id = ?`,
+      [sessionId, sessionExerciseId, userId],
+    );
+
+    const sessionExercise = rows[0];
+
+    if (sessionExercise === undefined) {
+      return "exercise_not_found";
+    }
+
+    if (sessionExercise.status !== "prepared") {
+      return "session_not_editable";
+    }
+
+    await databaseClient.query<Result>(
+      `UPDATE workout_session_exercise
+       SET rest_seconds = ?
+       WHERE id = ?
+         AND workout_session_id = ?`,
+      [restSeconds, sessionExerciseId, sessionId],
+    );
+
+    return "updated";
   }
 
   async reorderExercises(

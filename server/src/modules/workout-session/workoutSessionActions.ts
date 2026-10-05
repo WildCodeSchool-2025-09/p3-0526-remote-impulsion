@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import { getCurrentUserId } from "../../helpers/currentUser";
 import { buildImageUrl } from "../../helpers/imageUrl";
+import { isAllowedRestSeconds } from "../../helpers/restTime";
 import workoutSessionRepository from "./workoutSessionRepository";
 
 type WorkoutSessionIdParams = {
@@ -13,6 +14,58 @@ type ReorderExercisesBody = {
 
 type AddExercisesBody = {
   exerciseIds: number[];
+};
+
+type WorkoutSessionExerciseParams = WorkoutSessionIdParams & {
+  sessionExerciseId: string;
+};
+
+type UpdateExerciseRestBody = {
+  restSeconds: number | null;
+};
+
+const updateExerciseRest: RequestHandler<
+  WorkoutSessionExerciseParams,
+  unknown,
+  UpdateExerciseRestBody
+> = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId(req);
+    const sessionId = Number(req.params.id);
+    const sessionExerciseId = Number(req.params.sessionExerciseId);
+
+    if (
+      !Number.isInteger(sessionId) ||
+      sessionId <= 0 ||
+      !Number.isInteger(sessionExerciseId) ||
+      sessionExerciseId <= 0 ||
+      !isAllowedRestSeconds(req.body?.restSeconds)
+    ) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const result = await workoutSessionRepository.updateExerciseRest(
+      sessionId,
+      sessionExerciseId,
+      userId,
+      req.body.restSeconds,
+    );
+
+    if (result === "exercise_not_found") {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (result === "session_not_editable") {
+      res.sendStatus(409);
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
 };
 
 const reorderExercises: RequestHandler<
@@ -319,6 +372,7 @@ export default {
   readCurrent,
   start,
   reorderExercises,
+  updateExerciseRest,
   abandon,
   destroy,
 };

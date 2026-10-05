@@ -15,6 +15,7 @@ import useAbandonSession from "../hooks/workout-session/useAbandonSession";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
 import useReorderSessionExercises from "../hooks/workout-session/useReorderSessionExercises";
 import useStartSession from "../hooks/workout-session/useStartSession";
+import useUpdateSessionExerciseRest from "../hooks/workout-session/useUpdateSessionExerciseRest";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
 
 function SessionId() {
@@ -54,6 +55,12 @@ function SessionId() {
     error: abandonError,
   } = useAbandonSession();
 
+  const {
+    updateSessionExerciseRest,
+    updatingExerciseId,
+    error: restError,
+  } = useUpdateSessionExerciseRest();
+
   const currentSessionContext = useContext(CurrentSessionContext);
   const { isNavOpen } = useMobileNav();
   const { showMessage } = useMessages();
@@ -75,6 +82,12 @@ function SessionId() {
       showMessage(abandonError, "error");
     }
   }, [abandonError, showMessage]);
+
+  useEffect(() => {
+    if (restError !== null) {
+      showMessage(restError, "error");
+    }
+  }, [restError, showMessage]);
 
   if (loading) {
     return <p>Chargement...</p>;
@@ -154,6 +167,29 @@ function SessionId() {
     if (started && currentSessionContext) {
       await currentSessionContext.refreshCurrentSession();
     }
+  };
+
+  const handleRestChange = async (
+    sessionExerciseId: number,
+    restSeconds: number | null,
+  ) => {
+    const updated = await updateSessionExerciseRest(
+      session.id,
+      sessionExerciseId,
+      restSeconds,
+    );
+
+    if (!updated) {
+      return;
+    }
+
+    updateSessionExercises(
+      exercises.map((exercise) =>
+        exercise.sessionExerciseId === sessionExerciseId
+          ? { ...exercise, restSeconds }
+          : exercise,
+      ),
+    );
   };
 
   const handleAbandonCurrentSession = async () => {
@@ -292,6 +328,11 @@ function SessionId() {
                 canMoveUp={index > 0}
                 canMoveDown={index < exercises.length - 1}
                 disabled={reorderLoading}
+                canEditRest={isPrepared}
+                restDisabled={updatingExerciseId !== null}
+                onRestChange={(restSeconds) =>
+                  handleRestChange(exercise.sessionExerciseId, restSeconds)
+                }
               />
             ))}
           </div>

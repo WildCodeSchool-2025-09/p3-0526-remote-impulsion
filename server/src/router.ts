@@ -4,6 +4,7 @@ import authActions from "./modules/auth/authActions";
 import exerciseActions from "./modules/exercise/exerciseActions";
 import filtersActions from "./modules/filters/filtersActions";
 import workoutSessionActions from "./modules/workout-session/workoutSessionActions";
+import workoutTemplateActions from "./modules/workout-template/workoutTemplateActions";
 
 const router = express.Router();
 
@@ -21,6 +22,10 @@ router.patch(
   "/api/workout-sessions/:id/exercises/order",
   workoutSessionActions.reorderExercises,
 );
+router.patch(
+  "/api/workout-sessions/:id/exercises/:sessionExerciseId/rest",
+  workoutSessionActions.updateExerciseRest,
+);
 router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/current", workoutSessionActions.readCurrent);
 router.get("/api/workout-sessions/:id", workoutSessionActions.read);
@@ -30,6 +35,18 @@ router.patch(
   workoutSessionActions.abandon,
 );
 router.delete("/api/workout-sessions/:id", workoutSessionActions.destroy);
+
+router.use("/api/workout-templates", authenticate);
+
+router.get("/api/workout-templates", workoutTemplateActions.browse);
+router.post(
+  "/api/workout-templates/:id/sessions",
+  workoutTemplateActions.prepareSession,
+);
+router.patch(
+  "/api/workout-templates/:id/exercises/:templateExerciseId/rest",
+  workoutTemplateActions.updateExerciseRest,
+);
 
 router.get("/api/categories", filtersActions.browseCategories);
 router.get("/api/difficulties", filtersActions.browseDifficulties);

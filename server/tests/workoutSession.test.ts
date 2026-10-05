@@ -252,10 +252,11 @@ describe("US13 - Ajouter des exercices à une séance", () => {
     const [insertSql, insertParams] = queryMock.mock.calls[4];
 
     expect(String(insertSql)).toMatch(/INSERT INTO workout_session_exercise/);
+    expect(String(insertSql)).toMatch(/rest_seconds/);
     expect(insertParams).toEqual([
       [
-        [7, 3, 3],
-        [7, 8, 4],
+        [7, 3, 3, 90],
+        [7, 8, 4, 90],
       ],
     ]);
   });
@@ -330,6 +331,92 @@ describe("US14 - Ordonner les exercices d'une séance", () => {
       expect(reorderExercisesMock).toHaveBeenCalledWith(7, 1, [18, 12, 25]);
     },
   );
+});
+
+describe("US15 - Régler le temps de repos d'un exercice", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test.each([60, 90, 120, 150, 180, null])(
+    "accepte la durée %s",
+    async (restSeconds) => {
+      const updateRestMock = jest
+        .spyOn(workoutSessionRepository, "updateExerciseRest")
+        .mockResolvedValue("updated");
+
+      const response = await authenticatedRequest
+        .patch("/api/workout-sessions/7/exercises/18/rest")
+        .send({ restSeconds });
+
+      expect(response.status).toBe(204);
+      expect(updateRestMock).toHaveBeenCalledWith(7, 18, 1, restSeconds);
+    },
+  );
+
+  test.each([undefined, 0, 30, 61, 200, "90"])(
+    "refuse la durée %s",
+    async (restSeconds) => {
+      const updateRestMock = jest.spyOn(
+        workoutSessionRepository,
+        "updateExerciseRest",
+      );
+
+      const response = await authenticatedRequest
+        .patch("/api/workout-sessions/7/exercises/18/rest")
+        .send(restSeconds === undefined ? {} : { restSeconds });
+
+      expect(response.status).toBe(400);
+      expect(updateRestMock).not.toHaveBeenCalled();
+    },
+  );
+
+  test.each([
+    ["exercise_not_found", 404],
+    ["session_not_editable", 409],
+  ] as const)(
+    "retourne %s avec le statut HTTP %i",
+    async (repositoryResult, expectedStatus) => {
+      jest
+        .spyOn(workoutSessionRepository, "updateExerciseRest")
+        .mockResolvedValue(repositoryResult);
+
+      const response = await authenticatedRequest
+        .patch("/api/workout-sessions/7/exercises/18/rest")
+        .send({ restSeconds: 120 });
+
+      expect(response.status).toBe(expectedStatus);
+    },
+  );
+
+  test("persiste la durée sur un exercice de séance préparée", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValueOnce([[{ status: "prepared" }], []] as never)
+      .mockResolvedValueOnce([{ affectedRows: 1 }, []] as never);
+
+    const result = await workoutSessionRepository.updateExerciseRest(
+      7,
+      18,
+      1,
+      150,
+    );
+
+    expect(result).toBe("updated");
+    expect(String(queryMock.mock.calls[1][0])).toMatch(/SET rest_seconds = \?/);
+    expect(queryMock.mock.calls[1][1]).toEqual([150, 18, 7]);
+  });
+
+  test("enregistre l'absence de minuteur avec null", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValueOnce([[{ status: "prepared" }], []] as never)
+      .mockResolvedValueOnce([{ affectedRows: 1 }, []] as never);
+
+    await workoutSessionRepository.updateExerciseRest(7, 18, 1, null);
+
+    expect(queryMock.mock.calls[1][1]).toEqual([null, 18, 7]);
+  });
 });
 
 describe("US16 - Démarrer une séance", () => {
