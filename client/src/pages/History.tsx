@@ -5,9 +5,11 @@ import HistoryEmptyState from "../components/history/HistoryEmptyState";
 import HistoryFilters from "../components/history/HistoryFilters";
 import HistoryNoResultsState from "../components/history/HistoryNoResultsState";
 import HistoryTabs from "../components/history/HistoryTabs";
-import SessionHistoryCard from "../components/history/SessionHistoryCard";
+import SessionMonthGroup from "../components/history/SessionMonthGroup";
 import useHistorySessions from "../hooks/workout-session/useHistorySessions";
 import type { HistoryFilter } from "../types/filters";
+import { getStartOfWeek } from "../utils/getStartOfWeek";
+import { groupSessionsByMonth } from "../utils/groupSessionsByMonth";
 
 const SKELETON_PLACEHOLDERS = [1, 2, 3];
 
@@ -16,6 +18,7 @@ function History() {
   const [filter, setFilter] = useState<HistoryFilter>("all");
 
   const today = new Date();
+
   const sessionsMonth = sessions.filter((session) => {
     const sessionDate = new Date(session.date);
     return (
@@ -24,10 +27,22 @@ function History() {
     );
   });
 
+  const startOfWeek = getStartOfWeek(today);
+
+  const sessionsWeek = sessions.filter((session) => {
+    const sessionDate = new Date(session.date);
+    return sessionDate >= startOfWeek;
+  });
+
   let sessionsToShow = sessions;
   if (filter === "month") {
     sessionsToShow = sessionsMonth;
   }
+  if (filter === "week") {
+    sessionsToShow = sessionsWeek;
+  }
+
+  const monthGroups = groupSessionsByMonth(sessionsToShow);
 
   let content: React.ReactNode;
 
@@ -49,13 +64,11 @@ function History() {
     content = <HistoryNoResultsState onReset={() => setFilter("all")} />;
   } else {
     content = (
-      <ul className="mt-6 grid gap-3">
-        {sessionsToShow.map((session) => (
-          <li key={session.id}>
-            <SessionHistoryCard session={session} />
-          </li>
+      <div className="mt-6 grid gap-6">
+        {monthGroups.map((group) => (
+          <SessionMonthGroup key={group.key} group={group} />
         ))}
-      </ul>
+      </div>
     );
   }
 
