@@ -12,6 +12,9 @@ router.get("/api/exercises/:id", exerciseActions.read);
 
 router.use("/api/workout-sessions", authenticate);
 
+router.use("/api/session-exercises", authenticate);
+router.post("/api/session-exercises/:id/sets", workoutSessionActions.createSet);
+
 router.post("/api/workout-sessions", workoutSessionActions.add);
 router.post(
   "/api/workout-sessions/:id/exercises",
