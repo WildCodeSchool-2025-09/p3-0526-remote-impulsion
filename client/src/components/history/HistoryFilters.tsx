@@ -1,7 +1,7 @@
 import type { HistoryFiltersProps } from "../../types/filters";
 
 const BUTTON_STYLE =
-  "rounded-field px-4 py-2.5 font-semibold text-sm transition-colors bg-base-200 text-base-content/75 hover:bg-base-300 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-default disabled:bg-secondary disabled:text-secondary-content";
+  "rounded-field px-4 py-1.5 font-semibold text-sm transition-colors bg-base-200 text-base-content/75 hover:bg-base-300 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-default disabled:bg-secondary disabled:text-secondary-content";
 
 const HistoryFilters = ({ filter, setFilter }: HistoryFiltersProps) => {
   const allIsActive = filter === "all";
