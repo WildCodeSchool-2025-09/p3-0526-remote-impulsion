@@ -78,4 +78,22 @@ describe("Déconnexion", () => {
       expect(screen.getByText("page de connexion")).toBeInTheDocument();
     });
   });
+
+    test("garde l'utilisateur connecté si le serveur renvoie une erreur", async () => {
+    vi.spyOn(authApi, "fetchCurrentUser").mockResolvedValue(fakeUser);
+    vi.spyOn(authApi, "logoutUser").mockRejectedValue(
+      new Error("Impossible de se déconnecter"),
+    );
+
+    renderProfile();
+
+    const logoutButton = await screen.findByRole("button", {
+      name: "Se déconnecter",
+    });
+    await userEvent.click(logoutButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("fabian")).toBeInTheDocument();
+    });
+  });
 });

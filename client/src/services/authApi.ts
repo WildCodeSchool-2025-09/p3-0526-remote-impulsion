@@ -57,10 +57,17 @@ export type CurrentUser = {
 };
 
 async function logoutUser() {
-  await fetch(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-  });
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/auth/logout`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible de se déconnecter");
+  }
 }
 
 async function fetchCurrentUser(): Promise<CurrentUser | null> {
