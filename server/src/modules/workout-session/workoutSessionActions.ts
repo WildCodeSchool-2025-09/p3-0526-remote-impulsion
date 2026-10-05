@@ -1,7 +1,8 @@
-import type { RequestHandler } from "express";
+import { RequestHandler } from "express";
 import { getCurrentUserId } from "../../helpers/currentUser";
 import { buildImageUrl } from "../../helpers/imageUrl";
 import workoutSessionRepository from "./workoutSessionRepository";
+import readSessionExerciseOwner from "./workoutSessionRepository";
 
 type WorkoutSessionIdParams = {
   id: string;
@@ -311,6 +312,66 @@ const destroy: RequestHandler = async (req, res, next) => {
   }
 };
 
+const createSet: RequestHandler = async (req, res, next) => {
+  try {
+    const exerciseId = Number(req.params.id);
+    const { repetitions, weightKg, durationSeconds, isCompleted } =
+      req.body ?? {};
+    const userId = getCurrentUserId(req);
+
+    if (Number.isNaN(exerciseId)) {
+      res.status(400).json({ error: "Identifiant invalide" });
+      return;
+    }
+
+    if (repetitions != null && (typeof repetitions !== "number" || repetitions <= 0)) {
+      res.status(422).json({ errors: { repetitions: "Valeur invalide" } });
+      return;
+    }
+
+    if (weightKg != null && (typeof weightKg !== "number" || weightKg <= 0)) {
+      res.status(422).json({ errors: { weightKg: "Valeur invalide" } });
+      return;
+    }
+
+    if (durationSeconds != null && (typeof durationSeconds !== "number" || durationSeconds <= 0)) {
+      res.status(422).json({ errors: { durationSeconds: "Valeur invalide" } });
+      return;
+    }
+
+    if (repetitions == null && weightKg == null && durationSeconds == null) {
+      res.status(422).json({
+        errors: { global: "Renseignez au moins une répétition, une charge ou une durée" },
+      });
+      return;
+    }
+
+    if (isCompleted != null && typeof isCompleted !== "boolean") {
+      res.status(422).json({ errors: { isCompleted: "Valeur invalide" } });
+      return;
+    }
+
+    const owner = await workoutSessionRepository.readSessionExerciseOwner(exerciseId);
+
+    if (owner === undefined || owner.userId !== userId) {
+      res.sendStatus(404);
+      return;
+    }
+
+    const createdSet = await workoutSessionRepository.createSet(
+      exerciseId,
+      repetitions ?? null,
+      weightKg ?? null,
+      durationSeconds ?? null,
+      isCompleted ?? false,
+    );
+
+    res.status(201).json(createdSet);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   add,
   addExercises,
@@ -321,4 +382,5 @@ export default {
   reorderExercises,
   abandon,
   destroy,
+  createSet,
 };
