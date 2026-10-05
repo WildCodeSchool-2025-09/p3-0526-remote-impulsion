@@ -79,7 +79,7 @@ describe("Déconnexion", () => {
     });
   });
 
-    test("garde l'utilisateur connecté si le serveur renvoie une erreur", async () => {
+  test("garde l'utilisateur connecté si le serveur renvoie une erreur", async () => {
     vi.spyOn(authApi, "fetchCurrentUser").mockResolvedValue(fakeUser);
     vi.spyOn(authApi, "logoutUser").mockRejectedValue(
       new Error("Impossible de se déconnecter"),

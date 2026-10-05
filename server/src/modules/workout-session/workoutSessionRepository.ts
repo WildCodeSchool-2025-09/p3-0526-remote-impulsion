@@ -335,7 +335,7 @@ class WorkoutSessionRepository {
     return result.affectedRows;
   }
 
-    async createSet(
+  async createSet(
     workoutSessionExerciseId: number,
     repetitions: number | null,
     weightKg: number | null,
