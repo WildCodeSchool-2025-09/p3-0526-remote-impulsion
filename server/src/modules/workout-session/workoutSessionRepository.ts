@@ -394,6 +394,18 @@ class WorkoutSessionRepository {
 
     return rows[0];
   }
+
+  async readSetsBySessionExercise(workoutSessionExerciseId: number){
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT id, set_number AS setNumber, repetitions, weight_kg AS weightKg, duration_seconds AS durationSeconds, is_completed AS isCompleted
+      FROM exercise_set
+      WHERE workout_session_exercise_id = ?
+      ORDER BY set_number`,
+      [workoutSessionExerciseId]
+    );
+
+    return rows;
+  }
 }
 
 export default new WorkoutSessionRepository();
