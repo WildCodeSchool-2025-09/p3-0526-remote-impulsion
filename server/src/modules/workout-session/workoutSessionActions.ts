@@ -1,9 +1,8 @@
-import { RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import { getCurrentUserId } from "../../helpers/currentUser";
 import { buildImageUrl } from "../../helpers/imageUrl";
 import { isAllowedRestSeconds } from "../../helpers/restTime";
 import workoutSessionRepository from "./workoutSessionRepository";
-import readSessionExerciseOwner from "./workoutSessionRepository";
 
 type WorkoutSessionIdParams = {
   id: string;
@@ -565,7 +564,10 @@ const createSet: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    if (repetitions != null && (typeof repetitions !== "number" || repetitions <= 0)) {
+    if (
+      repetitions != null &&
+      (typeof repetitions !== "number" || repetitions <= 0)
+    ) {
       res.status(422).json({ errors: { repetitions: "Valeur invalide" } });
       return;
     }
@@ -575,14 +577,19 @@ const createSet: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    if (durationSeconds != null && (typeof durationSeconds !== "number" || durationSeconds <= 0)) {
+    if (
+      durationSeconds != null &&
+      (typeof durationSeconds !== "number" || durationSeconds <= 0)
+    ) {
       res.status(422).json({ errors: { durationSeconds: "Valeur invalide" } });
       return;
     }
 
     if (repetitions == null && weightKg == null && durationSeconds == null) {
       res.status(422).json({
-        errors: { global: "Renseignez au moins une répétition, une charge ou une durée" },
+        errors: {
+          global: "Renseignez au moins une répétition, une charge ou une durée",
+        },
       });
       return;
     }
@@ -592,7 +599,8 @@ const createSet: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const owner = await workoutSessionRepository.readSessionExerciseOwner(exerciseId);
+    const owner =
+      await workoutSessionRepository.readSessionExerciseOwner(exerciseId);
 
     if (owner === undefined || owner.userId !== userId) {
       res.sendStatus(404);
@@ -608,6 +616,32 @@ const createSet: RequestHandler = async (req, res, next) => {
     );
 
     res.status(201).json(createdSet);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const browseSets: RequestHandler = async (req, res, next) => {
+  try {
+    const setsId = Number(req.params.id);
+    const userId = getCurrentUserId(req);
+
+    if (Number.isNaN(setsId)) {
+      res.status(400).json({ error: "sets invalid" });
+      return;
+    }
+
+    const owner =
+      await workoutSessionRepository.readSessionExerciseOwner(setsId);
+
+    if (owner === undefined || owner.userId !== userId) {
+      res.sendStatus(404);
+      return;
+    }
+    const sets =
+      await workoutSessionRepository.readSetsBySessionExercise(setsId);
+
+    res.json(sets);
   } catch (err) {
     next(err);
   }
@@ -630,4 +664,5 @@ export default {
   complete,
   destroy,
   createSet,
+  browseSets,
 };
