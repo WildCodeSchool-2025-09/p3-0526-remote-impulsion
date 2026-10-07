@@ -12,9 +12,9 @@ function HistoryEmptyState() {
 
       <p className="max-w-md text-base-content/75 text-sm leading-6">
         <span className="mb-1 block font-display font-extrabold text-base-content text-xl uppercase italic">
-          Aucune séance enregistrée.
+          Aucune séance terminée pour l'instant.
         </span>
-        Démarre ta première séance pour la retrouver ici.
+        Termine une séance pour la retrouver ici.
       </p>
     </div>
   );
