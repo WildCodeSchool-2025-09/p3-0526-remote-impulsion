@@ -41,3 +41,19 @@ export type WorkoutSessionHistory = {
   exerciseCount: number;
   totalVolumeKg: number;
 };
+
+export type CompletedSet = {
+  sessionExerciseId: number;
+  setNumber: number;
+  repetitions: number | null;
+  weightKg: number | string | null;
+  durationSeconds: number | null;
+};
+
+export type WorkoutSessionDetailExercise = WorkoutSessionExercise & {
+  sets: CompletedSet[];
+};
+
+export type WorkoutSessionDetail = WorkoutSession & {
+  exercises: WorkoutSessionDetailExercise[];
+};
