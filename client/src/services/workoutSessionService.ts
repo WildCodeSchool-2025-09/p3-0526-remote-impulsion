@@ -158,6 +158,28 @@ const reorderWorkoutSessionExercises = async (
   }
 };
 
+const updateWorkoutSessionExerciseRest = async (
+  sessionId: number,
+  sessionExerciseId: number,
+  restSeconds: number | null,
+): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/exercises/${sessionExerciseId}/rest`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ restSeconds }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible de modifier le temps de repos");
+  }
+};
+
 const getHistory = async (): Promise<WorkoutSessionHistory[]> => {
   const response = await fetch(`${API_URL}/api/workout-sessions/history`, {
     credentials: "include",
@@ -181,5 +203,6 @@ export default {
   deleteWorkoutSession,
   postExercisesToSession,
   reorderWorkoutSessionExercises,
+  updateWorkoutSessionExerciseRest,
   getHistory,
 };
