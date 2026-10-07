@@ -13,7 +13,7 @@ const SessionHistoryCard = ({ session }: WorkoutSessionHistoryProps) => {
 
   return (
     <Link
-      to={`/sessions/${session.id}`}
+      to={`/history/${session.id}`}
       className="grid grid-cols-[1fr_auto] items-center gap-x-4 rounded-box border border-base-300 bg-base-200 p-4 transition-colors hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
     >
       <h3 className="font-semibold text-base-content first-letter:uppercase">

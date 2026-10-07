@@ -72,7 +72,7 @@ function CompletedSessionView({ sessionId }: CompletedSessionViewProps) {
       </div>
 
       <dl className="grid grid-cols-3 gap-3">
-        <div className="flex flex-col-reverse gap-1 rounded-box border border-base-300 bg-base-200 p-3">
+        <div className="flex flex-col-reverse items-center gap-1 rounded-box border border-base-300 bg-base-200 p-3 text-center">
           <dt className="text-base-content/75 text-xs uppercase tracking-widest">
             Durée
           </dt>
@@ -80,7 +80,7 @@ function CompletedSessionView({ sessionId }: CompletedSessionViewProps) {
             {formatDuration(durationSeconds)}
           </dd>
         </div>
-        <div className="flex flex-col-reverse gap-1 rounded-box border border-base-300 bg-base-200 p-3">
+        <div className="flex flex-col-reverse items-center gap-1 rounded-box border border-base-300 bg-base-200 p-3 text-center">
           <dt className="text-base-content/75 text-xs uppercase tracking-widest">
             Séries
           </dt>
@@ -88,7 +88,7 @@ function CompletedSessionView({ sessionId }: CompletedSessionViewProps) {
             {setCount}
           </dd>
         </div>
-        <div className="flex flex-col-reverse gap-1 rounded-box border border-base-300 bg-base-200 p-3">
+        <div className="flex flex-col-reverse items-center gap-1 rounded-box border border-base-300 bg-base-200 p-3 text-center">
           <dt className="text-base-content/75 text-xs uppercase tracking-widest">
             Volume
           </dt>
