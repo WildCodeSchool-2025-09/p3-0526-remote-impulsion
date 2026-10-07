@@ -488,7 +488,7 @@ class WorkoutSessionRepository {
       [sessionId],
     );
 
-    const exercises = session.exercises.map((exercise) => ({
+    const exercises: Rows = session.exercises.map((exercise) => ({
       ...exercise,
       sets: setRows.filter(
         (set) => set.sessionExerciseId === exercise.sessionExerciseId,
