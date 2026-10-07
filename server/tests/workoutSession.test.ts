@@ -541,13 +541,16 @@ describe("US22 - Abandonner une séance", () => {
   test("transmet les paramètres dans le bon ordre pour abandonner", async () => {
     const queryMock = jest
       .spyOn(databaseClient, "query")
-      .mockResolvedValue([{ affectedRows: 0 }, []] as never);
+      .mockResolvedValueOnce([[{ completedSetCount: 0 }], []] as never)
+      .mockResolvedValueOnce([{ affectedRows: 1 }, []] as never);
 
     await workoutSessionRepository.abandon(7, 1);
 
-    const [, params] = queryMock.mock.calls[0];
+    const [, countParams] = queryMock.mock.calls[0];
+    const [, updateParams] = queryMock.mock.calls[1];
 
-    expect(params).toEqual([1, 7]);
+    expect(countParams).toEqual([7]);
+    expect(updateParams).toEqual([7, 1]);
   });
 });
 

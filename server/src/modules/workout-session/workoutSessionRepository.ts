@@ -383,26 +383,31 @@ class WorkoutSessionRepository {
   }
 
   async abandon(sessionId: number, userId: number) {
-    const [result] = await databaseClient.query<Result>(
-      `UPDATE workout_session       
-      SET 
-        status = 'prepared',
-        started_at = NULL,
-        ended_at = NULL
-        WHERE workout_session.user_id = ?
-          AND workout_session.id = ? 
-          AND workout_session.status = 'in_progress'
-          AND NOT EXISTS (
-        SELECT 1
-          FROM exercise_set
-          JOIN workout_session_exercise
-            ON exercise_set.workout_session_exercise_id =
-              workout_session_exercise.id
-          WHERE workout_session_exercise.workout_session_id =
-              workout_session.id
-          AND exercise_set.is_completed = TRUE)`,
-      [userId, sessionId],
+    const [setRows] = await databaseClient.query<Rows>(
+      `SELECT COUNT(*) AS completedSetCount
+       FROM exercise_set
+       JOIN workout_session_exercise
+         ON workout_session_exercise.id = exercise_set.workout_session_exercise_id
+       WHERE workout_session_exercise.workout_session_id = ?
+         AND exercise_set.is_completed = TRUE`,
+      [sessionId],
     );
+
+    if (Number(setRows[0].completedSetCount) > 0) {
+      return 0;
+    }
+
+    const [result] = await databaseClient.query<Result>(
+      `UPDATE workout_session
+       SET status = 'prepared',
+           started_at = NULL,
+           ended_at = NULL
+       WHERE id = ?
+         AND user_id = ?
+         AND status = 'in_progress'`,
+      [sessionId, userId],
+    );
+
     return result.affectedRows;
   }
 
