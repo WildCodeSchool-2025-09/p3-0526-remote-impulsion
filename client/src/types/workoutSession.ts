@@ -54,6 +54,13 @@ export type WorkoutSessionDetailExercise = WorkoutSessionExercise & {
   sets: CompletedSet[];
 };
 
-export type WorkoutSessionDetail = WorkoutSession & {
+export type WorkoutSessionDetail = {
+  id: number;
+  userId: number;
+  createdAt: string;
+  startedAt: string | null;
+  endedAt: string | null;
+  status: WorkoutSessionStatus;
+  exerciseCount: number;
   exercises: WorkoutSessionDetailExercise[];
 };
