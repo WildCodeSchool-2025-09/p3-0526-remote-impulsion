@@ -37,6 +37,10 @@ router.get(
   "/api/workout-sessions/:id/summary",
   workoutSessionActions.readSummary,
 );
+router.get(
+  "/api/workout-sessions/:id/details",
+  workoutSessionActions.readDetail,
+);
 router.patch("/api/workout-sessions/:id/start", workoutSessionActions.start);
 router.patch(
   "/api/workout-sessions/:id/complete",

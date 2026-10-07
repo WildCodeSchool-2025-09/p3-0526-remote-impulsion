@@ -480,6 +480,39 @@ class WorkoutSessionRepository {
     return result.affectedRows;
   }
 
+  async readDetail(sessionId: number, userId: number) {
+    const session = await this.read(sessionId, userId);
+
+    if (session === undefined) {
+      return undefined;
+    }
+
+    const [setRows] = await databaseClient.query<Rows>(
+      `SELECT
+        exercise_set.workout_session_exercise_id AS sessionExerciseId,
+        exercise_set.set_number AS setNumber,
+        exercise_set.repetitions,
+        exercise_set.weight_kg AS weightKg,
+        exercise_set.duration_seconds AS durationSeconds
+      FROM exercise_set
+      JOIN workout_session_exercise
+        ON workout_session_exercise.id = exercise_set.workout_session_exercise_id
+      WHERE workout_session_exercise.workout_session_id = ?
+        AND exercise_set.is_completed = TRUE
+      ORDER BY exercise_set.set_number`,
+      [sessionId],
+    );
+
+    const exercises: Rows = session.exercises.map((exercise) => ({
+      ...exercise,
+      sets: setRows.filter(
+        (set) => set.sessionExerciseId === exercise.sessionExerciseId,
+      ),
+    }));
+
+    return { ...session, exercises };
+  }
+
   async delete(sessionId: number, userId: number) {
     const [result] = await databaseClient.query<Result>(
       `DELETE FROM workout_session
