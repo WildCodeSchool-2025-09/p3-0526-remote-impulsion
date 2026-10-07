@@ -147,14 +147,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
     const queryMock = jest
       .spyOn(databaseClient, "query")
       .mockResolvedValueOnce([
-        [
-          {
-            id: 7,
-            userId: 1,
-            status: "prepared",
-            exerciseCount: 2,
-          },
-        ],
+        [{ id: 7, userId: 1, status: "prepared" }],
         [],
       ] as never)
       .mockResolvedValueOnce([
@@ -163,7 +156,8 @@ describe("US13 - Ajouter des exercices à une séance", () => {
           { id: 8, name: "Développé couché", position: 2 },
         ],
         [],
-      ] as never);
+      ] as never)
+      .mockResolvedValueOnce([[{ completedSetCount: 0 }], []] as never);
 
     const session = await workoutSessionRepository.read(7, 1);
 
@@ -171,6 +165,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
       { id: 3, name: "Squat", position: 1 },
       { id: 8, name: "Développé couché", position: 2 },
     ]);
+    expect(session?.exerciseCount).toBe(2);
 
     expect(queryMock.mock.calls[1][1]).toEqual([7]);
   });
