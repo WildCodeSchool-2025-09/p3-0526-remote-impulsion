@@ -33,3 +33,11 @@ export type WorkoutSessionSummary = {
   exerciseCount: number;
   totalVolumeKg: number;
 };
+
+export type WorkoutSessionHistory = {
+  id: number;
+  date: string;
+  durationSeconds: number;
+  exerciseCount: number;
+  totalVolumeKg: number;
+};

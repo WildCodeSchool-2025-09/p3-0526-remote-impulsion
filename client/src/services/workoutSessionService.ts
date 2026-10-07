@@ -1,5 +1,6 @@
 import type {
   WorkoutSession,
+  WorkoutSessionHistory,
   WorkoutSessionSummary,
 } from "../types/workoutSession";
 
@@ -157,6 +158,17 @@ const reorderWorkoutSessionExercises = async (
   }
 };
 
+const getHistory = async (): Promise<WorkoutSessionHistory[]> => {
+  const response = await fetch(`${API_URL}/api/workout-sessions/history`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Impossible de charger les séances");
+  }
+  const sessions = await response.json();
+  return sessions;
+};
+
 export default {
   getWorkoutSessions,
   postWorkoutSession,
@@ -169,4 +181,5 @@ export default {
   deleteWorkoutSession,
   postExercisesToSession,
   reorderWorkoutSessionExercises,
+  getHistory,
 };

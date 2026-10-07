@@ -16,6 +16,7 @@ import useDeletePreparedSession from "../hooks/workout-session/useDeletePrepared
 import useReorderSessionExercises from "../hooks/workout-session/useReorderSessionExercises";
 import useStartSession from "../hooks/workout-session/useStartSession";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
+import { formatSessionDateWithWeekday } from "../utils/formatSessionDate";
 
 function SessionId() {
   const { id } = useParams();
@@ -88,14 +89,7 @@ function SessionId() {
     return <p>Séance introuvable.</p>;
   }
 
-  const formattedDate = new Date(session.createdAt).toLocaleDateString(
-    "fr-FR",
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    },
-  );
+  const formattedDate = formatSessionDateWithWeekday(session.createdAt);
 
   const exercises = session.exercises ?? [];
   const exerciseCount = Number(session.exerciseCount);

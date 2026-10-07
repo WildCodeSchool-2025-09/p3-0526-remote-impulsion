@@ -23,6 +23,10 @@ router.patch(
 );
 router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/current", workoutSessionActions.readCurrent);
+router.get(
+  "/api/workout-sessions/history",
+  workoutSessionActions.browseHistory,
+);
 router.get("/api/workout-sessions/:id", workoutSessionActions.read);
 router.get(
   "/api/workout-sessions/:id/summary",
