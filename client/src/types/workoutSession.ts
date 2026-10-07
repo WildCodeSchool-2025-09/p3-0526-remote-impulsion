@@ -18,7 +18,26 @@ export type WorkoutSession = {
   endedAt: string | null;
   status: WorkoutSessionStatus;
   exerciseCount: number;
+  completedSetCount?: number;
   exercises?: WorkoutSessionExercise[];
 };
 
 export type WorkoutSessionStatus = "prepared" | "in_progress" | "completed";
+
+export type WorkoutSessionSummary = {
+  id: number;
+  status: WorkoutSessionStatus;
+  date: string;
+  durationSeconds: number;
+  completedSetCount: number;
+  exerciseCount: number;
+  totalVolumeKg: number;
+};
+
+export type WorkoutSessionHistory = {
+  id: number;
+  date: string;
+  durationSeconds: number;
+  exerciseCount: number;
+  totalVolumeKg: number;
+};

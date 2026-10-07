@@ -17,6 +17,7 @@ import useReorderSessionExercises from "../hooks/workout-session/useReorderSessi
 import useStartSession from "../hooks/workout-session/useStartSession";
 import useUpdateSessionExerciseRest from "../hooks/workout-session/useUpdateSessionExerciseRest";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
+import { formatSessionDateWithWeekday } from "../utils/formatSessionDate";
 
 function SessionId() {
   const { id } = useParams();
@@ -62,8 +63,8 @@ function SessionId() {
   } = useUpdateSessionExerciseRest();
 
   const currentSessionContext = useContext(CurrentSessionContext);
-  const { isNavOpen } = useMobileNav();
   const { showMessage } = useMessages();
+  const { isNavOpen } = useMobileNav();
 
   useEffect(() => {
     if (deleteError !== null) {
@@ -101,14 +102,7 @@ function SessionId() {
     return <p>Séance introuvable.</p>;
   }
 
-  const formattedDate = new Date(session.createdAt).toLocaleDateString(
-    "fr-FR",
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    },
-  );
+  const formattedDate = formatSessionDateWithWeekday(session.createdAt);
 
   const exercises = session.exercises ?? [];
   const exerciseCount = Number(session.exerciseCount);
@@ -210,13 +204,15 @@ function SessionId() {
 
   const isPrepared = session.status === "prepared" && !isInProgress;
 
+  const hasCompletedSets = Number(session.completedSetCount ?? 0) > 0;
+
   const startedAt =
     currentSessionContext?.currentSession?.id === session.id
       ? currentSessionContext.currentSession.startedAt
       : session.startedAt;
 
   return (
-    <div className="w-full max-w-3xl pb-24 md:py-4 md:pb-4 lg:px-4">
+    <div className="w-full max-w-3xl pb-32 md:py-4 md:pb-4 lg:px-4">
       <div className="flex items-center justify-between gap-2 border-base-300 border-b pb-4 lg:pb-6">
         <div className="flex min-w-0 items-center gap-1">
           <Link
@@ -244,7 +240,7 @@ function SessionId() {
           </button>
         )}
 
-        {isInProgress && (
+        {isInProgress && !hasCompletedSets && (
           <button
             type="button"
             onClick={() => setIsAbandonModalOpen(true)}
@@ -339,16 +335,16 @@ function SessionId() {
         )}
 
         <div
-          className={`fixed inset-x-0 bottom-0 z-10 flex items-stretch gap-3 bg-linear-to-t from-base-100 from-70% to-transparent px-4 pt-10 transition-[padding] duration-300 md:static md:mt-6 md:bg-none md:p-0 ${
-            isNavOpen ? "pb-24" : "pb-9"
+          className={`fixed inset-x-0 bottom-0 z-10 flex items-stretch gap-3 bg-linear-to-t from-base-100 from-72% to-transparent px-4 pt-16 transition-[padding] duration-300 md:static md:mt-6 md:bg-none md:p-0 ${
+            isNavOpen ? "pb-28" : "pb-10"
           } ${exerciseCount === 0 ? "md:justify-center" : "md:justify-end"}`}
         >
           <Link
             to={`/sessions/${session.id}/exercises`}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-center font-semibold text-xs leading-tight transition focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 sm:text-sm md:flex-none md:px-5 ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-center font-semibold text-xs leading-tight transition-colors duration-200 sm:text-sm md:px-5 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 md:flex-none ${
               exerciseCount === 0
-                ? "border-primary bg-primary text-primary-content hover:opacity-90"
-                : "border-base-content/40 bg-base-100 hover:border-base-content hover:bg-base-200 md:bg-transparent"
+                ? "border-primary bg-primary text-primary-content hover:border-info hover:bg-info hover:text-white"
+                : "border-base-content/40 bg-base-100 hover:border-info hover:bg-info/10 hover:text-info md:bg-transparent"
             }`}
           >
             Ajouter des exercices
@@ -359,9 +355,25 @@ function SessionId() {
               type="button"
               onClick={handleStart}
               disabled={exerciseCount === 0 || startLoading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-3 py-2.5 text-center font-semibold text-primary-content text-xs leading-tight transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:opacity-100 sm:text-sm md:flex-none md:px-5"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-3 py-2.5 text-center font-semibold text-primary-content text-xs leading-tight transition-colors duration-200 sm:text-sm md:px-5 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 md:flex-none"
             >
               {startLoading ? "Démarrage..." : "Démarrer la séance"}
+            </button>
+          )}
+
+          {isInProgress && (
+            <button
+              type="button"
+              onClick={() => navigate(`/sessions/${session.id}/summary`)}
+              disabled={!hasCompletedSets}
+              title={
+                hasCompletedSets
+                  ? undefined
+                  : "Validez au moins une série pour terminer la séance"
+              }
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-3 py-2.5 text-center font-semibold text-primary-content text-xs leading-tight transition-colors duration-200 sm:text-sm md:px-5 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 md:flex-none"
+            >
+              Valider la séance
             </button>
           )}
         </div>

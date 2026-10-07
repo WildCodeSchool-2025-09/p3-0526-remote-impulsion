@@ -1,4 +1,8 @@
-import type { WorkoutSession } from "../types/workoutSession";
+import type {
+  WorkoutSession,
+  WorkoutSessionHistory,
+  WorkoutSessionSummary,
+} from "../types/workoutSession";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -49,6 +53,20 @@ const getCurrentSession = async (): Promise<WorkoutSession | null> => {
   return currentSession;
 };
 
+const getSessionSummary = async (
+  sessionId: number,
+): Promise<WorkoutSessionSummary> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/summary`,
+    { credentials: "include" },
+  );
+  if (!response.ok) {
+    throw new Error("Impossible de charger le récapitulatif");
+  }
+  const summary = await response.json();
+  return summary;
+};
+
 const startWorkoutSession = async (sessionId: number) => {
   const response = await fetch(
     `${API_URL}/api/workout-sessions/${sessionId}/start`,
@@ -68,6 +86,16 @@ const startWorkoutSession = async (sessionId: number) => {
   return {
     result: "started",
   };
+};
+
+const completeWorkoutSession = async (sessionId: number): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/complete`,
+    { method: "PATCH", credentials: "include" },
+  );
+  if (!response.ok) {
+    throw new Error("Impossible de valider la séance");
+  }
 };
 
 const abandonSession = async (sessionId: number): Promise<void> => {
@@ -152,15 +180,29 @@ const updateWorkoutSessionExerciseRest = async (
   }
 };
 
+const getHistory = async (): Promise<WorkoutSessionHistory[]> => {
+  const response = await fetch(`${API_URL}/api/workout-sessions/history`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Impossible de charger les séances");
+  }
+  const sessions = await response.json();
+  return sessions;
+};
+
 export default {
   getWorkoutSessions,
   postWorkoutSession,
   getWorkoutSessionById,
   getCurrentSession,
   startWorkoutSession,
+  getSessionSummary,
+  completeWorkoutSession,
   abandonSession,
   deleteWorkoutSession,
   postExercisesToSession,
   reorderWorkoutSessionExercises,
   updateWorkoutSessionExerciseRest,
+  getHistory,
 };

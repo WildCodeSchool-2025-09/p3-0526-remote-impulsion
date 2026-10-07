@@ -215,6 +215,17 @@ const browse: RequestHandler = async (req, res, next) => {
   }
 };
 
+const browseHistory: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId(req);
+    const sessions = await workoutSessionRepository.readAllCompleted(userId);
+
+    res.json(sessions);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const read: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId(req);
@@ -299,6 +310,90 @@ const start: RequestHandler = async (req, res, next) => {
   }
 };
 
+const readSummary: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId(req);
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const summary = await workoutSessionRepository.readSummary(
+      sessionId,
+      userId,
+    );
+
+    if (summary === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (summary.status !== "in_progress") {
+      res.sendStatus(409);
+      return;
+    }
+
+    const numberOfCompletedSets = Number(summary.completedSetCount);
+
+    if (numberOfCompletedSets === 0) {
+      res.sendStatus(422);
+      return;
+    }
+
+    res.status(200).json(summary);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const complete: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId(req);
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const summary = await workoutSessionRepository.readSummary(
+      sessionId,
+      userId,
+    );
+
+    if (summary === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (summary.status !== "in_progress") {
+      res.sendStatus(409);
+      return;
+    }
+
+    if (Number(summary.completedSetCount) === 0) {
+      res.sendStatus(422);
+      return;
+    }
+
+    const affectedRows = await workoutSessionRepository.complete(
+      sessionId,
+      userId,
+    );
+
+    if (affectedRows === 0) {
+      res.sendStatus(409);
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const readCurrent: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId(req);
@@ -368,11 +463,14 @@ export default {
   add,
   addExercises,
   browse,
+  browseHistory,
   read,
   readCurrent,
   start,
   reorderExercises,
   updateExerciseRest,
   abandon,
+  readSummary,
+  complete,
   destroy,
 };

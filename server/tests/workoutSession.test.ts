@@ -550,3 +550,153 @@ describe("US22 - Abandonner une séance", () => {
     expect(params).toEqual([1, 7]);
   });
 });
+
+describe("US23 - Historique des séances", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("ne lit que les séances terminées de l'utilisateur, triées sur started_at", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValue([[], []] as never);
+
+    await workoutSessionRepository.readAllCompleted(1);
+
+    const [sql, params] = queryMock.mock.calls[0];
+
+    expect(String(sql)).toMatch(/status\s*=\s*'completed'/);
+    expect(String(sql)).toMatch(/user_id\s*=\s*\?/);
+    expect(String(sql)).toMatch(/ORDER BY started_at DESC/);
+    expect(params).toEqual([1]);
+  });
+
+  test("renvoie un tableau vide sans interroger les exercices ni les séries", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValue([[], []] as never);
+
+    const sessions = await workoutSessionRepository.readAllCompleted(1);
+
+    expect(sessions).toEqual([]);
+    expect(queryMock).toHaveBeenCalledTimes(1);
+  });
+
+  test("compte les exercices et calcule le volume séance par séance", async () => {
+    jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValueOnce([
+        [
+          { id: 10, date: "2026-10-03T16:00:00.000Z", durationSeconds: 3660 },
+          { id: 11, date: "2026-09-28T16:00:00.000Z", durationSeconds: 1800 },
+        ],
+        [],
+      ] as never)
+      .mockResolvedValueOnce([
+        [
+          { workout_session_id: 10 },
+          { workout_session_id: 10 },
+          { workout_session_id: 11 },
+        ],
+        [],
+      ] as never)
+      .mockResolvedValueOnce([
+        [
+          { workout_session_id: 10, repetitions: 10, weight_kg: "40.00" },
+          { workout_session_id: 10, repetitions: 8, weight_kg: "50.00" },
+          { workout_session_id: 11, repetitions: 12, weight_kg: "20.00" },
+        ],
+        [],
+      ] as never);
+
+    const sessions = await workoutSessionRepository.readAllCompleted(1);
+
+    expect(sessions).toEqual([
+      {
+        id: 10,
+        date: "2026-10-03T16:00:00.000Z",
+        durationSeconds: 3660,
+        exerciseCount: 2,
+        totalVolumeKg: 800,
+      },
+      {
+        id: 11,
+        date: "2026-09-28T16:00:00.000Z",
+        durationSeconds: 1800,
+        exerciseCount: 1,
+        totalVolumeKg: 240,
+      },
+    ]);
+  });
+
+  test("exclut les séries non validées du calcul du volume", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValueOnce([
+        [{ id: 10, date: "2026-10-03", durationSeconds: 60 }],
+        [],
+      ] as never)
+      .mockResolvedValueOnce([[], []] as never)
+      .mockResolvedValueOnce([[], []] as never);
+
+    await workoutSessionRepository.readAllCompleted(1);
+
+    const [setSql] = queryMock.mock.calls[2];
+
+    expect(String(setSql)).toMatch(/is_completed\s*=\s*TRUE/);
+  });
+
+  test("renvoie l'historique de l'utilisateur connecté", async () => {
+    jest.spyOn(workoutSessionRepository, "readAllCompleted").mockResolvedValue([
+      {
+        id: 10,
+        date: "2026-10-03T16:00:00.000Z",
+        durationSeconds: 3660,
+        exerciseCount: 2,
+        totalVolumeKg: 800,
+      },
+    ] as never);
+
+    const response = await authenticatedRequest.get(
+      "/api/workout-sessions/history",
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].id).toBe(10);
+  });
+
+  test("renvoie un tableau vide, et non une erreur, quand il n'y a aucune séance", async () => {
+    jest
+      .spyOn(workoutSessionRepository, "readAllCompleted")
+      .mockResolvedValue([] as never);
+
+    const response = await authenticatedRequest.get(
+      "/api/workout-sessions/history",
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([]);
+  });
+
+  test("demande l'historique du seul utilisateur authentifié", async () => {
+    const repositoryMock = jest
+      .spyOn(workoutSessionRepository, "readAllCompleted")
+      .mockResolvedValue([] as never);
+
+    await authenticatedRequest.get("/api/workout-sessions/history");
+
+    expect(repositoryMock).toHaveBeenCalledWith(1);
+  });
+
+  test("refuse l'accès sans cookie d'authentification", async () => {
+    const repositoryMock = jest
+      .spyOn(workoutSessionRepository, "readAllCompleted")
+      .mockResolvedValue([] as never);
+
+    const response = await request(app).get("/api/workout-sessions/history");
+
+    expect(response.status).toBe(401);
+    expect(repositoryMock).not.toHaveBeenCalled();
+  });
+});
