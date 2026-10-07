@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import ChevronRightIcon from "../../assets/icons/chevrons/chevron-right.svg?react";
 import type { WorkoutSessionHistory } from "../../types/workoutSession";
 import { formatDuration } from "../../utils/formatDuration";
@@ -11,7 +12,10 @@ const SessionHistoryCard = ({ session }: WorkoutSessionHistoryProps) => {
   const formattedDate = formatSessionDateWithWeekday(session.date);
 
   return (
-    <article className="grid grid-cols-[1fr_auto] items-center gap-x-4 rounded-box border border-base-300 bg-base-200 p-4">
+    <Link
+      to={`/sessions/${session.id}`}
+      className="grid grid-cols-[1fr_auto] items-center gap-x-4 rounded-box border border-base-300 bg-base-200 p-4 transition-colors hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
+    >
       <h3 className="font-semibold text-base-content first-letter:uppercase">
         {formattedDate}
       </h3>
@@ -24,7 +28,7 @@ const SessionHistoryCard = ({ session }: WorkoutSessionHistoryProps) => {
         aria-hidden="true"
         className="col-start-2 row-span-2 row-start-1 size-5 text-base-content/50"
       />
-    </article>
+    </Link>
   );
 };
 
