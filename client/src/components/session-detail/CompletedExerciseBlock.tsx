@@ -11,7 +11,7 @@ function CompletedExerciseBlock({
   onOpenDetail,
 }: CompletedExerciseBlockProps) {
   return (
-    <article className="overflow-hidden rounded-box border border-primary/60 bg-base-200">
+    <article className="overflow-hidden rounded-box border border-base-300 bg-base-200">
       <div className="flex items-center justify-between gap-3 border-base-300 border-b px-4 py-3">
         <h3 className="font-semibold text-base-content">
           {exercise.position} · {exercise.name}
