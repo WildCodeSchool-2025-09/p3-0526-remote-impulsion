@@ -2,14 +2,14 @@ import { Link } from "react-router";
 import ChevronRightIcon from "../../assets/icons/chevrons/chevron-right.svg?react";
 import type { WorkoutSessionHistory } from "../../types/workoutSession";
 import { formatDuration } from "../../utils/formatDuration";
-import { formatSessionDateWithWeekday } from "../../utils/formatSessionDate";
+import { formatFullDate } from "../../utils/formatSessionDate";
 
 type WorkoutSessionHistoryProps = {
   session: WorkoutSessionHistory;
 };
 
 const SessionHistoryCard = ({ session }: WorkoutSessionHistoryProps) => {
-  const formattedDate = formatSessionDateWithWeekday(session.date);
+  const formattedDate = formatFullDate(session.date);
 
   return (
     <Link
