@@ -509,14 +509,44 @@ class WorkoutSessionRepository {
       [sessionId],
     );
 
-    const exercises: Rows = session.exercises.map((exercise) => ({
-      ...exercise,
-      sets: setRows.filter(
-        (set) => set.sessionExerciseId === exercise.sessionExerciseId,
-      ),
-    }));
+    const exercises = [];
 
-    return { ...session, exercises };
+    for (const exercise of session.exercises) {
+      const sets = [];
+
+      for (const set of setRows) {
+        if (set.sessionExerciseId === exercise.sessionExerciseId) {
+          sets.push(set);
+        }
+      }
+
+      exercises.push({
+        sessionExerciseId: exercise.sessionExerciseId,
+        id: exercise.id,
+        slug: exercise.slug,
+        name: exercise.name,
+        category: exercise.category,
+        position: exercise.position,
+        targetSets: exercise.targetSets,
+        targetReps: exercise.targetReps,
+        targetWeightKg: exercise.targetWeightKg,
+        targetDurationSeconds: exercise.targetDurationSeconds,
+        restSeconds: exercise.restSeconds,
+        sets: sets,
+      });
+    }
+
+    return {
+      id: session.id,
+      userId: session.userId,
+      createdAt: session.createdAt,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      status: session.status,
+      exerciseCount: session.exerciseCount,
+      completedSetCount: session.completedSetCount,
+      exercises: exercises,
+    };
   }
 
   async delete(sessionId: number, userId: number) {
