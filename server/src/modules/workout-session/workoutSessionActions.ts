@@ -269,37 +269,26 @@ const start: RequestHandler = async (req, res, next) => {
 
     const session = await workoutSessionRepository.read(sessionId, userId);
 
-    if (session == null) {
+    if (session === undefined) {
       res.sendStatus(404);
       return;
     }
+
     const currentSession = await workoutSessionRepository.readCurrent(userId);
+
     if (currentSession) {
-      res.status(409).json({
-        currentSessionId: currentSession.id,
-      });
+      res.status(409).json({ currentSessionId: currentSession.id });
       return;
     }
+
     if (session.exerciseCount === 0) {
       res.sendStatus(422);
       return;
     }
 
-    const affectedRows = await workoutSessionRepository.start(
-      sessionId,
-      userId,
-    );
+    const affectedRows = await workoutSessionRepository.start(sessionId, userId);
 
     if (affectedRows === 0) {
-      const runningSession = await workoutSessionRepository.readCurrent(userId);
-
-      if (runningSession) {
-        res.status(409).json({
-          currentSessionId: runningSession.id,
-        });
-        return;
-      }
-
       res.sendStatus(409);
       return;
     }
