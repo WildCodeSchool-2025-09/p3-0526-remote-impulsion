@@ -414,12 +414,36 @@ const readDetail: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    res.json({
-      ...session,
-      exercises: session.exercises.map((exercise) => ({
-        ...exercise,
+    const exercises = [];
+
+    for (const exercise of session.exercises) {
+      exercises.push({
+        sessionExerciseId: exercise.sessionExerciseId,
+        id: exercise.id,
+        slug: exercise.slug,
+        name: exercise.name,
+        category: exercise.category,
+        position: exercise.position,
+        targetSets: exercise.targetSets,
+        targetReps: exercise.targetReps,
+        targetWeightKg: exercise.targetWeightKg,
+        targetDurationSeconds: exercise.targetDurationSeconds,
+        restSeconds: exercise.restSeconds,
+        sets: exercise.sets,
         imageUrl: buildImageUrl(exercise.slug),
-      })),
+      });
+    }
+
+    res.json({
+      id: session.id,
+      userId: session.userId,
+      createdAt: session.createdAt,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      status: session.status,
+      exerciseCount: session.exerciseCount,
+      completedSetCount: session.completedSetCount,
+      exercises: exercises,
     });
   } catch (err) {
     next(err);
