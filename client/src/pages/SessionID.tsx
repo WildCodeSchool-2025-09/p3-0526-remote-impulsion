@@ -90,7 +90,7 @@ function SessionId() {
   }, [restError, showMessage]);
 
   if (currentSessionContext === null) {
-    throw new Error("CurrentSessionContext est indisponible");
+    throw new Error("Le contexte de la séance en cours est indisponible");
   }
 
   if (loading) {
@@ -161,12 +161,12 @@ function SessionId() {
   };
 
   const handleStart = async () => {
-    setUserClosedPopup(false);
-
     const started = await startSession(session.id);
 
     if (started) {
       await currentSessionContext.refreshCurrentSession();
+    } else {
+      setUserClosedPopup(false);
     }
   };
 
