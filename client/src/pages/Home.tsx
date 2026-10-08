@@ -18,11 +18,11 @@ function Home() {
     return <p>{error}</p>;
   }
 
-  const emptySession = sessions.find((session) => session.exerciseCount === 0);
+  const draftSession = sessions.find((session) => session.exerciseCount === 0);
 
   const handleSessionAction = async () => {
-    if (emptySession) {
-      navigate(`/sessions/${emptySession.id}`);
+    if (draftSession) {
+      navigate(`/sessions/${draftSession.id}`);
       return;
     }
 
@@ -43,12 +43,12 @@ function Home() {
 
         <HomeSessionAction
           subtitle={
-            emptySession
+            draftSession
               ? "Ta séance est créée, ajoute maintenant tes exercices."
               : "Ajoute tes exercices, puis démarre quand tu veux."
           }
           buttonLabel={
-            emptySession ? "AJOUTER DES EXERCICES" : "CRÉER UNE SÉANCE"
+            draftSession ? "AJOUTER DES EXERCICES" : "CRÉER UNE SÉANCE"
           }
           onAction={handleSessionAction}
           isLoading={createLoading}
