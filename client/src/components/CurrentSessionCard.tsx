@@ -7,11 +7,13 @@ type CurrentSessionCardProps = {
 };
 
 const CurrentSessionCard = ({ session }: CurrentSessionCardProps) => {
-  const details = [
-    session.startedAt &&
-      `Démarrée à ${formatSessionStartTime(session.startedAt)}`,
-    `${session.exerciseCount} ${session.exerciseCount <= 1 ? "exercice" : "exercices"}`,
-  ].filter(Boolean);
+  let startText = "";
+
+  if (session.startedAt !== null) {
+    startText = `Démarrée à ${formatSessionStartTime(session.startedAt)} · `;
+  }
+
+  const exerciseText = `${session.exerciseCount} ${session.exerciseCount <= 1 ? "exercice" : "exercices"}`;
 
   return (
     <div className="mt-6 grid grid-cols-[1fr_auto] items-center gap-x-4 rounded-box border-2 border-primary bg-base-200 p-4 shadow-lg shadow-primary/15">
@@ -24,7 +26,8 @@ const CurrentSessionCard = ({ session }: CurrentSessionCardProps) => {
       </p>
 
       <p className="col-start-1 mt-1 text-info text-sm">
-        {details.join(" · ")}
+        {startText}
+        {exerciseText}
       </p>
 
       <Link
