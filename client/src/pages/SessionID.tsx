@@ -30,7 +30,7 @@ function SessionId() {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAbandonModalOpen, setIsAbandonModalOpen] = useState(false);
-  const [userClosedPopup, setUserClosedPopup] = useState(false);
+  const [userClosedConflictModal, setUserClosedConflictModal] = useState(false);
 
   const {
     reorderSessionExercises,
@@ -167,7 +167,7 @@ function SessionId() {
     if (started) {
       await currentSessionContext.refreshCurrentSession();
     } else {
-      setUserClosedPopup(false);
+      setUserClosedConflictModal(false);
     }
   };
 
@@ -197,10 +197,10 @@ function SessionId() {
   const hasOtherSession =
     currentSessionId !== null && currentSessionId !== session.id;
 
-  const isPopupOpen = hasOtherSession && !userClosedPopup;
+  const isConflictModalOpen = hasOtherSession && !userClosedConflictModal;
 
-  const closePopup = () => {
-    setUserClosedPopup(true);
+  const closeConflictModal = () => {
+    setUserClosedConflictModal(true);
   };
 
   const goToOtherSession = () => {
@@ -215,7 +215,7 @@ function SessionId() {
     const abandoned = await abandonSession(currentSessionId);
 
     if (abandoned) {
-      setUserClosedPopup(true);
+      setUserClosedConflictModal(true);
     }
   };
 
@@ -421,10 +421,10 @@ function SessionId() {
         />
       )}
 
-      {isPopupOpen && (
+      {isConflictModalOpen && (
         <ConflictSessionModal
           isAbandoning={isAbandoning}
-          onClose={closePopup}
+          onClose={closeConflictModal}
           onResume={goToOtherSession}
           onAbandon={handleAbandonCurrentSession}
         />
