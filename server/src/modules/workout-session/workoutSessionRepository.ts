@@ -489,7 +489,7 @@ class WorkoutSessionRepository {
   async readDetail(sessionId: number, userId: number) {
     const session = await this.read(sessionId, userId);
 
-    if (session === undefined) {
+    if (session === undefined || session.status !== "completed") {
       return undefined;
     }
 

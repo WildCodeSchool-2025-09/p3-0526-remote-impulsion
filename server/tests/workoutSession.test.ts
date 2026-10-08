@@ -741,6 +741,7 @@ describe("US24 - Consulter le détail d'une séance", () => {
   test("ne lit que les séries validées de la séance, triées par numéro", async () => {
     jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
       id: 10,
+      status: "completed",
       exercises: [],
     } as never);
 
