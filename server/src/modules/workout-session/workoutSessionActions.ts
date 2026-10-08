@@ -488,16 +488,19 @@ const destroy: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const nbRowsAffected = await workoutSessionRepository.delete(
-      sessionId,
-      userId,
-    );
+    const session = await workoutSessionRepository.read(sessionId, userId);
 
-    if (nbRowsAffected === 0) {
+    if (session === undefined) {
       res.sendStatus(404);
       return;
     }
 
+    if (session.status !== "prepared") {
+      res.sendStatus(409);
+      return;
+    }
+
+    await workoutSessionRepository.delete(sessionId, userId);
     res.sendStatus(204);
   } catch (err) {
     next(err);

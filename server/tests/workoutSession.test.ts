@@ -87,6 +87,10 @@ describe("US11 - Workout sessions", () => {
   });
 
   test("supprime une séance prepared", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      status: "prepared",
+    } as never);
     jest.spyOn(workoutSessionRepository, "delete").mockResolvedValue(1);
 
     const response = await authenticatedRequest.delete(
@@ -96,14 +100,33 @@ describe("US11 - Workout sessions", () => {
     expect(response.status).toBe(204);
   });
 
-  test("refuse la suppression lorsque le repository ne supprime aucune séance", async () => {
-    jest.spyOn(workoutSessionRepository, "delete").mockResolvedValue(0);
+  test("répond 404 si la séance n'existe pas ou n'appartient pas à l'utilisateur", async () => {
+    jest
+      .spyOn(workoutSessionRepository, "read")
+      .mockResolvedValue(undefined as never);
+    const deleteMock = jest.spyOn(workoutSessionRepository, "delete");
 
     const response = await authenticatedRequest.delete(
       "/api/workout-sessions/7",
     );
 
     expect(response.status).toBe(404);
+    expect(deleteMock).not.toHaveBeenCalled();
+  });
+
+  test("répond 409 si la séance n'est plus prepared", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      status: "in_progress",
+    } as never);
+    const deleteMock = jest.spyOn(workoutSessionRepository, "delete");
+
+    const response = await authenticatedRequest.delete(
+      "/api/workout-sessions/7",
+    );
+
+    expect(response.status).toBe(409);
+    expect(deleteMock).not.toHaveBeenCalled();
   });
 
   test("le DELETE du repository est limité aux séances prepared", async () => {
