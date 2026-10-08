@@ -20,15 +20,27 @@ const PreparedSessionsList = ({
 
   const sessionsList = sessions.filter((s) => s.exerciseCount >= 1);
   const visibleSessions = limit ? sessionsList.slice(0, limit) : sessionsList;
-  const emptySession = sessions.find((s) => s.exerciseCount === 0);
+  const draftSession = sessions.find((s) => s.exerciseCount === 0);
+
+  const hasNoSessions = sessionsList.length === 0;
+  const isHomePage = limit !== undefined;
+
+  let title = "Aucune séance préparée.";
+  let text =
+    "Prépare une séance à l'avance pour la retrouver ici, prête à démarrer.";
+
+  if (draftSession) {
+    title = "Séance en préparation.";
+    text = "Ta séance est créée, ajoute maintenant tes exercices.";
+  }
 
   const handleCreate = async () => {
     if (createLoading) {
       return;
     }
 
-    if (emptySession) {
-      navigate(`/sessions/${emptySession.id}`);
+    if (draftSession) {
+      navigate(`/sessions/${draftSession.id}`);
       return;
     }
 
@@ -45,14 +57,13 @@ const PreparedSessionsList = ({
         SÉANCES PRÉPARÉES
       </h2>
 
-      {sessionsList.length === 0 && limit ? (
+      {hasNoSessions && isHomePage && (
         <div className="col-span-2 mt-3 rounded-box border border-base-300 border-dashed p-4 text-base-content/75 text-sm leading-6">
-          <p className="max-w-md">
-            Aucune séance préparée. Prépare une séance à l'avance pour la
-            retrouver ici, prête à démarrer.
-          </p>
+          <p className="max-w-md">{text}</p>
         </div>
-      ) : sessionsList.length === 0 ? (
+      )}
+
+      {hasNoSessions && !isHomePage && (
         <button
           type="button"
           onClick={handleCreate}
@@ -68,18 +79,14 @@ const PreparedSessionsList = ({
 
           <p className="max-w-md">
             <span className="mb-1 block font-display font-extrabold text-base-content text-xl uppercase italic">
-              {emptySession
-                ? "Séance en préparation."
-                : "Aucune séance préparée."}
+              {title}
             </span>{" "}
-            {createLoading
-              ? "Création de la séance..."
-              : emptySession
-                ? "Ta séance est créée, ajoute maintenant tes exercices."
-                : "Prépare une séance à l'avance pour la retrouver ici, prête à démarrer."}
+            {text}
           </p>
         </button>
-      ) : (
+      )}
+
+      {!hasNoSessions && (
         <ul
           className={`col-span-2 mt-3 grid gap-3 ${
             limit ? "" : "md:grid-cols-2 xl:grid-cols-3"
@@ -92,6 +99,7 @@ const PreparedSessionsList = ({
           ))}
         </ul>
       )}
+
       {limit && sessionsList.length > limit && (
         <Link
           to="/sessions"
