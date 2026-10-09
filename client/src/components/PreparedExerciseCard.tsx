@@ -1,6 +1,7 @@
 import ChevronDownIcon from "../assets/icons/chevrons/chevron-down.svg?react";
 import ChevronUpIcon from "../assets/icons/chevrons/chevron-up.svg?react";
 import type { WorkoutSessionExercise } from "../types/workoutSession";
+import ExerciseSetManager from "./ExerciseSetManager";
 import RestTimeSelector from "./RestTimeSelector";
 
 type PreparedExerciseCardProps = {
@@ -16,6 +17,7 @@ type PreparedExerciseCardProps = {
   canRemove: boolean;
   removeDisabled: boolean;
   onRemove: () => void;
+  canManageSets: boolean;
 };
 
 function PreparedExerciseCard({
@@ -31,6 +33,7 @@ function PreparedExerciseCard({
   canRemove,
   removeDisabled,
   onRemove,
+  canManageSets,
 }: PreparedExerciseCardProps) {
   return (
     <article className="rounded-box border border-base-300 bg-linear-to-b from-base-300/35 to-base-200 p-4 transition-colors hover:border-primary/40">
@@ -84,6 +87,15 @@ function PreparedExerciseCard({
           </button>
         </div>
       </div>
+
+      {canManageSets && (
+        <ExerciseSetManager
+          sessionExerciseId={exercise.sessionExerciseId}
+          targetReps={exercise.targetReps}
+          targetWeightKg={exercise.targetWeightKg}
+          targetDurationSeconds={exercise.targetDurationSeconds}
+        />
+      )}
     </article>
   );
 }

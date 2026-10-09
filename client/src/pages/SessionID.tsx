@@ -397,6 +397,7 @@ function SessionId() {
                 onRemove={() =>
                   handleRemoveExercise(exercise.sessionExerciseId)
                 }
+                canManageSets={isInProgress}
               />
             ))}
           </div>
