@@ -10,11 +10,11 @@ import SearchField from "../components/SearchField";
 import LocalErrorState from "../components/feedback/LocalErrorState";
 import CategoryIcon from "../components/filters/CategoryIcon";
 import EquipmentIcon from "../components/filters/EquipmentIcon";
+import FilterButton from "../components/filters/FilterButton";
 import FilterGrid from "../components/filters/FilterGrid";
 import LevelIcon from "../components/filters/LevelIcon";
 import useExercises from "../hooks/useExercises";
 import useFilters from "../hooks/useFilters";
-import FilterButton from "../components/filters/FilterButton";
 
 const SKELETON_IDS = [
   "exercise-skeleton-1",
