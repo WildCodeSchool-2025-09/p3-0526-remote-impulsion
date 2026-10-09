@@ -606,6 +606,77 @@ class WorkoutSessionRepository {
     );
     return result.affectedRows;
   }
+
+  async createSet(
+    workoutSessionExerciseId: number,
+    repetitions: number | null,
+    weightKg: number | null,
+    durationSeconds: number | null,
+  ) {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT COALESCE(MAX(set_number), 0) + 1 AS nextSetNumber
+       FROM exercise_set
+       WHERE workout_session_exercise_id = ?`,
+      [workoutSessionExerciseId],
+    );
+
+    const nextSetNumber = Number(rows[0].nextSetNumber);
+
+    const [result] = await databaseClient.query<Result>(
+      `INSERT INTO exercise_set
+        (workout_session_exercise_id, set_number, repetitions, weight_kg, duration_seconds)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        workoutSessionExerciseId,
+        nextSetNumber,
+        repetitions,
+        weightKg,
+        durationSeconds,
+      ],
+    );
+
+    return {
+      id: result.insertId,
+      setNumber: nextSetNumber,
+      repetitions,
+      weightKg,
+      durationSeconds,
+      isCompleted: false,
+    };
+  }
+
+  async readSessionExerciseOwner(workoutSessionExerciseId: number) {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT
+        workout_session.user_id AS userId,
+        workout_session.status
+       FROM workout_session_exercise
+       JOIN workout_session
+         ON workout_session_exercise.workout_session_id = workout_session.id
+       WHERE workout_session_exercise.id = ?`,
+      [workoutSessionExerciseId],
+    );
+
+    return rows[0];
+  }
+
+  async readSetsBySessionExercise(workoutSessionExerciseId: number) {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT
+        id,
+        set_number AS setNumber,
+        repetitions,
+        weight_kg AS weightKg,
+        duration_seconds AS durationSeconds,
+        is_completed AS isCompleted
+       FROM exercise_set
+       WHERE workout_session_exercise_id = ?
+       ORDER BY set_number`,
+      [workoutSessionExerciseId],
+    );
+
+    return rows;
+  }
 }
 
 export default new WorkoutSessionRepository();
