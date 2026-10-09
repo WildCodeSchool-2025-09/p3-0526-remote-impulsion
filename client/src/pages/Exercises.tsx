@@ -5,6 +5,7 @@ import ExerciseCard from "../components/ExerciseCard";
 import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
 import ExerciseDetailSheet from "../components/ExerciseDetailSheet";
 import NoResultsState from "../components/NoResultsState";
+import Pagination from "../components/Pagination";
 import SearchField from "../components/SearchField";
 import LocalErrorState from "../components/feedback/LocalErrorState";
 import CategoryIcon from "../components/filters/CategoryIcon";
@@ -13,7 +14,6 @@ import FilterGrid from "../components/filters/FilterGrid";
 import LevelIcon from "../components/filters/LevelIcon";
 import useExercises from "../hooks/useExercises";
 import useFilters from "../hooks/useFilters";
-import Pagination from "../components/Pagination";
 
 const SKELETON_IDS = [
   "exercise-skeleton-1",
