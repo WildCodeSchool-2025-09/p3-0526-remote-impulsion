@@ -1,6 +1,7 @@
 import argon2 from "argon2";
 import type { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
+import { getCurrentUserId } from "../../helpers/currentUser";
 import authRepository from "./authRepository";
 import type { LoginPayload, RegisterPayload } from "./authTypes";
 
@@ -150,4 +151,20 @@ const login: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { register, login };
+const isLogged: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId(req);
+    const user = await authRepository.readById(userId);
+
+    if (user === undefined) {
+      res.sendStatus(401);
+      return;
+    }
+
+    res.json(user);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { register, login, isLogged };
