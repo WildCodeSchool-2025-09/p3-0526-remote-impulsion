@@ -554,32 +554,36 @@ const destroy: RequestHandler = async (req, res, next) => {
 
 const createSet: RequestHandler = async (req, res, next) => {
   try {
-    const exerciseId = Number(req.params.id);
-    const { repetitions, weightKg, durationSeconds, isCompleted } =
-      req.body ?? {};
+    const sessionExerciseId = Number(req.params.id);
+    const { repetitions, weightKg, durationSeconds } = req.body ?? {};
     const userId = getCurrentUserId(req);
 
-    if (Number.isNaN(exerciseId)) {
+    if (!Number.isInteger(sessionExerciseId) || sessionExerciseId <= 0) {
       res.status(400).json({ error: "Identifiant invalide" });
       return;
     }
 
     if (
       repetitions != null &&
-      (typeof repetitions !== "number" || repetitions <= 0)
+      (!Number.isInteger(repetitions) || repetitions <= 0)
     ) {
       res.status(422).json({ errors: { repetitions: "Valeur invalide" } });
       return;
     }
 
-    if (weightKg != null && (typeof weightKg !== "number" || weightKg <= 0)) {
+    if (
+      weightKg != null &&
+      (typeof weightKg !== "number" ||
+        !Number.isFinite(weightKg) ||
+        weightKg <= 0)
+    ) {
       res.status(422).json({ errors: { weightKg: "Valeur invalide" } });
       return;
     }
 
     if (
       durationSeconds != null &&
-      (typeof durationSeconds !== "number" || durationSeconds <= 0)
+      (!Number.isInteger(durationSeconds) || durationSeconds <= 0)
     ) {
       res.status(422).json({ errors: { durationSeconds: "Valeur invalide" } });
       return;
@@ -594,25 +598,26 @@ const createSet: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    if (isCompleted != null && typeof isCompleted !== "boolean") {
-      res.status(422).json({ errors: { isCompleted: "Valeur invalide" } });
-      return;
-    }
-
     const owner =
-      await workoutSessionRepository.readSessionExerciseOwner(exerciseId);
+      await workoutSessionRepository.readSessionExerciseOwner(
+        sessionExerciseId,
+      );
 
     if (owner === undefined || owner.userId !== userId) {
       res.sendStatus(404);
       return;
     }
 
+    if (owner.status !== "in_progress") {
+      res.sendStatus(409);
+      return;
+    }
+
     const createdSet = await workoutSessionRepository.createSet(
-      exerciseId,
+      sessionExerciseId,
       repetitions ?? null,
       weightKg ?? null,
       durationSeconds ?? null,
-      isCompleted ?? false,
     );
 
     res.status(201).json(createdSet);
@@ -623,23 +628,27 @@ const createSet: RequestHandler = async (req, res, next) => {
 
 const browseSets: RequestHandler = async (req, res, next) => {
   try {
-    const setsId = Number(req.params.id);
+    const sessionExerciseId = Number(req.params.id);
     const userId = getCurrentUserId(req);
 
-    if (Number.isNaN(setsId)) {
-      res.status(400).json({ error: "sets invalid" });
+    if (!Number.isInteger(sessionExerciseId) || sessionExerciseId <= 0) {
+      res.status(400).json({ error: "Identifiant invalide" });
       return;
     }
 
     const owner =
-      await workoutSessionRepository.readSessionExerciseOwner(setsId);
+      await workoutSessionRepository.readSessionExerciseOwner(
+        sessionExerciseId,
+      );
 
     if (owner === undefined || owner.userId !== userId) {
       res.sendStatus(404);
       return;
     }
     const sets =
-      await workoutSessionRepository.readSetsBySessionExercise(setsId);
+      await workoutSessionRepository.readSetsBySessionExercise(
+        sessionExerciseId,
+      );
 
     res.json(sets);
   } catch (err) {
