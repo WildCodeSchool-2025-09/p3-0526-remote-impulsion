@@ -112,11 +112,7 @@ function Exercises({
   }
 
   return (
-    <section
-      className={`min-h-full bg-base-100 px-4 pt-5 text-base-content ${
-        selectionMode ? "pb-28" : "pb-8"
-      }`}
-    >
+    <section className="min-h-full bg-base-100 px-4 pt-5 pb-8 text-base-content">
       <header className="mb-5 flex items-start gap-2">
         {selectionMode && (
           <button
@@ -139,6 +135,39 @@ function Exercises({
           </h1>
         </div>
       </header>
+
+      {selectionMode && (
+        <div className="sticky top-16 z-20 mb-5 rounded-xl border border-base-300 bg-base-200/95 p-3 shadow-lg backdrop-blur lg:top-4">
+          <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
+            <span className="text-neutral text-sm">
+              {selectedIds.length} exercice
+              {selectedIds.length > 1 ? "s" : ""} sélectionné
+              {selectedIds.length > 1 ? "s" : ""}
+              {selectedIds.length > 0 && (
+                <>
+                  {" · "}
+                  <button
+                    type="button"
+                    onClick={handleClearSelection}
+                    disabled={isSubmitting}
+                    className="font-semibold text-info disabled:opacity-50"
+                  >
+                    Vider
+                  </button>
+                </>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={handleValidate}
+              disabled={selectedIds.length === 0 || isSubmitting}
+              className="shrink-0 rounded-lg bg-primary px-3 py-2 font-semibold text-primary-content text-xs disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm"
+            >
+              {isSubmitting ? "Ajout..." : "Ajouter à ma séance"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="mb-3">
         <SearchField
@@ -245,39 +274,6 @@ function Exercises({
             </div>
           )}
         </>
-      )}
-
-      {selectionMode && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-base-300 border-t bg-base-200 px-4 py-3 lg:left-56">
-          <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
-            <span className="text-neutral text-sm">
-              {selectedIds.length} exercice
-              {selectedIds.length > 1 ? "s" : ""} sélectionné
-              {selectedIds.length > 1 ? "s" : ""}
-              {selectedIds.length > 0 && (
-                <>
-                  {" · "}
-                  <button
-                    type="button"
-                    onClick={handleClearSelection}
-                    disabled={isSubmitting}
-                    className="font-semibold text-info disabled:opacity-50"
-                  >
-                    Vider
-                  </button>
-                </>
-              )}
-            </span>
-            <button
-              type="button"
-              onClick={handleValidate}
-              disabled={selectedIds.length === 0 || isSubmitting}
-              className="rounded-lg bg-primary px-4 py-2 font-semibold text-primary-content text-sm disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isSubmitting ? "Ajout..." : "Ajouter à ma séance"}
-            </button>
-          </div>
-        </div>
       )}
 
       <ExerciseDetailSheet

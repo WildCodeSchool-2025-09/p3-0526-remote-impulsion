@@ -24,6 +24,48 @@ type UpdateExerciseRestBody = {
   restSeconds: number | null;
 };
 
+const removeExercise: RequestHandler<WorkoutSessionExerciseParams> = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    const userId = getCurrentUserId(req);
+    const sessionId = Number(req.params.id);
+    const sessionExerciseId = Number(req.params.sessionExerciseId);
+
+    if (
+      !Number.isInteger(sessionId) ||
+      sessionId <= 0 ||
+      !Number.isInteger(sessionExerciseId) ||
+      sessionExerciseId <= 0
+    ) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const result = await workoutSessionRepository.removeExercise(
+      sessionId,
+      sessionExerciseId,
+      userId,
+    );
+
+    if (result === "exercise_not_found") {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (result === "session_not_editable") {
+      res.sendStatus(409);
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const updateExerciseRest: RequestHandler<
   WorkoutSessionExerciseParams,
   unknown,
@@ -466,6 +508,7 @@ export default {
   browseHistory,
   read,
   readCurrent,
+  removeExercise,
   start,
   reorderExercises,
   updateExerciseRest,

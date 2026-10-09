@@ -180,6 +180,23 @@ const updateWorkoutSessionExerciseRest = async (
   }
 };
 
+const deleteWorkoutSessionExercise = async (
+  sessionId: number,
+  sessionExerciseId: number,
+): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/exercises/${sessionExerciseId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible de retirer l'exercice de la séance");
+  }
+};
+
 const getHistory = async (): Promise<WorkoutSessionHistory[]> => {
   const response = await fetch(`${API_URL}/api/workout-sessions/history`, {
     credentials: "include",
@@ -204,5 +221,6 @@ export default {
   postExercisesToSession,
   reorderWorkoutSessionExercises,
   updateWorkoutSessionExerciseRest,
+  deleteWorkoutSessionExercise,
   getHistory,
 };
