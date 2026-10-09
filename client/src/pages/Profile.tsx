@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import UserIcon from "../assets/icons/navigation/user.svg?react";
 import { useAuth } from "../contexts/AuthContext";
 import { useMessages } from "../contexts/MessageContext";
 import authApi from "../services/authApi";
@@ -25,30 +26,33 @@ function Profile() {
   }
 
   return (
-    <section className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-4 py-10">
-      <div className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-lg">
-        <header className="mb-6">
-          <p className="mb-1 font-semibold text-primary text-sm uppercase tracking-wider">
-            Ton espace Impulsion
-          </p>
-          <h1 className="font-display font-extrabold text-3xl uppercase italic">
-            Profil
-          </h1>
-        </header>
+    <section className="w-full md:py-4">
+      <h1 className="font-display font-extrabold text-2xl uppercase italic">
+        Mon profil
+      </h1>
+
+      <div className="mx-auto max-w-xs">
+        <span className="mx-auto mt-6 grid size-12 place-items-center rounded-full bg-secondary/20 text-info">
+          <UserIcon aria-hidden="true" className="size-6" />
+        </span>
 
         {user !== null && (
-          <dl className="mb-6 flex flex-col gap-3">
-            <div>
-              <dt className="text-base-content/60 text-xs uppercase tracking-wider">
-                Pseudonyme
+          <dl className="mt-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <dt className="font-semibold text-info text-xs uppercase tracking-wider">
+                Pseudo
               </dt>
-              <dd className="font-semibold">{user.username}</dd>
+              <dd className="rounded-lg border border-base-300 bg-base-200 px-4 py-3 lg:px-3 lg:py-2 lg:text-sm">
+                {user.username}
+              </dd>
             </div>
-            <div>
-              <dt className="text-base-content/60 text-xs uppercase tracking-wider">
-                E-mail
+            <div className="flex flex-col gap-1.5">
+              <dt className="font-semibold text-info text-xs uppercase tracking-wider">
+                Adresse e-mail
               </dt>
-              <dd className="font-semibold">{user.email}</dd>
+              <dd className="truncate rounded-lg border border-base-300 bg-base-200 px-4 py-3 lg:px-3 lg:py-2 lg:text-sm">
+                {user.email}
+              </dd>
             </div>
           </dl>
         )}
@@ -57,7 +61,7 @@ function Profile() {
           type="button"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="w-full rounded-lg border border-error/40 bg-error/10 px-4 py-3 font-bold text-error transition hover:bg-error/20 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-8 w-full rounded-lg bg-primary px-4 py-3.5 font-semibold text-primary-content lg:py-2.5 lg:text-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoggingOut ? "Déconnexion…" : "Se déconnecter"}
         </button>
