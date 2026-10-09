@@ -16,11 +16,11 @@ function SessionSummary() {
   const sessionId = Number(id);
   const { summary, loading, error } = useSessionSummary(sessionId);
 
-  const [isChronoNoticeVisible, setIsChronoNoticeVisible] = useState(true);
+  const [showChronoInfo, setShowChronoInfo] = useState(true);
 
   const navigate = useNavigate();
   const { showMessage } = useMessages();
-  const { completeSession, loading: completing } = useCompleteSession();
+  const { completeSession, loading: completeLoading } = useCompleteSession();
 
   const handleComplete = async () => {
     const isCompleted = await completeSession(sessionId);
@@ -28,18 +28,18 @@ function SessionSummary() {
     if (isCompleted) {
       showMessage("Bravo, séance enregistrée", "success");
       navigate("/");
-      return;
+    } else {
+      showMessage("Impossible de valider la séance", "error");
     }
-
-    showMessage("Impossible de valider la séance", "error");
   };
 
-  if (loading)
+  if (loading) {
     return (
       <p className="text-base-content/75">Chargement du récapitulatif...</p>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
       <div
         role="alert"
@@ -54,9 +54,17 @@ function SessionSummary() {
         </p>
       </div>
     );
+  }
 
-  if (!summary)
+  if (!summary) {
     return <p className="text-base-content/75">Récapitulatif introuvable.</p>;
+  }
+
+  let buttonText = "Terminer et enregistrer";
+
+  if (completeLoading) {
+    buttonText = "Enregistrement...";
+  }
 
   return (
     <main className="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-xl flex-col gap-6 pb-24">
@@ -74,7 +82,7 @@ function SessionSummary() {
         </h1>
       </div>
 
-      {isChronoNoticeVisible && (
+      {showChronoInfo && (
         <p className="relative flex items-start gap-3 rounded-box border border-info/50 bg-[color-mix(in_oklab,var(--color-info)_16%,var(--color-base-100))] py-3 pr-12 pl-4 text-info text-sm leading-5">
           <InfoCircleIcon
             aria-hidden="true"
@@ -84,7 +92,7 @@ function SessionSummary() {
           <button
             type="button"
             aria-label="Fermer le message"
-            onClick={() => setIsChronoNoticeVisible(false)}
+            onClick={() => setShowChronoInfo(false)}
             className="absolute top-2 right-2 grid size-8 place-items-center rounded-full text-xl leading-none transition-colors hover:bg-info/20 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
           >
             <span aria-hidden="true">&times;</span>
@@ -138,10 +146,10 @@ function SessionSummary() {
         <button
           type="button"
           onClick={handleComplete}
-          disabled={completing}
+          disabled={completeLoading}
           className="flex w-full items-center justify-center rounded-lg border border-primary bg-primary px-5 py-3 text-center font-semibold text-primary-content text-sm transition-colors duration-200 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-wait disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 disabled:hover:text-base-content/35"
         >
-          {completing ? "Enregistrement..." : "Terminer et enregistrer"}
+          {buttonText}
         </button>
       </div>
     </main>

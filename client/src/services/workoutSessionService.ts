@@ -74,12 +74,16 @@ const startWorkoutSession = async (sessionId: number) => {
     { method: "PATCH", credentials: "include" },
   );
   if (response.status === 409) {
-    const conflict = await response.json().catch(() => null);
+    let currentSessionId = null;
 
-    return {
-      result: "conflict",
-      currentSessionId: conflict?.currentSessionId ?? null,
-    };
+    try {
+      const conflict = await response.json();
+      currentSessionId = conflict.currentSessionId;
+    } catch {
+      // la réponse ne contient pas de JSON : on garde null
+    }
+
+    return { result: "conflict", currentSessionId: currentSessionId };
   }
   if (!response.ok) {
     throw new Error("Impossible de démarrer la séance");

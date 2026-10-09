@@ -20,7 +20,7 @@ export const formatSessionStartTime = (startedAt: string): string =>
     minute: "2-digit",
   });
 
-export const formatSessionDateWithWeekday = (startedAt: string): string =>
+export const formatFullDate = (startedAt: string): string =>
   new Date(startedAt).toLocaleDateString(LOCALE, {
     weekday: "long",
     day: "numeric",

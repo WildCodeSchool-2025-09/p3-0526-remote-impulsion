@@ -5,6 +5,7 @@ import ExerciseCard from "../components/ExerciseCard";
 import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
 import ExerciseDetailSheet from "../components/ExerciseDetailSheet";
 import NoResultsState from "../components/NoResultsState";
+import Pagination from "../components/Pagination";
 import SearchField from "../components/SearchField";
 import LocalErrorState from "../components/feedback/LocalErrorState";
 import CategoryIcon from "../components/filters/CategoryIcon";
@@ -54,6 +55,10 @@ function Exercises({
     hasActiveFilter,
     resetFilters,
     isCatalogEmpty,
+    page,
+    setPage,
+    total,
+    pageCount,
   } = useExercises();
 
   const {
@@ -213,8 +218,8 @@ function Exercises({
         <>
           <div className="mb-3 flex items-center justify-between">
             <p className="font-semibold text-neutral text-xs uppercase tracking-wider">
-              {exercises.length} résultat
-              {exercises.length > 1 ? "s" : ""}
+              {total} résultat
+              {total > 1 ? "s" : ""}
             </p>
           </div>
 
@@ -230,19 +235,26 @@ function Exercises({
           ) : exercises.length === 0 ? (
             <NoResultsState onReset={resetFilters} />
           ) : (
-            <div className={exerciseGridClassName}>
-              {exercises.map((exercise) => (
-                <ExerciseCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  onSelect={handleOpenExerciseDetail}
-                  selectionMode={selectionMode}
-                  isSelected={selectedIds.includes(exercise.id)}
-                  isUnavailable={excludedIds.includes(exercise.id)}
-                  onToggleSelect={handleToggleSelection}
-                />
-              ))}
-            </div>
+            <>
+              <div className={exerciseGridClassName}>
+                {exercises.map((exercise) => (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    onSelect={handleOpenExerciseDetail}
+                    selectionMode={selectionMode}
+                    isSelected={selectedIds.includes(exercise.id)}
+                    isUnavailable={excludedIds.includes(exercise.id)}
+                    onToggleSelect={handleToggleSelection}
+                  />
+                ))}
+              </div>
+              <Pagination
+                page={page}
+                pageCount={pageCount}
+                onPageChange={setPage}
+              />
+            </>
           )}
         </>
       )}

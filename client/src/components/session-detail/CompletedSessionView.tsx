@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import ChevronLeftIcon from "../../assets/icons/chevrons/chevron-left.svg?react";
 import useWorkoutSessionDetail from "../../hooks/workout-session/useWorkoutSessionDetail";
 import { formatDuration } from "../../utils/formatDuration";
-import { formatSessionDateWithWeekday } from "../../utils/formatSessionDate";
+import { formatFullDate } from "../../utils/formatSessionDate";
 import ExerciseDetailSheet from "../ExerciseDetailSheet";
 import LocalErrorState from "../feedback/LocalErrorState";
 import Skeleton from "../feedback/Skeleton";
@@ -67,7 +67,7 @@ function CompletedSessionView({ sessionId }: CompletedSessionViewProps) {
         </Link>
 
         <h1 className="py-0.5 font-display font-extrabold text-2xl uppercase italic leading-snug lg:text-4xl">
-          {formatSessionDateWithWeekday(startedAt)}
+          {formatFullDate(startedAt)}
         </h1>
       </div>
 

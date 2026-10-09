@@ -56,6 +56,45 @@ describe("GET /api/exercises/:id", () => {
   });
 });
 
+type ExerciseItem = {
+  slug: string;
+  name: string;
+  category: string;
+};
+
+// lit toutes les pages d'une recherche, pour vérifier la liste complète
+const getAllExercises = async (query: Record<string, string | number>) => {
+  const firstPage = await request(app).get("/api/exercises").query(query);
+  const allItems: ExerciseItem[] = [];
+
+  for (const item of firstPage.body.items) {
+    allItems.push(item);
+  }
+
+  for (let page = 2; page <= firstPage.body.pageCount; page = page + 1) {
+    const nextPage = await request(app)
+      .get("/api/exercises")
+      .query(query)
+      .query({ page: page });
+
+    for (const item of nextPage.body.items) {
+      allItems.push(item);
+    }
+  }
+
+  return allItems;
+};
+
+const getSlugs = (items: ExerciseItem[]) => {
+  const slugs: string[] = [];
+
+  for (const item of items) {
+    slugs.push(item.slug);
+  }
+
+  return slugs;
+};
+
 describe("GET /api/exercises - recherche et filtres", () => {
   test("la recherche est insensible à la casse et aux accents", async () => {
     const [lower, upper, accented] = await Promise.all([
@@ -65,12 +104,12 @@ describe("GET /api/exercises - recherche et filtres", () => {
     ]);
 
     expect(lower.status).toBe(200);
-    expect(lower.body).toHaveLength(15);
-    expect(upper.body).toHaveLength(15);
-    expect(accented.body).toHaveLength(15);
-    expect(
-      lower.body.map((exercise: { slug: string }) => exercise.slug),
-    ).toContain("seated-chest-press");
+    expect(lower.body.total).toBe(15);
+    expect(upper.body.total).toBe(15);
+    expect(accented.body.total).toBe(15);
+
+    const allItems = await getAllExercises({ search: "developpe" });
+    expect(getSlugs(allItems)).toContain("seated-chest-press");
   });
 
   test("filtre par catégorie", async () => {
@@ -79,12 +118,13 @@ describe("GET /api/exercises - recherche et filtres", () => {
       .query({ categoryId: 5 });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(31);
-    expect(
-      response.body.every(
-        (exercise: { category: string }) => exercise.category === "Jambes",
-      ),
-    ).toBe(true);
+    expect(response.body.total).toBe(31);
+
+    const allItems = await getAllExercises({ categoryId: 5 });
+    expect(allItems).toHaveLength(31);
+    expect(allItems.every((exercise) => exercise.category === "Jambes")).toBe(
+      true,
+    );
   });
 
   test("filtre par difficulté", async () => {
@@ -93,10 +133,9 @@ describe("GET /api/exercises - recherche et filtres", () => {
       .query({ difficultyId: 1 });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(105);
-    const slugs = response.body.map(
-      (exercise: { slug: string }) => exercise.slug,
-    );
+    expect(response.body.total).toBe(105);
+
+    const slugs = getSlugs(await getAllExercises({ difficultyId: 1 }));
     expect(slugs).toContain("push-ups");
     expect(slugs).not.toContain("pull-ups");
   });
@@ -107,10 +146,9 @@ describe("GET /api/exercises - recherche et filtres", () => {
       .query({ equipmentId: 4 });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(24);
-    const slugs = response.body.map(
-      (exercise: { slug: string }) => exercise.slug,
-    );
+    expect(response.body.total).toBe(24);
+
+    const slugs = getSlugs(await getAllExercises({ equipmentId: 4 }));
     expect(slugs).toContain("deadlift");
     expect(slugs).not.toContain("push-ups");
   });
@@ -121,15 +159,14 @@ describe("GET /api/exercises - recherche et filtres", () => {
       .query({ categoryId: 5, difficultyId: 1 });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(17);
-    expect(
-      response.body.every(
-        (exercise: { category: string }) => exercise.category === "Jambes",
-      ),
-    ).toBe(true);
-    const slugs = response.body.map(
-      (exercise: { slug: string }) => exercise.slug,
+    expect(response.body.total).toBe(17);
+
+    const allItems = await getAllExercises({ categoryId: 5, difficultyId: 1 });
+    expect(allItems.every((exercise) => exercise.category === "Jambes")).toBe(
+      true,
     );
+
+    const slugs = getSlugs(allItems);
     expect(slugs).toContain("bodyweight-squat");
     expect(slugs).not.toContain("deadlift");
   });
@@ -144,11 +181,11 @@ describe("GET /api/exercises - recherche et filtres", () => {
 
     expect(combined.status).toBe(200);
     // la combinaison est plus restrictive que la recherche seule
-    expect(combined.body.length).toBeLessThan(searchOnly.body.length);
-    expect(combined.body).toHaveLength(8);
+    expect(combined.body.total).toBeLessThan(searchOnly.body.total);
+    expect(combined.body.total).toBe(8);
     expect(
-      combined.body.every(
-        (exercise: { category: string; name: string }) =>
+      combined.body.items.every(
+        (exercise: ExerciseItem) =>
           exercise.category === "Pectoraux" &&
           exercise.name.toLowerCase().includes("développé".toLowerCase()),
       ),
@@ -156,13 +193,9 @@ describe("GET /api/exercises - recherche et filtres", () => {
   });
 
   test("une seule valeur peut être active par famille", async () => {
-    const response = await request(app)
-      .get("/api/exercises")
-      .query({ categoryId: 5 });
+    const allItems = await getAllExercises({ categoryId: 5 });
 
-    const categories = new Set(
-      response.body.map((exercise: { category: string }) => exercise.category),
-    );
+    const categories = new Set(allItems.map((exercise) => exercise.category));
     expect(categories.size).toBe(1);
     expect(categories.has("Jambes")).toBe(true);
   });
@@ -171,17 +204,116 @@ describe("GET /api/exercises - recherche et filtres", () => {
     const response = await request(app).get("/api/exercises");
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(151);
+    expect(response.body.total).toBe(151);
   });
 
-  test("renvoie un tableau vide quand aucun exercice ne correspond", async () => {
+  test("renvoie une liste vide quand aucun exercice ne correspond", async () => {
     const response = await request(app)
       .get("/api/exercises")
       .query({ search: "zzzznotfound" });
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual([]);
-    expect(response.body).toHaveLength(0);
+    expect(response.body.items).toEqual([]);
+    expect(response.body.total).toBe(0);
+  });
+});
+
+describe("GET /api/exercises - pagination (US26)", () => {
+  test("sans paramètre, renvoie la première page de 10 exercices", async () => {
+    const response = await request(app).get("/api/exercises");
+
+    expect(response.status).toBe(200);
+    expect(response.body.page).toBe(1);
+    expect(response.body.items).toHaveLength(10);
+    expect(response.body.items[0].slug).toBe("hip-abduction");
+  });
+
+  test("la page suivante renvoie les 10 exercices d'après, sans doublon", async () => {
+    const [firstPage, secondPage] = await Promise.all([
+      request(app).get("/api/exercises").query({ page: 1 }),
+      request(app).get("/api/exercises").query({ page: 2 }),
+    ]);
+
+    expect(secondPage.status).toBe(200);
+    expect(secondPage.body.page).toBe(2);
+    expect(secondPage.body.items).toHaveLength(10);
+    expect(secondPage.body.items[0].slug).toBe("scissor-kicks");
+
+    const firstSlugs = getSlugs(firstPage.body.items);
+    for (const exercise of secondPage.body.items) {
+      expect(firstSlugs).not.toContain(exercise.slug);
+    }
+  });
+
+  test("la dernière page contient les exercices restants", async () => {
+    const response = await request(app)
+      .get("/api/exercises")
+      .query({ page: 16 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(1);
+    expect(response.body.items[0].slug).toBe("y-t-w-raise");
+  });
+
+  test("une page après la dernière renvoie une liste vide", async () => {
+    const response = await request(app)
+      .get("/api/exercises")
+      .query({ page: 17 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toEqual([]);
+    expect(response.body.total).toBe(151);
+  });
+
+  test("une page invalide renvoie la première page", async () => {
+    for (const invalidPage of ["abc", "0", "-3", "1.5"]) {
+      const response = await request(app)
+        .get("/api/exercises")
+        .query({ page: invalidPage });
+
+      expect(response.status).toBe(200);
+      expect(response.body.page).toBe(1);
+      expect(response.body.items[0].slug).toBe("hip-abduction");
+    }
+  });
+
+  test("les filtres s'appliquent avant la pagination", async () => {
+    const response = await request(app)
+      .get("/api/exercises")
+      .query({ categoryId: 5, page: 4 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.total).toBe(31);
+    expect(response.body.pageCount).toBe(4);
+    expect(response.body.page).toBe(4);
+    expect(response.body.items).toHaveLength(1);
+    expect(response.body.items[0].category).toBe("Jambes");
+  });
+
+  test("aucun résultat : liste vide, total 0 et 0 page", async () => {
+    const response = await request(app)
+      .get("/api/exercises")
+      .query({ search: "zzzznotfound", page: 1 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toEqual([]);
+    expect(response.body.total).toBe(0);
+    expect(response.body.pageCount).toBe(0);
+  });
+
+  test("total et pageCount correspondent au nombre d'exercices", async () => {
+    const [all, beginner, search] = await Promise.all([
+      request(app).get("/api/exercises"),
+      request(app).get("/api/exercises").query({ difficultyId: 1 }),
+      request(app).get("/api/exercises").query({ search: "developpe" }),
+    ]);
+
+    expect(all.body.total).toBe(151);
+    expect(all.body.pageCount).toBe(16);
+    expect(beginner.body.total).toBe(105);
+    expect(beginner.body.pageCount).toBe(11);
+    expect(search.body.total).toBe(15);
+    expect(search.body.pageCount).toBe(2);
   });
 });
 

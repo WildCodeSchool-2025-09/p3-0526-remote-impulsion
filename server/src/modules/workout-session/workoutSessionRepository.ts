@@ -102,33 +102,19 @@ class WorkoutSessionRepository {
   async read(sessionId: number, userId: number) {
     const [sessionRows] = await databaseClient.query<Rows>(
       `SELECT
-        workout_session.id,
-        workout_session.user_id AS userId,
-        workout_session.created_at AS createdAt,
-        workout_session.started_at AS startedAt,
-        workout_session.ended_at AS endedAt,
-        workout_session.status,
-        COUNT(workout_session_exercise.id) AS exerciseCount,
-        (SELECT COUNT(*)
-         FROM exercise_set
-         WHERE is_completed = TRUE
-           AND workout_session_exercise_id IN (
-             SELECT id
-             FROM workout_session_exercise
-             WHERE workout_session_id = workout_session.id
-           )) AS completedSetCount
-      FROM workout_session
-      LEFT JOIN workout_session_exercise
-        ON workout_session.id = workout_session_exercise.workout_session_id
-      WHERE workout_session.user_id = ?
-        AND workout_session.id = ?
-      GROUP BY workout_session.id`,
-      [userId, sessionId],
+        id,
+        user_id AS userId,
+        created_at AS createdAt,
+        started_at AS startedAt,
+        ended_at AS endedAt,
+        status
+       FROM workout_session
+       WHERE id = ?
+         AND user_id = ?`,
+      [sessionId, userId],
     );
 
-    const session = sessionRows[0] as
-      | (Rows[number] & { exerciseCount: number })
-      | undefined;
+    const session = sessionRows[0];
 
     if (session === undefined) {
       return undefined;
@@ -147,17 +133,37 @@ class WorkoutSessionRepository {
         workout_session_exercise.target_weight_kg AS targetWeightKg,
         workout_session_exercise.target_duration_seconds AS targetDurationSeconds,
         workout_session_exercise.rest_seconds AS restSeconds
-      FROM workout_session_exercise
-      JOIN exercise
-        ON exercise.id = workout_session_exercise.exercise_id
-      JOIN category
-        ON category.id = exercise.category_id
-      WHERE workout_session_exercise.workout_session_id = ?
-      ORDER BY workout_session_exercise.position`,
+       FROM workout_session_exercise
+       JOIN exercise
+         ON exercise.id = workout_session_exercise.exercise_id
+       JOIN category
+         ON category.id = exercise.category_id
+       WHERE workout_session_exercise.workout_session_id = ?
+       ORDER BY workout_session_exercise.position`,
       [sessionId],
     );
 
-    return { ...session, exercises: exerciseRows };
+    const [setRows] = await databaseClient.query<Rows>(
+      `SELECT COUNT(*) AS completedSetCount
+       FROM exercise_set
+       JOIN workout_session_exercise
+         ON workout_session_exercise.id = exercise_set.workout_session_exercise_id
+       WHERE workout_session_exercise.workout_session_id = ?
+         AND exercise_set.is_completed = TRUE`,
+      [sessionId],
+    );
+
+    return {
+      id: session.id,
+      userId: session.userId,
+      createdAt: session.createdAt,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      status: session.status,
+      exerciseCount: exerciseRows.length,
+      completedSetCount: Number(setRows[0].completedSetCount),
+      exercises: exerciseRows,
+    };
   }
 
   async readCurrent(userId: number) {
@@ -383,26 +389,31 @@ class WorkoutSessionRepository {
   }
 
   async abandon(sessionId: number, userId: number) {
-    const [result] = await databaseClient.query<Result>(
-      `UPDATE workout_session       
-      SET 
-        status = 'prepared',
-        started_at = NULL,
-        ended_at = NULL
-        WHERE workout_session.user_id = ?
-          AND workout_session.id = ? 
-          AND workout_session.status = 'in_progress'
-          AND NOT EXISTS (
-        SELECT 1
-          FROM exercise_set
-          JOIN workout_session_exercise
-            ON exercise_set.workout_session_exercise_id =
-              workout_session_exercise.id
-          WHERE workout_session_exercise.workout_session_id =
-              workout_session.id
-          AND exercise_set.is_completed = TRUE)`,
-      [userId, sessionId],
+    const [setRows] = await databaseClient.query<Rows>(
+      `SELECT COUNT(*) AS completedSetCount
+       FROM exercise_set
+       JOIN workout_session_exercise
+         ON workout_session_exercise.id = exercise_set.workout_session_exercise_id
+       WHERE workout_session_exercise.workout_session_id = ?
+         AND exercise_set.is_completed = TRUE`,
+      [sessionId],
     );
+
+    if (Number(setRows[0].completedSetCount) > 0) {
+      return 0;
+    }
+
+    const [result] = await databaseClient.query<Result>(
+      `UPDATE workout_session
+       SET status = 'prepared',
+           started_at = NULL,
+           ended_at = NULL
+       WHERE id = ?
+         AND user_id = ?
+         AND status = 'in_progress'`,
+      [sessionId, userId],
+    );
+
     return result.affectedRows;
   }
 
@@ -478,7 +489,7 @@ class WorkoutSessionRepository {
   async readDetail(sessionId: number, userId: number) {
     const session = await this.read(sessionId, userId);
 
-    if (session === undefined) {
+    if (session === undefined || session.status !== "completed") {
       return undefined;
     }
 
@@ -498,14 +509,44 @@ class WorkoutSessionRepository {
       [sessionId],
     );
 
-    const exercises: Rows = session.exercises.map((exercise) => ({
-      ...exercise,
-      sets: setRows.filter(
-        (set) => set.sessionExerciseId === exercise.sessionExerciseId,
-      ),
-    }));
+    const exercises = [];
 
-    return { ...session, exercises };
+    for (const exercise of session.exercises) {
+      const sets = [];
+
+      for (const set of setRows) {
+        if (set.sessionExerciseId === exercise.sessionExerciseId) {
+          sets.push(set);
+        }
+      }
+
+      exercises.push({
+        sessionExerciseId: exercise.sessionExerciseId,
+        id: exercise.id,
+        slug: exercise.slug,
+        name: exercise.name,
+        category: exercise.category,
+        position: exercise.position,
+        targetSets: exercise.targetSets,
+        targetReps: exercise.targetReps,
+        targetWeightKg: exercise.targetWeightKg,
+        targetDurationSeconds: exercise.targetDurationSeconds,
+        restSeconds: exercise.restSeconds,
+        sets: sets,
+      });
+    }
+
+    return {
+      id: session.id,
+      userId: session.userId,
+      createdAt: session.createdAt,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      status: session.status,
+      exerciseCount: session.exerciseCount,
+      completedSetCount: session.completedSetCount,
+      exercises: exercises,
+    };
   }
 
   async delete(sessionId: number, userId: number) {
