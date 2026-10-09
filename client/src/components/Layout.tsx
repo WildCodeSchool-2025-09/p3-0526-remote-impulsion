@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useLocation } from "react-router";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
 import CalendarIcon from "../assets/icons/navigation/calendar-month.svg?react";
 import HistoryIcon from "../assets/icons/navigation/history.svg?react";
@@ -22,6 +22,10 @@ const NAV_ITEMS = [
 
 function Layout() {
   const { theme, toggleTheme } = useTheme();
+  const { pathname } = useLocation();
+  const isHome = pathname === "/";
+  const isAddingExercises =
+    pathname.startsWith("/sessions/") && pathname.endsWith("/exercises");
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content lg:flex">
@@ -74,49 +78,53 @@ function Layout() {
         </div>
       </aside>
 
-      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-base-300 border-b bg-base-100/95 px-4 backdrop-blur lg:hidden">
-        <img
-          src={theme === "impulsion-dark" ? logoDark : logoLight}
-          alt="Impulsion"
-          width={112}
-          height={24}
-        />
+      {isHome && (
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-base-300 border-b bg-base-100/95 px-4 backdrop-blur lg:hidden">
+          <img
+            src={theme === "impulsion-dark" ? logoDark : logoLight}
+            alt="Impulsion"
+            width={112}
+            height={24}
+          />
 
-        <NavLink
-          to="/profile"
-          aria-label="Ouvrir le profil"
-          className={({ isActive }) =>
-            `grid size-10 place-items-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 ${
-              isActive
-                ? "border-info bg-info text-info-content"
-                : "border-base-300 bg-base-200 text-base-content hover:border-info hover:text-info"
-            }`
-          }
-        >
-          <UserIcon className="size-5" />
-          <span className="sr-only">Profil</span>
-        </NavLink>
-      </header>
+          <NavLink
+            to="/profile"
+            aria-label="Ouvrir le profil"
+            className={({ isActive }) =>
+              `grid size-10 place-items-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 ${
+                isActive
+                  ? "border-info bg-info text-info-content"
+                  : "border-base-300 bg-base-200 text-base-content hover:border-info hover:text-info"
+              }`
+            }
+          >
+            <UserIcon className="size-5" />
+            <span className="sr-only">Profil</span>
+          </NavLink>
+        </header>
+      )}
 
       <main className="flex-1 p-4 pb-24 lg:pb-4">
         <Outlet />
       </main>
 
-      <nav
-        aria-label="Navigation mobile"
-        className="fixed right-0 bottom-0 left-0 flex h-20 items-center justify-around border-base-300 border-t bg-base-200 lg:hidden"
-      >
-        {NAV_ITEMS.map(({ to, label, icon, end }) => (
-          <NavItem
-            key={to}
-            to={to}
-            label={label}
-            icon={icon}
-            end={end}
-            variant="mobile"
-          />
-        ))}
-      </nav>
+      {!isAddingExercises && (
+        <nav
+          aria-label="Navigation mobile"
+          className="fixed right-0 bottom-0 left-0 z-30 flex h-20 items-center justify-around border-base-300 border-t bg-base-200 lg:hidden"
+        >
+          {NAV_ITEMS.map(({ to, label, icon, end }) => (
+            <NavItem
+              key={to}
+              to={to}
+              label={label}
+              icon={icon}
+              end={end}
+              variant="mobile"
+            />
+          ))}
+        </nav>
+      )}
     </div>
   );
 }

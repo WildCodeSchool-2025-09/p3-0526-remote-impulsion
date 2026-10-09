@@ -127,7 +127,7 @@ function ExerciseDetailSheet({
               {exerciseDetail?.name ?? "Exercice"}
             </h2>
             {exerciseDetail !== null && (
-              <p className="mt-2 flex flex-wrap items-center gap-x-2 text-neutral text-xs">
+              <p className="mt-2 flex flex-wrap items-center gap-x-2 text-info text-xs">
                 <span>{exerciseDetail.category}</span>
                 <span aria-hidden="true">·</span>
                 <span>
@@ -148,9 +148,19 @@ function ExerciseDetailSheet({
             type="button"
             aria-label="Fermer la fiche exercice"
             onClick={onClose}
-            className="grid size-10 shrink-0 place-items-center rounded-full bg-base-300 text-2xl text-base-content transition-colors hover:bg-primary hover:text-primary-content focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-base-300 text-base-content transition-colors hover:bg-primary hover:text-primary-content focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
           >
-            &times;
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              className="size-4"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
           </button>
         </header>
 
