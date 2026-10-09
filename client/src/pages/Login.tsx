@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useMessages } from "../contexts/MessageContext";
 import authApi from "../services/authApi";
@@ -12,8 +12,6 @@ function Login() {
   const { setUser } = useAuth();
 
   const navigate = useNavigate();
-  const location = useLocation();
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? "/";
   const { showMessage } = useMessages();
 
   async function handleSubmit(event: React.FormEvent) {
@@ -28,7 +26,7 @@ function Login() {
         const currentUser = await authApi.fetchCurrentUser();
         setUser(currentUser);
         showMessage("Connexion réussie", "success");
-        navigate(redirectTo, { replace: true });
+        navigate("/", { replace: true });
         return;
       }
 

@@ -151,6 +151,16 @@ const login: RequestHandler = async (req, res, next) => {
   }
 };
 
+const logout: RequestHandler = (_req, res) => {
+  res.clearCookie("auth_token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  res.sendStatus(204);
+};
+
 const isLogged: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId(req);
@@ -167,4 +177,4 @@ const isLogged: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default { register, login, isLogged };
+export default { register, login, isLogged, logout };
