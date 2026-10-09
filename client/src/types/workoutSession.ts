@@ -50,6 +50,21 @@ export type CompletedSet = {
   durationSeconds: number | null;
 };
 
+export type ExerciseSet = {
+  id: number;
+  setNumber: number;
+  repetitions: number | null;
+  weightKg: number | string | null;
+  durationSeconds: number | null;
+  isCompleted: boolean;
+};
+
+export type CreateExerciseSet = {
+  repetitions: number | null;
+  weightKg: number | null;
+  durationSeconds: number | null;
+};
+
 export type WorkoutSessionDetailExercise = WorkoutSessionExercise & {
   sets: CompletedSet[];
 };

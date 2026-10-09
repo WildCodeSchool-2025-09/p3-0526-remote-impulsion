@@ -1,4 +1,6 @@
 import type {
+  CreateExerciseSet,
+  ExerciseSet,
   WorkoutSession,
   WorkoutSessionDetail,
   WorkoutSessionHistory,
@@ -230,6 +232,44 @@ const getWorkoutSessionDetail = async (
   return session;
 };
 
+const getExerciseSets = async (
+  sessionExerciseId: number,
+): Promise<ExerciseSet[]> => {
+  const response = await fetch(
+    `${API_URL}/api/session-exercises/${sessionExerciseId}/sets`,
+    { credentials: "include" },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible de charger les séries");
+  }
+
+  return response.json();
+};
+
+const postExerciseSet = async (
+  sessionExerciseId: number,
+  values: CreateExerciseSet,
+): Promise<ExerciseSet> => {
+  const response = await fetch(
+    `${API_URL}/api/session-exercises/${sessionExerciseId}/sets`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible d'enregistrer la série");
+  }
+
+  return response.json();
+};
+
 export default {
   getWorkoutSessions,
   postWorkoutSession,
@@ -246,4 +286,6 @@ export default {
   deleteWorkoutSessionExercise,
   getHistory,
   getWorkoutSessionDetail,
+  getExerciseSets,
+  postExerciseSet,
 };
