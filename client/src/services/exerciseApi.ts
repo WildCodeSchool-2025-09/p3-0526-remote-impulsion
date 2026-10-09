@@ -1,12 +1,13 @@
-import type { ExerciseDetail, ExerciseSummary } from "../types/exercise";
+import type { ExerciseDetail, ExercisePage } from "../types/exercise";
 
 async function fetchExercises(
   categoryId?: number,
   difficultyId?: number,
   equipmentId?: number,
   search?: string,
+  page?: number,
   signal?: AbortSignal,
-): Promise<ExerciseSummary[]> {
+): Promise<ExercisePage> {
   const params = new URLSearchParams();
 
   if (categoryId) {
@@ -25,6 +26,10 @@ async function fetchExercises(
     params.set("search", search);
   }
 
+  if (page) {
+    params.set("page", String(page));
+  }
+
   const url = `${import.meta.env.VITE_API_URL}/api/exercises?${params.toString()}`;
 
   const response = await fetch(url, { signal });
@@ -33,7 +38,7 @@ async function fetchExercises(
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  const data: ExerciseSummary[] = await response.json();
+  const data: ExercisePage = await response.json();
 
   return data;
 }

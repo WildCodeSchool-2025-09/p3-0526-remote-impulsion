@@ -6,7 +6,13 @@ import usePreparedSessions from "../hooks/workout-session/usePreparedSessions";
 
 function Sessions() {
   const { sessions, loading, error } = usePreparedSessions();
-  const currentSession = useContext(CurrentSessionContext)?.currentSession;
+  const context = useContext(CurrentSessionContext);
+
+  if (context === null) {
+    throw new Error("Le contexte de la séance en cours est indisponible");
+  }
+
+  const currentSession = context.currentSession;
 
   if (loading) {
     return <p>Chargement...</p>;

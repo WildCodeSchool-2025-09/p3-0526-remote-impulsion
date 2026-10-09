@@ -4,16 +4,22 @@ import { Link, useNavigate, useParams } from "react-router";
 import TrashIcon from "../assets/icons/actions/trash.svg?react";
 import ChevronLeftIcon from "../assets/icons/chevrons/chevron-left.svg?react";
 import BarbellIcon from "../assets/icons/navigation/barbell.svg?react";
+import AbandonSessionModal from "../components/AbandonSessionModal";
 import Chrono from "../components/Chrono";
+import ConflictSessionModal from "../components/ConflictSessionModal";
 import DeleteSessionModal from "../components/DeleteSessionModal";
 import PreparedExerciseCard from "../components/PreparedExerciseCard";
+import CompletedSessionView from "../components/session-detail/CompletedSessionView";
 import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import { useMessages } from "../contexts/MessageContext";
-import { useMobileNav } from "../contexts/MobileNavContext";
+import useAbandonSession from "../hooks/workout-session/useAbandonSession";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
+import useDeleteSessionExercise from "../hooks/workout-session/useDeleteSessionExercise";
 import useReorderSessionExercises from "../hooks/workout-session/useReorderSessionExercises";
 import useStartSession from "../hooks/workout-session/useStartSession";
+import useUpdateSessionExerciseRest from "../hooks/workout-session/useUpdateSessionExerciseRest";
 import useWorkoutSession from "../hooks/workout-session/useWorkoutSession";
+import { formatFullDate } from "../utils/formatSessionDate";
 
 function SessionId() {
   const { id } = useParams();
@@ -24,6 +30,8 @@ function SessionId() {
     useWorkoutSession(sessionId);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAbandonModalOpen, setIsAbandonModalOpen] = useState(false);
+  const [userClosedConflictModal, setUserClosedConflictModal] = useState(false);
 
   const {
     reorderSessionExercises,
@@ -44,8 +52,25 @@ function SessionId() {
     currentSessionId,
   } = useStartSession();
 
+  const {
+    abandonSession,
+    isAbandoning,
+    error: abandonError,
+  } = useAbandonSession();
+
+  const {
+    updateSessionExerciseRest,
+    updatingExerciseId,
+    error: restError,
+  } = useUpdateSessionExerciseRest();
+
+  const {
+    deleteSessionExercise,
+    deletingExerciseId,
+    error: removeExerciseError,
+  } = useDeleteSessionExercise();
+
   const currentSessionContext = useContext(CurrentSessionContext);
-  const { isNavOpen } = useMobileNav();
   const { showMessage } = useMessages();
 
   useEffect(() => {
@@ -60,6 +85,28 @@ function SessionId() {
     }
   }, [startError, showMessage]);
 
+  useEffect(() => {
+    if (abandonError !== null) {
+      showMessage(abandonError, "error");
+    }
+  }, [abandonError, showMessage]);
+
+  useEffect(() => {
+    if (restError !== null) {
+      showMessage(restError, "error");
+    }
+  }, [restError, showMessage]);
+
+  useEffect(() => {
+    if (removeExerciseError !== null) {
+      showMessage(removeExerciseError, "error");
+    }
+  }, [removeExerciseError, showMessage]);
+
+  if (currentSessionContext === null) {
+    throw new Error("Le contexte de la séance en cours est indisponible");
+  }
+
   if (loading) {
     return <p>Chargement...</p>;
   }
@@ -72,14 +119,11 @@ function SessionId() {
     return <p>Séance introuvable.</p>;
   }
 
-  const formattedDate = new Date(session.createdAt).toLocaleDateString(
-    "fr-FR",
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    },
-  );
+  if (session.status === "completed") {
+    return <CompletedSessionView sessionId={session.id} />;
+  }
+
+  const formattedDate = formatFullDate(session.createdAt);
 
   const exercises = session.exercises ?? [];
   const exerciseCount = Number(session.exerciseCount);
@@ -133,24 +177,103 @@ function SessionId() {
   const handleStart = async () => {
     const started = await startSession(session.id);
 
-    if (started && currentSessionContext) {
+    if (started) {
       await currentSessionContext.refreshCurrentSession();
+    } else {
+      setUserClosedConflictModal(false);
     }
   };
 
-  const isInProgress =
-    session.status === "in_progress" ||
-    currentSessionContext?.currentSession?.id === session.id;
+  const handleRestChange = async (
+    sessionExerciseId: number,
+    restSeconds: number | null,
+  ) => {
+    const updated = await updateSessionExerciseRest(
+      session.id,
+      sessionExerciseId,
+      restSeconds,
+    );
+
+    if (!updated) {
+      return;
+    }
+
+    updateSessionExercises(
+      exercises.map((exercise) =>
+        exercise.sessionExerciseId === sessionExerciseId
+          ? { ...exercise, restSeconds }
+          : exercise,
+      ),
+    );
+  };
+
+  const handleRemoveExercise = async (sessionExerciseId: number) => {
+    const deleted = await deleteSessionExercise(session.id, sessionExerciseId);
+
+    if (!deleted) {
+      return;
+    }
+
+    updateSessionExercises(
+      exercises
+        .filter((exercise) => exercise.sessionExerciseId !== sessionExerciseId)
+        .map((exercise, index) => ({
+          ...exercise,
+          position: index + 1,
+        })),
+    );
+    showMessage("Exercice retiré de la séance", "success");
+  };
+
+  const hasOtherSession =
+    currentSessionId !== null && currentSessionId !== session.id;
+
+  const isConflictModalOpen = hasOtherSession && !userClosedConflictModal;
+
+  const closeConflictModal = () => {
+    setUserClosedConflictModal(true);
+  };
+
+  const goToOtherSession = () => {
+    navigate(`/sessions/${currentSessionId}`);
+  };
+
+  const handleAbandonCurrentSession = async () => {
+    if (currentSessionId === null) {
+      return;
+    }
+
+    const abandoned = await abandonSession(currentSessionId);
+
+    if (abandoned) {
+      setUserClosedConflictModal(true);
+    }
+  };
+
+  const afterAbandon = () => {
+    setIsAbandonModalOpen(false);
+    navigate("/sessions");
+  };
+
+  const currentSession = currentSessionContext.currentSession;
+
+  const isCurrentSession =
+    currentSession !== null && currentSession.id === session.id;
+
+  const isInProgress = session.status === "in_progress" || isCurrentSession;
 
   const isPrepared = session.status === "prepared" && !isInProgress;
 
-  const startedAt =
-    currentSessionContext?.currentSession?.id === session.id
-      ? currentSessionContext.currentSession.startedAt
-      : session.startedAt;
+  const hasCompletedSets = Number(session.completedSetCount ?? 0) > 0;
+
+  const startedAt = isCurrentSession
+    ? currentSession.startedAt
+    : session.startedAt;
+
+  const showChrono = isInProgress && startedAt !== null;
 
   return (
-    <div className="w-full max-w-3xl pb-24 md:py-4 md:pb-4 lg:px-4">
+    <div className="w-full max-w-3xl pb-32 md:py-4 md:pb-4 lg:px-4">
       <div className="flex items-center justify-between gap-2 border-base-300 border-b pb-4 lg:pb-6">
         <div className="flex min-w-0 items-center gap-1">
           <Link
@@ -178,12 +301,11 @@ function SessionId() {
           </button>
         )}
 
-        {isInProgress && (
+        {isInProgress && !hasCompletedSets && (
           <button
             type="button"
-            disabled
-            title="L'abandon de séance n'est pas encore disponible"
-            className="-mr-1 flex shrink-0 cursor-not-allowed items-center gap-1.5 rounded-lg px-1.5 py-1.5 font-medium text-error text-sm"
+            onClick={() => setIsAbandonModalOpen(true)}
+            className="-mr-1 flex shrink-0 items-center gap-1.5 rounded-lg px-1.5 py-1.5 font-medium text-error text-sm transition-colors hover:bg-error/10 focus-visible:outline-2 focus-visible:outline-error focus-visible:outline-offset-2"
           >
             <span aria-hidden="true" className="text-base leading-none">
               &times;
@@ -196,9 +318,9 @@ function SessionId() {
       <div className="mt-4 flex items-center justify-between gap-3 lg:mt-5">
         <p className="min-w-0 font-semibold capitalize">{formattedDate}</p>
 
-        {isInProgress ? (
-          startedAt && <Chrono startedAt={startedAt} />
-        ) : (
+        {showChrono && <Chrono startedAt={startedAt} />}
+
+        {!isInProgress && (
           <span className="inline-flex shrink-0 whitespace-nowrap rounded-full bg-info/15 px-2.5 py-1 font-semibold text-[11px] text-info uppercase tracking-wide">
             Non démarrée
           </span>
@@ -262,23 +384,31 @@ function SessionId() {
                 onMoveDown={() => handleMoveExercise(index, 1)}
                 canMoveUp={index > 0}
                 canMoveDown={index < exercises.length - 1}
-                disabled={reorderLoading}
+                disabled={reorderLoading || deletingExerciseId !== null}
+                canEditRest={isPrepared}
+                restDisabled={
+                  updatingExerciseId !== null || deletingExerciseId !== null
+                }
+                onRestChange={(restSeconds) =>
+                  handleRestChange(exercise.sessionExerciseId, restSeconds)
+                }
+                canRemove={isPrepared}
+                removeDisabled={deletingExerciseId !== null || reorderLoading}
+                onRemove={() =>
+                  handleRemoveExercise(exercise.sessionExerciseId)
+                }
               />
             ))}
           </div>
         )}
 
-        <div
-          className={`fixed inset-x-0 bottom-0 z-10 flex items-stretch gap-3 bg-linear-to-t from-base-100 from-70% to-transparent px-4 pt-10 transition-[padding] duration-300 md:static md:mt-6 md:bg-none md:p-0 ${
-            isNavOpen ? "pb-24" : "pb-9"
-          } ${exerciseCount === 0 ? "md:justify-center" : "md:justify-end"}`}
-        >
+        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:justify-end">
           <Link
             to={`/sessions/${session.id}/exercises`}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-center font-semibold text-xs leading-tight transition focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 sm:text-sm md:flex-none md:px-5 ${
+            className={`flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3.5 text-center font-semibold text-sm leading-tight transition-colors duration-200 sm:text-sm md:px-5 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 lg:w-auto ${
               exerciseCount === 0
-                ? "border-primary bg-primary text-primary-content hover:opacity-90"
-                : "border-base-content/40 bg-base-100 hover:border-base-content hover:bg-base-200 md:bg-transparent"
+                ? "border-primary bg-primary text-primary-content hover:border-info hover:bg-info hover:text-white"
+                : "border-base-content/40 bg-base-100 hover:border-info hover:bg-info/10 hover:text-info md:bg-transparent"
             }`}
           >
             Ajouter des exercices
@@ -289,9 +419,25 @@ function SessionId() {
               type="button"
               onClick={handleStart}
               disabled={exerciseCount === 0 || startLoading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-3 py-2.5 text-center font-semibold text-primary-content text-xs leading-tight transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:opacity-100 sm:text-sm md:flex-none md:px-5"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-3.5 text-center font-semibold text-primary-content text-sm leading-tight transition-colors duration-200 sm:text-sm md:px-5 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 lg:w-auto"
             >
               {startLoading ? "Démarrage..." : "Démarrer la séance"}
+            </button>
+          )}
+
+          {isInProgress && (
+            <button
+              type="button"
+              onClick={() => navigate(`/sessions/${session.id}/summary`)}
+              disabled={!hasCompletedSets}
+              title={
+                hasCompletedSets
+                  ? undefined
+                  : "Validez au moins une série pour terminer la séance"
+              }
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-3.5 text-center font-semibold text-primary-content text-sm leading-tight transition-colors duration-200 sm:text-sm md:px-5 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 lg:w-auto"
+            >
+              Valider la séance
             </button>
           )}
         </div>
@@ -303,34 +449,21 @@ function SessionId() {
           onConfirm={handleDelete}
         />
       )}
-      {currentSessionId !== null && currentSessionId !== session.id && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-base-100/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-box border border-base-300 bg-base-200 p-6 shadow-2xl">
-            <h2 className="font-display font-extrabold text-xl uppercase italic">
-              Séance déjà en cours
-            </h2>
+      {isInProgress && isAbandonModalOpen && (
+        <AbandonSessionModal
+          sessionId={session.id}
+          onClose={() => setIsAbandonModalOpen(false)}
+          onAbandoned={afterAbandon}
+        />
+      )}
 
-            <p className="mt-2 text-base-content/75">
-              Vous avez déjà une séance en cours.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => navigate(`/sessions/${currentSessionId}`)}
-              className="mt-5 w-full rounded-lg bg-primary px-4 py-3 font-semibold text-primary-content"
-            >
-              Reprendre la séance
-            </button>
-
-            <button
-              type="button"
-              disabled
-              className="mt-3 w-full cursor-not-allowed rounded-lg border border-base-300 px-4 py-3 font-semibold opacity-40"
-            >
-              Abandonner la séance
-            </button>
-          </div>
-        </div>
+      {isConflictModalOpen && (
+        <ConflictSessionModal
+          isAbandoning={isAbandoning}
+          onClose={closeConflictModal}
+          onResume={goToOtherSession}
+          onAbandon={handleAbandonCurrentSession}
+        />
       )}
     </div>
   );

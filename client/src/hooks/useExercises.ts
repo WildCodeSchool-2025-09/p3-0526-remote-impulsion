@@ -17,14 +17,18 @@ function useExercises() {
     number | null
   >(null);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [pageCount, setPageCount] = useState(1);
   // compteur qu'on incremente juste pour relancer l'effet quand on clique sur "Reessayer"
   const [reloadCount, setReloadCount] = useState(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: on surveille les filtres pour revenir page 1
+  useEffect(() => {
+    setPage(1);
+  }, [search, selectedCategoryId, selectedEquipmentId, selectedDifficultyId]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: reloadCount n'est pas lu dans l'effet, il sert uniquement a le relancer quand on clique sur "Reessayer"
   useEffect(() => {
-    // toute modification de recherche ou de filtre renvoie a la page 1 (pagination = US26)
-    setPage(1);
-
     // permet d'annuler cette requete si un critere change avant qu'elle reponde
     const controller = new AbortController();
 
@@ -37,9 +41,12 @@ function useExercises() {
           selectedDifficultyId ?? undefined,
           selectedEquipmentId ?? undefined,
           search,
+          page,
           controller.signal,
         );
-        setExercises(data);
+        setExercises(data.items);
+        setTotal(data.total);
+        setPageCount(data.pageCount);
       } catch (err) {
         // requete annulee : une plus recente est en cours, on ignore cette reponse
         if ((err as Error).name === "AbortError") {
@@ -62,6 +69,7 @@ function useExercises() {
     selectedCategoryId,
     selectedEquipmentId,
     selectedDifficultyId,
+    page,
     reloadCount,
   ]);
 
@@ -100,6 +108,9 @@ function useExercises() {
     selectedDifficultyId,
     setSelectedDifficultyId,
     page,
+    setPage,
+    total,
+    pageCount,
     resetFilters,
     hasActiveFilter,
     isCatalogEmpty,

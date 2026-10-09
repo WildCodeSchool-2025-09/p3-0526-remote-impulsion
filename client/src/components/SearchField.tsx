@@ -6,10 +6,10 @@ type SearchFieldProps = {
 
 function SearchField({ value, onChange, disabled }: SearchFieldProps) {
   return (
-    <div className="join">
+    <div className="join w-full">
       {/* le label sert de "boite" pour poser l'icone a cote de l'input */}
       <label
-        className={`input input-bordered join-item flex items-center gap-2 ${disabled ? "opacity-50" : ""}`}
+        className={`input input-bordered join-item flex h-11 w-full items-center gap-3 rounded-xl border-base-300 bg-base-200/40 px-4 text-base ${disabled ? "opacity-50" : ""}`}
       >
         {/* icone loupe ecrite directement en SVG : le projet n'a pas de librairie d'icones */}
         <svg
@@ -18,7 +18,7 @@ function SearchField({ value, onChange, disabled }: SearchFieldProps) {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className="h-4 w-4 opacity-60"
+          className="h-5 w-5 opacity-60"
           aria-hidden="true"
         >
           <circle cx="11" cy="11" r="7" />
@@ -28,22 +28,11 @@ function SearchField({ value, onChange, disabled }: SearchFieldProps) {
           type="text"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="Rechercher un exercice"
+          placeholder="Rechercher un exercice..."
           disabled={disabled}
-          className="grow"
+          className="grow placeholder:text-neutral"
         />
       </label>
-      {value !== "" && (
-        <button
-          type="button"
-          onClick={() => onChange("")}
-          disabled={disabled}
-          className="btn join-item"
-          aria-label="Effacer la recherche"
-        >
-          ✕
-        </button>
-      )}
     </div>
   );
 }

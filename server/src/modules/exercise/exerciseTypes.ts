@@ -33,3 +33,10 @@ export type ExerciseDetail = Exercise & {
   muscles: ExerciseMuscle[];
   equipment: ExerciseEquipment[];
 };
+
+export type ExercisePage = {
+  items: ExerciseSummary[];
+  total: number;
+  page: number;
+  pageCount: number;
+};

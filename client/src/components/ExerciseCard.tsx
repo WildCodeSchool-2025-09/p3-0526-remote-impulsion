@@ -1,3 +1,4 @@
+import PlusIcon from "../assets/icons/actions/plus.svg?react";
 import type { ExerciseSummary } from "../types/exercise";
 
 type ExerciseCardProps = {
@@ -77,19 +78,22 @@ function ExerciseCard({
               ? "Désélectionner cet exercice"
               : "Sélectionner cet exercice"
         }
-        className={`absolute top-3 right-3 z-10 grid size-7 place-items-center rounded-full border-2 font-bold text-xs transition ${
+        className={`absolute right-3 bottom-2 z-10 grid size-7 place-items-center rounded-full border-2 font-bold text-xs transition ${
           isSelected
             ? "border-primary bg-primary text-primary-content"
-            : "border-base-content/40 bg-base-100"
+            : "border-base-content/40 bg-base-100 text-base-content/70"
         } disabled:cursor-not-allowed`}
       >
         {isSelected && <span aria-hidden="true">✓</span>}
+        {!isSelected && !isUnavailable && (
+          <PlusIcon aria-hidden="true" className="size-4" />
+        )}
       </button>
 
       <button
         type="button"
         onClick={() => onSelect(exercise.id)}
-        className="flex w-full flex-col items-start gap-2 text-left"
+        className="flex w-full flex-1 flex-col items-start gap-2 text-left"
       >
         <img
           src={imageSrc}
@@ -103,7 +107,11 @@ function ExerciseCard({
         <h2 className="font-body font-semibold text-base-content text-sm">
           {exercise.name}
         </h2>
-        <span className="badge badge-sm">
+        <span
+          className={`badge badge-sm mt-auto border-0 ${
+            isUnavailable ? "bg-base-300" : "bg-info/15 text-info"
+          }`}
+        >
           {isUnavailable ? "Déjà ajouté" : exercise.category}
         </span>
       </button>
