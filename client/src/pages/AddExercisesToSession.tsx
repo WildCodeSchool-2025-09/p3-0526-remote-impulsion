@@ -66,7 +66,6 @@ function AddExercisesToSession() {
       <Exercises
         selectionMode
         excludedIds={existingExerciseIds}
-        isSubmitting={addLoading}
         onCancel={() => navigate(`/sessions/${sessionId}`)}
         onValidate={handleValidate}
       />
