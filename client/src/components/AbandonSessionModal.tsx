@@ -26,8 +26,6 @@ const AbandonSessionModal = ({
 
   if (isAbandoning) {
     confirmLabel = "Abandon en cours...";
-  } else if (error !== null) {
-    confirmLabel = "Réessayer";
   }
 
   return (

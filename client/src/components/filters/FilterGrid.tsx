@@ -44,16 +44,16 @@ function FilterGrid({
               type="button"
               aria-pressed={isSelected}
               onClick={() => onSelect(isSelected ? null : option.id)}
-              className={`flex flex-col items-center justify-end gap-1.5 rounded-xl border-2 bg-base-200 px-1.5 py-2.5 transition disabled:cursor-not-allowed disabled:opacity-40 ${
+              className={`flex flex-col items-center justify-end gap-1.5 rounded-xl border-2 px-1.5 py-2.5 transition disabled:cursor-not-allowed disabled:opacity-40 ${
                 isSelected
-                  ? "border-primary"
-                  : "border-base-300 hover:border-neutral"
+                  ? "border-primary bg-primary/10"
+                  : "border-base-300 bg-base-100 hover:border-neutral"
               }`}
             >
               {renderIcon(option, isSelected)}
               <span
-                className={`text-center font-semibold text-[11px] leading-tight ${
-                  isSelected ? "text-primary" : "text-neutral"
+                className={`text-center font-medium text-[10px] leading-tight ${
+                  isSelected ? "text-base-content/80" : "text-neutral"
                 }`}
               >
                 {option.name}

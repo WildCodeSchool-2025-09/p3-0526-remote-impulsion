@@ -32,14 +32,16 @@ function CategoryIcon({ name, isSelected }: CategoryIconProps) {
   const Icon = ICONS[normalizeName(name)];
 
   if (Icon === undefined) {
-    return <div className="h-14" />;
+    return <div className="h-[72px]" />;
   }
 
   return (
     <Icon
       aria-hidden="true"
-      className={`h-14 w-auto [&_.base]:fill-base-300 ${
-        isSelected ? "[&_.zone]:fill-primary" : "[&_.zone]:fill-neutral"
+      className={`h-[72px] w-auto ${
+        isSelected
+          ? "[&_.base]:fill-base-content/60 [&_.zone]:fill-primary"
+          : "[&_.base]:fill-base-300 [&_.zone]:fill-primary/40"
       }`}
     />
   );

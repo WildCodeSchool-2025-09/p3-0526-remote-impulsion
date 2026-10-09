@@ -1,6 +1,7 @@
 import argon2 from "argon2";
 import type { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
+import { getCurrentUserId } from "../../helpers/currentUser";
 import authRepository from "./authRepository";
 import type { LoginPayload, RegisterPayload } from "./authTypes";
 
@@ -161,33 +162,18 @@ const logout: RequestHandler = (_req, res) => {
 };
 
 const isLogged: RequestHandler = async (req, res, next) => {
-  const hasToken = req.cookies.auth_token;
-
-  if (!hasToken) {
-    res.sendStatus(401);
-    return;
-  }
-
-  const appSecret = process.env.APP_SECRET;
-
-  if (appSecret === undefined) {
-    next(new Error("APP_SECRET n'est pas configuré"));
-    return;
-  }
   try {
-    const payload = jwt.verify(hasToken, appSecret);
-    const userId = Number((payload as { sub?: string }).sub);
+    const userId = getCurrentUserId(req);
+    const user = await authRepository.readById(userId);
 
-    if (Number.isNaN(userId)) {
+    if (user === undefined) {
       res.sendStatus(401);
       return;
     }
 
-    const user = await authRepository.readById(userId);
-
     res.json(user);
-  } catch {
-    res.sendStatus(401);
+  } catch (err) {
+    next(err);
   }
 };
 

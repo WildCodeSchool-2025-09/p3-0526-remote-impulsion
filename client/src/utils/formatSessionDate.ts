@@ -19,3 +19,10 @@ export const formatSessionStartTime = (startedAt: string): string =>
     hour: "2-digit",
     minute: "2-digit",
   });
+
+export const formatFullDate = (startedAt: string): string =>
+  new Date(startedAt).toLocaleDateString(LOCALE, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });

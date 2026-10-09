@@ -1,9 +1,18 @@
-import type { WorkoutSession } from "../types/workoutSession";
+import type {
+  CreateExerciseSet,
+  ExerciseSet,
+  WorkoutSession,
+  WorkoutSessionDetail,
+  WorkoutSessionHistory,
+  WorkoutSessionSummary,
+} from "../types/workoutSession";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const getWorkoutSessions = async (): Promise<WorkoutSession[]> => {
-  const response = await fetch(`${API_URL}/api/workout-sessions`);
+  const response = await fetch(`${API_URL}/api/workout-sessions`, {
+    credentials: "include",
+  });
   if (!response.ok) {
     throw new Error("Impossible de charger les séances");
   }
@@ -14,6 +23,7 @@ const getWorkoutSessions = async (): Promise<WorkoutSession[]> => {
 const postWorkoutSession = async (): Promise<number> => {
   const response = await fetch(`${API_URL}/api/workout-sessions`, {
     method: "POST",
+    credentials: "include",
   });
   if (!response.ok) {
     throw new Error("Impossible de créer la séance");
@@ -25,7 +35,9 @@ const postWorkoutSession = async (): Promise<number> => {
 const getWorkoutSessionById = async (
   sessionId: number,
 ): Promise<WorkoutSession> => {
-  const response = await fetch(`${API_URL}/api/workout-sessions/${sessionId}`);
+  const response = await fetch(`${API_URL}/api/workout-sessions/${sessionId}`, {
+    credentials: "include",
+  });
   if (!response.ok) {
     throw new Error("Impossible de charger la séance");
   }
@@ -34,7 +46,9 @@ const getWorkoutSessionById = async (
 };
 
 const getCurrentSession = async (): Promise<WorkoutSession | null> => {
-  const response = await fetch(`${API_URL}/api/workout-sessions/current`);
+  const response = await fetch(`${API_URL}/api/workout-sessions/current`, {
+    credentials: "include",
+  });
   if (!response.ok) {
     throw new Error("Impossible de charger la séance en cours");
   }
@@ -42,18 +56,36 @@ const getCurrentSession = async (): Promise<WorkoutSession | null> => {
   return currentSession;
 };
 
+const getSessionSummary = async (
+  sessionId: number,
+): Promise<WorkoutSessionSummary> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/summary`,
+    { credentials: "include" },
+  );
+  if (!response.ok) {
+    throw new Error("Impossible de charger le récapitulatif");
+  }
+  const summary = await response.json();
+  return summary;
+};
+
 const startWorkoutSession = async (sessionId: number) => {
   const response = await fetch(
     `${API_URL}/api/workout-sessions/${sessionId}/start`,
-    { method: "PATCH" },
+    { method: "PATCH", credentials: "include" },
   );
   if (response.status === 409) {
-    const conflict = await response.json().catch(() => null);
+    let currentSessionId = null;
 
-    return {
-      result: "conflict",
-      currentSessionId: conflict?.currentSessionId ?? null,
-    };
+    try {
+      const conflict = await response.json();
+      currentSessionId = conflict.currentSessionId;
+    } catch {
+      // la réponse ne contient pas de JSON : on garde null
+    }
+
+    return { result: "conflict", currentSessionId: currentSessionId };
   }
   if (!response.ok) {
     throw new Error("Impossible de démarrer la séance");
@@ -63,10 +95,20 @@ const startWorkoutSession = async (sessionId: number) => {
   };
 };
 
+const completeWorkoutSession = async (sessionId: number): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/complete`,
+    { method: "PATCH", credentials: "include" },
+  );
+  if (!response.ok) {
+    throw new Error("Impossible de valider la séance");
+  }
+};
+
 const abandonSession = async (sessionId: number): Promise<void> => {
   const response = await fetch(
     `${API_URL}/api/workout-sessions/${sessionId}/abandon`,
-    { method: "PATCH" },
+    { method: "PATCH", credentials: "include" },
   );
   if (!response.ok) {
     throw new Error("Impossible d'abandonner la séance");
@@ -76,6 +118,7 @@ const abandonSession = async (sessionId: number): Promise<void> => {
 const deleteWorkoutSession = async (sessionId: number): Promise<void> => {
   const response = await fetch(`${API_URL}/api/workout-sessions/${sessionId}`, {
     method: "DELETE",
+    credentials: "include",
   });
   if (!response.ok) {
     throw new Error("Impossible de supprimer la séance");
@@ -90,6 +133,7 @@ const postExercisesToSession = async (
     `${API_URL}/api/workout-sessions/${sessionId}/exercises`,
     {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -109,6 +153,7 @@ const reorderWorkoutSessionExercises = async (
     `${API_URL}/api/workout-sessions/${sessionId}/exercises/order`,
     {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -120,14 +165,127 @@ const reorderWorkoutSessionExercises = async (
   }
 };
 
+const updateWorkoutSessionExerciseRest = async (
+  sessionId: number,
+  sessionExerciseId: number,
+  restSeconds: number | null,
+): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/exercises/${sessionExerciseId}/rest`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ restSeconds }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible de modifier le temps de repos");
+  }
+};
+
+const deleteWorkoutSessionExercise = async (
+  sessionId: number,
+  sessionExerciseId: number,
+): Promise<void> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/exercises/${sessionExerciseId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible de retirer l'exercice de la séance");
+  }
+};
+
+const getHistory = async (): Promise<WorkoutSessionHistory[]> => {
+  const response = await fetch(`${API_URL}/api/workout-sessions/history`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Impossible de charger les séances");
+  }
+  const sessions = await response.json();
+  return sessions;
+};
+
+const getWorkoutSessionDetail = async (
+  sessionId: number,
+): Promise<WorkoutSessionDetail | null> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/details`,
+    { credentials: "include" },
+  );
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error("Impossible de charger cette séance");
+  }
+  const session = await response.json();
+  return session;
+};
+
+const getExerciseSets = async (
+  sessionExerciseId: number,
+): Promise<ExerciseSet[]> => {
+  const response = await fetch(
+    `${API_URL}/api/session-exercises/${sessionExerciseId}/sets`,
+    { credentials: "include" },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible de charger les séries");
+  }
+
+  return response.json();
+};
+
+const postExerciseSet = async (
+  sessionExerciseId: number,
+  values: CreateExerciseSet,
+): Promise<ExerciseSet> => {
+  const response = await fetch(
+    `${API_URL}/api/session-exercises/${sessionExerciseId}/sets`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Impossible d'enregistrer la série");
+  }
+
+  return response.json();
+};
+
 export default {
   getWorkoutSessions,
   postWorkoutSession,
   getWorkoutSessionById,
   getCurrentSession,
   startWorkoutSession,
+  getSessionSummary,
+  completeWorkoutSession,
   abandonSession,
   deleteWorkoutSession,
   postExercisesToSession,
   reorderWorkoutSessionExercises,
+  updateWorkoutSessionExerciseRest,
+  deleteWorkoutSessionExercise,
+  getHistory,
+  getWorkoutSessionDetail,
+  getExerciseSets,
+  postExerciseSet,
 };
