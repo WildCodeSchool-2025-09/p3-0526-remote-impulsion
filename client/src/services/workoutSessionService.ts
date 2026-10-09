@@ -1,5 +1,6 @@
 import type {
   WorkoutSession,
+  WorkoutSessionDetail,
   WorkoutSessionHistory,
   WorkoutSessionSummary,
 } from "../types/workoutSession";
@@ -73,12 +74,16 @@ const startWorkoutSession = async (sessionId: number) => {
     { method: "PATCH", credentials: "include" },
   );
   if (response.status === 409) {
-    const conflict = await response.json().catch(() => null);
+    let currentSessionId = null;
 
-    return {
-      result: "conflict",
-      currentSessionId: conflict?.currentSessionId ?? null,
-    };
+    try {
+      const conflict = await response.json();
+      currentSessionId = conflict.currentSessionId;
+    } catch {
+      // la réponse ne contient pas de JSON : on garde null
+    }
+
+    return { result: "conflict", currentSessionId: currentSessionId };
   }
   if (!response.ok) {
     throw new Error("Impossible de démarrer la séance");
@@ -208,6 +213,23 @@ const getHistory = async (): Promise<WorkoutSessionHistory[]> => {
   return sessions;
 };
 
+const getWorkoutSessionDetail = async (
+  sessionId: number,
+): Promise<WorkoutSessionDetail | null> => {
+  const response = await fetch(
+    `${API_URL}/api/workout-sessions/${sessionId}/details`,
+    { credentials: "include" },
+  );
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error("Impossible de charger cette séance");
+  }
+  const session = await response.json();
+  return session;
+};
+
 export default {
   getWorkoutSessions,
   postWorkoutSession,
@@ -223,4 +245,5 @@ export default {
   updateWorkoutSessionExerciseRest,
   deleteWorkoutSessionExercise,
   getHistory,
+  getWorkoutSessionDetail,
 };

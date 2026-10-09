@@ -1,11 +1,11 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import workoutSessionService from "../../services/workoutSessionService";
 
 const useCreatePreparedSession = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createPreparedSession = useCallback(async () => {
+  const createPreparedSession = async () => {
     setLoading(true);
     setError(null);
 
@@ -18,7 +18,7 @@ const useCreatePreparedSession = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   return { createPreparedSession, loading, error };
 };

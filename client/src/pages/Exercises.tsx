@@ -5,10 +5,12 @@ import ExerciseCard from "../components/ExerciseCard";
 import ExerciseCardSkeleton from "../components/ExerciseCardSkeleton";
 import ExerciseDetailSheet from "../components/ExerciseDetailSheet";
 import NoResultsState from "../components/NoResultsState";
+import Pagination from "../components/Pagination";
 import SearchField from "../components/SearchField";
 import LocalErrorState from "../components/feedback/LocalErrorState";
 import CategoryIcon from "../components/filters/CategoryIcon";
 import EquipmentIcon from "../components/filters/EquipmentIcon";
+import FilterButton from "../components/filters/FilterButton";
 import FilterGrid from "../components/filters/FilterGrid";
 import LevelIcon from "../components/filters/LevelIcon";
 import useExercises from "../hooks/useExercises";
@@ -54,6 +56,10 @@ function Exercises({
     hasActiveFilter,
     resetFilters,
     isCatalogEmpty,
+    page,
+    setPage,
+    total,
+    pageCount,
   } = useExercises();
 
   const {
@@ -70,6 +76,18 @@ function Exercises({
   const exerciseGridClassName = selectionMode
     ? "grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4"
     : "flex flex-col gap-2";
+
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
+
+  function toggleFilter(name: string) {
+    if (openFilter === name) {
+      setOpenFilter(null);
+    } else {
+      setOpenFilter(name);
+    }
+  }
+
+  const showFilterBox = openFilter !== null;
 
   function handleToggleSelection(id: number) {
     if (excludedIds.includes(id)) {
@@ -102,7 +120,7 @@ function Exercises({
 
   if (error) {
     return (
-      <section className="min-h-full bg-base-100 px-4 py-6">
+      <section className="mx-auto w-full max-w-5xl md:py-4">
         <LocalErrorState
           message="Impossible de charger les exercices."
           onRetry={retry}
@@ -112,56 +130,51 @@ function Exercises({
   }
 
   return (
-    <section className="min-h-full bg-base-100 px-4 pt-5 pb-8 text-base-content">
-      <header className="mb-5 flex items-start gap-2">
+    <section className="mx-auto w-full max-w-5xl text-base-content md:py-4">
+      <header className="mb-6 flex items-center gap-2">
         {selectionMode && (
           <button
             type="button"
             onClick={onCancel}
             aria-label="Retour à la séance"
-            className="mt-2 grid size-9 shrink-0 place-items-center rounded-full transition-colors hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
+            className="grid size-9 shrink-0 place-items-center rounded-full transition-colors hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2"
           >
             <ArrowRightIcon aria-hidden="true" className="size-5 rotate-180" />
           </button>
         )}
 
-        <div>
-          <p className="mb-1 font-bold text-accent text-xs uppercase tracking-[0.2em]">
-            {selectionMode ? "Séance préparée" : "Catalogue"}
-          </p>
-
-          <h1 className="font-display font-extrabold text-3xl uppercase italic tracking-wide">
-            {selectionMode ? "Choisir des exercices" : "Exercices"}
-          </h1>
-        </div>
+        <h1 className="font-display font-extrabold text-2xl uppercase italic tracking-wide">
+          {selectionMode ? "Ajouter à ma séance" : "Catalogue d'exercices"}
+        </h1>
       </header>
 
       {selectionMode && (
-        <div className="sticky top-16 z-20 mb-5 rounded-xl border border-base-300 bg-base-200/95 p-3 shadow-lg backdrop-blur lg:top-4">
-          <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
-            <span className="text-neutral text-sm">
-              {selectedIds.length} exercice
-              {selectedIds.length > 1 ? "s" : ""} sélectionné
-              {selectedIds.length > 1 ? "s" : ""}
+        <div className="sticky top-4 z-20 mb-5 rounded-xl border border-base-300 bg-base-200/95 p-3 shadow-lg backdrop-blur">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center justify-center gap-3 sm:justify-start">
+              <span className="text-neutral text-sm">
+                {selectedIds.length} exercice
+                {selectedIds.length > 1 ? "s" : ""} sélectionné
+                {selectedIds.length > 1 ? "s" : ""}
+              </span>
+
               {selectedIds.length > 0 && (
-                <>
-                  {" · "}
-                  <button
-                    type="button"
-                    onClick={handleClearSelection}
-                    disabled={isSubmitting}
-                    className="font-semibold text-info disabled:opacity-50"
-                  >
-                    Vider
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  disabled={isSubmitting}
+                  className="font-semibold text-info text-sm disabled:opacity-50"
+                >
+                  Vider
+                </button>
               )}
-            </span>
+            </div>
+
             <button
               type="button"
               onClick={handleValidate}
               disabled={selectedIds.length === 0 || isSubmitting}
-              className="shrink-0 rounded-lg bg-primary px-3 py-2 font-semibold text-primary-content text-xs disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm"
+              className="w-full rounded-xl bg-primary px-4 py-3 font-semibold text-primary-content text-sm disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               {isSubmitting ? "Ajout..." : "Ajouter à ma séance"}
             </button>
@@ -169,7 +182,7 @@ function Exercises({
         </div>
       )}
 
-      <div className="mb-3">
+      <div className="mb-4">
         <SearchField
           value={search}
           onChange={setSearch}
@@ -177,55 +190,86 @@ function Exercises({
         />
       </div>
 
-      <div className="mb-5 space-y-4 rounded-2xl border border-base-300 bg-base-100/40 p-3">
-        <FilterGrid
-          legend="Zone musculaire"
-          options={categories}
-          selectedId={selectedCategoryId}
-          onSelect={setSelectedCategoryId}
+      <div className="mb-3 flex gap-2">
+        <FilterButton
+          label="Groupe"
+          isOpen={openFilter === "category"}
+          isActive={selectedCategoryId !== null}
           disabled={isCatalogEmpty}
-          columnsClassName="grid-cols-4"
-          renderIcon={(option, isSelected) => (
-            <CategoryIcon name={option.name} isSelected={isSelected} />
-          )}
+          onClick={() => toggleFilter("category")}
         />
-
-        <FilterGrid
-          legend="Matériel"
-          options={equipment}
-          selectedId={selectedEquipmentId}
-          onSelect={setSelectedEquipmentId}
+        <FilterButton
+          label="Matériel"
+          isOpen={openFilter === "equipment"}
+          isActive={selectedEquipmentId !== null}
           disabled={isCatalogEmpty}
-          columnsClassName="grid-cols-3 sm:grid-cols-6"
-          renderIcon={(option, isSelected) => (
-            <EquipmentIcon name={option.name} isSelected={isSelected} />
-          )}
+          onClick={() => toggleFilter("equipment")}
         />
-
-        <FilterGrid
-          legend="Niveau"
-          showLegend
-          options={difficulties}
-          selectedId={selectedDifficultyId}
-          onSelect={setSelectedDifficultyId}
+        <FilterButton
+          label="Difficulté"
+          isOpen={openFilter === "difficulty"}
+          isActive={selectedDifficultyId !== null}
           disabled={isCatalogEmpty}
-          columnsClassName="grid-cols-3"
-          renderIcon={(option, isSelected) => (
-            <LevelIcon name={option.name} isSelected={isSelected} />
-          )}
+          onClick={() => toggleFilter("difficulty")}
         />
-
-        {hasActiveFilter && (
-          <button
-            type="button"
-            onClick={resetFilters}
-            disabled={isCatalogEmpty}
-            className="w-full rounded-full border border-base-300 bg-base-200 px-4 py-2 font-semibold text-neutral text-xs transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Réinitialiser
-          </button>
-        )}
       </div>
+
+      {showFilterBox && (
+        <div className="mb-5 space-y-4 rounded-2xl border border-base-300 bg-base-200/60 p-3">
+          {openFilter === "category" && (
+            <FilterGrid
+              legend="Zone musculaire"
+              options={categories}
+              selectedId={selectedCategoryId}
+              onSelect={setSelectedCategoryId}
+              disabled={isCatalogEmpty}
+              columnsClassName="grid-cols-4"
+              renderIcon={(option, isSelected) => (
+                <CategoryIcon name={option.name} isSelected={isSelected} />
+              )}
+            />
+          )}
+
+          {openFilter === "equipment" && (
+            <FilterGrid
+              legend="Matériel"
+              options={equipment}
+              selectedId={selectedEquipmentId}
+              onSelect={setSelectedEquipmentId}
+              disabled={isCatalogEmpty}
+              columnsClassName="grid-cols-3 sm:grid-cols-6"
+              renderIcon={(option, isSelected) => (
+                <EquipmentIcon name={option.name} isSelected={isSelected} />
+              )}
+            />
+          )}
+
+          {openFilter === "difficulty" && (
+            <FilterGrid
+              legend="Niveau"
+              options={difficulties}
+              selectedId={selectedDifficultyId}
+              onSelect={setSelectedDifficultyId}
+              disabled={isCatalogEmpty}
+              columnsClassName="grid-cols-3"
+              renderIcon={(option, isSelected) => (
+                <LevelIcon name={option.name} isSelected={isSelected} />
+              )}
+            />
+          )}
+        </div>
+      )}
+
+      {hasActiveFilter && (
+        <button
+          type="button"
+          onClick={resetFilters}
+          disabled={isCatalogEmpty}
+          className="mb-5 w-full rounded-xl border-2 border-base-300 bg-base-200 px-4 py-3 font-semibold text-neutral text-sm transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Réinitialiser
+        </button>
+      )}
 
       {filtersError && (
         <div
@@ -240,10 +284,13 @@ function Exercises({
         <EmptyState />
       ) : (
         <>
-          <div className="mb-3 flex items-center justify-between">
-            <p className="font-semibold text-neutral text-xs uppercase tracking-wider">
-              {exercises.length} résultat
-              {exercises.length > 1 ? "s" : ""}
+          <div
+            id="results-top"
+            className="mb-3 flex scroll-mt-4 items-center justify-between"
+          >
+            <p className="font-semibold text-info text-xs uppercase tracking-wider">
+              {total} résultat
+              {total > 1 ? "s" : ""}
             </p>
           </div>
 
@@ -257,21 +304,28 @@ function Exercises({
               ))}
             </div>
           ) : exercises.length === 0 ? (
-            <NoResultsState onReset={resetFilters} />
+            <NoResultsState />
           ) : (
-            <div className={exerciseGridClassName}>
-              {exercises.map((exercise) => (
-                <ExerciseCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  onSelect={handleOpenExerciseDetail}
-                  selectionMode={selectionMode}
-                  isSelected={selectedIds.includes(exercise.id)}
-                  isUnavailable={excludedIds.includes(exercise.id)}
-                  onToggleSelect={handleToggleSelection}
-                />
-              ))}
-            </div>
+            <>
+              <div className={exerciseGridClassName}>
+                {exercises.map((exercise) => (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    onSelect={handleOpenExerciseDetail}
+                    selectionMode={selectionMode}
+                    isSelected={selectedIds.includes(exercise.id)}
+                    isUnavailable={excludedIds.includes(exercise.id)}
+                    onToggleSelect={handleToggleSelection}
+                  />
+                ))}
+              </div>
+              <Pagination
+                page={page}
+                pageCount={pageCount}
+                onPageChange={setPage}
+              />
+            </>
           )}
         </>
       )}

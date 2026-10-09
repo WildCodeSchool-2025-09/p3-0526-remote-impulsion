@@ -311,17 +311,18 @@ const start: RequestHandler = async (req, res, next) => {
 
     const session = await workoutSessionRepository.read(sessionId, userId);
 
-    if (session == null) {
+    if (session === undefined) {
       res.sendStatus(404);
       return;
     }
+
     const currentSession = await workoutSessionRepository.readCurrent(userId);
+
     if (currentSession) {
-      res.status(409).json({
-        currentSessionId: currentSession.id,
-      });
+      res.status(409).json({ currentSessionId: currentSession.id });
       return;
     }
+
     if (session.exerciseCount === 0) {
       res.sendStatus(422);
       return;
@@ -333,15 +334,6 @@ const start: RequestHandler = async (req, res, next) => {
     );
 
     if (affectedRows === 0) {
-      const runningSession = await workoutSessionRepository.readCurrent(userId);
-
-      if (runningSession) {
-        res.status(409).json({
-          currentSessionId: runningSession.id,
-        });
-        return;
-      }
-
       res.sendStatus(409);
       return;
     }
@@ -447,6 +439,62 @@ const readCurrent: RequestHandler = async (req, res, next) => {
   }
 };
 
+const readDetail: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = getCurrentUserId(req);
+    const sessionId = Number(req.params.id);
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const session = await workoutSessionRepository.readDetail(
+      sessionId,
+      userId,
+    );
+
+    if (session === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+
+    const exercises = [];
+
+    for (const exercise of session.exercises) {
+      exercises.push({
+        sessionExerciseId: exercise.sessionExerciseId,
+        id: exercise.id,
+        slug: exercise.slug,
+        name: exercise.name,
+        category: exercise.category,
+        position: exercise.position,
+        targetSets: exercise.targetSets,
+        targetReps: exercise.targetReps,
+        targetWeightKg: exercise.targetWeightKg,
+        targetDurationSeconds: exercise.targetDurationSeconds,
+        restSeconds: exercise.restSeconds,
+        sets: exercise.sets,
+        imageUrl: buildImageUrl(exercise.slug),
+      });
+    }
+
+    res.json({
+      id: session.id,
+      userId: session.userId,
+      createdAt: session.createdAt,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      status: session.status,
+      exerciseCount: session.exerciseCount,
+      completedSetCount: session.completedSetCount,
+      exercises: exercises,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const abandon: RequestHandler = async (req, res, next) => {
   try {
     const userId = getCurrentUserId(req);
@@ -485,16 +533,19 @@ const destroy: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const nbRowsAffected = await workoutSessionRepository.delete(
-      sessionId,
-      userId,
-    );
+    const session = await workoutSessionRepository.read(sessionId, userId);
 
-    if (nbRowsAffected === 0) {
+    if (session === undefined) {
       res.sendStatus(404);
       return;
     }
 
+    if (session.status !== "prepared") {
+      res.sendStatus(409);
+      return;
+    }
+
+    await workoutSessionRepository.delete(sessionId, userId);
     res.sendStatus(204);
   } catch (err) {
     next(err);
@@ -508,6 +559,7 @@ export default {
   browseHistory,
   read,
   readCurrent,
+  readDetail,
   removeExercise,
   start,
   reorderExercises,

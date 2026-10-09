@@ -5,18 +5,20 @@ type ChronoProps = {
   startedAt: string;
 };
 
-const formatElapsedTime = (totalSeconds: number) => {
+const formatChrono = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  const paddedTime = [minutes, seconds]
-    .map((part) => String(part).padStart(2, "0"))
-    .join(":");
+  const mm = minutes < 10 ? `0${minutes}` : `${minutes}`;
+  const ss = seconds < 10 ? `0${seconds}` : `${seconds}`;
 
-  return hours > 0
-    ? `${String(hours).padStart(2, "0")}:${paddedTime}`
-    : paddedTime;
+  if (hours > 0) {
+    const hh = hours < 10 ? `0${hours}` : `${hours}`;
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  return `${mm}:${ss}`;
 };
 
 const Chrono = ({ startedAt }: ChronoProps) => {
@@ -40,7 +42,7 @@ const Chrono = ({ startedAt }: ChronoProps) => {
   return (
     <div className="flex shrink-0 items-center gap-2 font-display font-extrabold text-2xl text-base-content italic tabular-nums lg:text-3xl">
       <ClockIcon aria-hidden="true" className="size-5 text-neutral lg:size-6" />
-      {formatElapsedTime(totalSeconds)}
+      {formatChrono(totalSeconds)}
     </div>
   );
 };

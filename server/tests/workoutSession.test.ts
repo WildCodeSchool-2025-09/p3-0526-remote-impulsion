@@ -87,6 +87,10 @@ describe("US11 - Workout sessions", () => {
   });
 
   test("supprime une séance prepared", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      status: "prepared",
+    } as never);
     jest.spyOn(workoutSessionRepository, "delete").mockResolvedValue(1);
 
     const response = await authenticatedRequest.delete(
@@ -96,14 +100,33 @@ describe("US11 - Workout sessions", () => {
     expect(response.status).toBe(204);
   });
 
-  test("refuse la suppression lorsque le repository ne supprime aucune séance", async () => {
-    jest.spyOn(workoutSessionRepository, "delete").mockResolvedValue(0);
+  test("répond 404 si la séance n'existe pas ou n'appartient pas à l'utilisateur", async () => {
+    jest
+      .spyOn(workoutSessionRepository, "read")
+      .mockResolvedValue(undefined as never);
+    const deleteMock = jest.spyOn(workoutSessionRepository, "delete");
 
     const response = await authenticatedRequest.delete(
       "/api/workout-sessions/7",
     );
 
     expect(response.status).toBe(404);
+    expect(deleteMock).not.toHaveBeenCalled();
+  });
+
+  test("répond 409 si la séance n'est plus prepared", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 7,
+      status: "in_progress",
+    } as never);
+    const deleteMock = jest.spyOn(workoutSessionRepository, "delete");
+
+    const response = await authenticatedRequest.delete(
+      "/api/workout-sessions/7",
+    );
+
+    expect(response.status).toBe(409);
+    expect(deleteMock).not.toHaveBeenCalled();
   });
 
   test("le DELETE du repository est limité aux séances prepared", async () => {
@@ -147,14 +170,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
     const queryMock = jest
       .spyOn(databaseClient, "query")
       .mockResolvedValueOnce([
-        [
-          {
-            id: 7,
-            userId: 1,
-            status: "prepared",
-            exerciseCount: 2,
-          },
-        ],
+        [{ id: 7, userId: 1, status: "prepared" }],
         [],
       ] as never)
       .mockResolvedValueOnce([
@@ -163,7 +179,8 @@ describe("US13 - Ajouter des exercices à une séance", () => {
           { id: 8, name: "Développé couché", position: 2 },
         ],
         [],
-      ] as never);
+      ] as never)
+      .mockResolvedValueOnce([[{ completedSetCount: 0 }], []] as never);
 
     const session = await workoutSessionRepository.read(7, 1);
 
@@ -171,6 +188,7 @@ describe("US13 - Ajouter des exercices à une séance", () => {
       { id: 3, name: "Squat", position: 1 },
       { id: 8, name: "Développé couché", position: 2 },
     ]);
+    expect(session?.exerciseCount).toBe(2);
 
     expect(queryMock.mock.calls[1][1]).toEqual([7]);
   });
@@ -618,13 +636,16 @@ describe("US22 - Abandonner une séance", () => {
   test("transmet les paramètres dans le bon ordre pour abandonner", async () => {
     const queryMock = jest
       .spyOn(databaseClient, "query")
-      .mockResolvedValue([{ affectedRows: 0 }, []] as never);
+      .mockResolvedValueOnce([[{ completedSetCount: 0 }], []] as never)
+      .mockResolvedValueOnce([{ affectedRows: 1 }, []] as never);
 
     await workoutSessionRepository.abandon(7, 1);
 
-    const [, params] = queryMock.mock.calls[0];
+    const [, countParams] = queryMock.mock.calls[0];
+    const [, updateParams] = queryMock.mock.calls[1];
 
-    expect(params).toEqual([1, 7]);
+    expect(countParams).toEqual([7]);
+    expect(updateParams).toEqual([7, 1]);
   });
 });
 
@@ -772,6 +793,130 @@ describe("US23 - Historique des séances", () => {
       .mockResolvedValue([] as never);
 
     const response = await request(app).get("/api/workout-sessions/history");
+
+    expect(response.status).toBe(401);
+    expect(repositoryMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("US24 - Consulter le détail d'une séance", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("range chaque série sous son exercice, et donne un tableau vide aux autres", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 10,
+      status: "completed",
+      exercises: [
+        { sessionExerciseId: 1, name: "Développé couché" },
+        { sessionExerciseId: 2, name: "Rowing" },
+      ],
+    } as never);
+
+    jest.spyOn(databaseClient, "query").mockResolvedValue([
+      [
+        {
+          sessionExerciseId: 1,
+          setNumber: 1,
+          repetitions: 8,
+          weightKg: "62.50",
+        },
+        {
+          sessionExerciseId: 1,
+          setNumber: 2,
+          repetitions: 7,
+          weightKg: "60.00",
+        },
+      ],
+      [],
+    ] as never);
+
+    const session = await workoutSessionRepository.readDetail(10, 1);
+
+    expect(session?.exercises[0].sets).toHaveLength(2);
+    expect(session?.exercises[1].sets).toEqual([]);
+  });
+
+  test("ne lit que les séries validées de la séance, triées par numéro", async () => {
+    jest.spyOn(workoutSessionRepository, "read").mockResolvedValue({
+      id: 10,
+      status: "completed",
+      exercises: [],
+    } as never);
+
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValue([[], []] as never);
+
+    await workoutSessionRepository.readDetail(10, 1);
+
+    const [sql, params] = queryMock.mock.calls[0];
+
+    expect(String(sql)).toMatch(/is_completed\s*=\s*TRUE/);
+    expect(String(sql)).toMatch(/ORDER BY exercise_set\.set_number/);
+    expect(params).toEqual([10]);
+  });
+
+  test("ne lit aucune série si la séance n'appartient pas à l'utilisateur", async () => {
+    jest
+      .spyOn(workoutSessionRepository, "read")
+      .mockResolvedValue(undefined as never);
+
+    const queryMock = jest.spyOn(databaseClient, "query");
+
+    const session = await workoutSessionRepository.readDetail(10, 2);
+
+    expect(session).toBeUndefined();
+    expect(queryMock).not.toHaveBeenCalled();
+  });
+
+  test("renvoie le détail de la séance de l'utilisateur connecté", async () => {
+    const repositoryMock = jest
+      .spyOn(workoutSessionRepository, "readDetail")
+      .mockResolvedValue({
+        id: 10,
+        exercises: [
+          { sessionExerciseId: 1, slug: "developpe-couche", sets: [] },
+        ],
+      } as never);
+
+    const response = await authenticatedRequest.get(
+      "/api/workout-sessions/10/details",
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.exercises[0].imageUrl).toBeDefined();
+    expect(repositoryMock).toHaveBeenCalledWith(10, 1);
+  });
+
+  test("répond 404 si la séance est absente ou appartient à un autre utilisateur", async () => {
+    jest
+      .spyOn(workoutSessionRepository, "readDetail")
+      .mockResolvedValue(undefined as never);
+
+    const response = await authenticatedRequest.get(
+      "/api/workout-sessions/999/details",
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  test("répond 400 si l'identifiant est invalide", async () => {
+    const repositoryMock = jest.spyOn(workoutSessionRepository, "readDetail");
+
+    const response = await authenticatedRequest.get(
+      "/api/workout-sessions/abc/details",
+    );
+
+    expect(response.status).toBe(400);
+    expect(repositoryMock).not.toHaveBeenCalled();
+  });
+
+  test("refuse l'accès sans cookie d'authentification", async () => {
+    const repositoryMock = jest.spyOn(workoutSessionRepository, "readDetail");
+
+    const response = await request(app).get("/api/workout-sessions/10/details");
 
     expect(response.status).toBe(401);
     expect(repositoryMock).not.toHaveBeenCalled();

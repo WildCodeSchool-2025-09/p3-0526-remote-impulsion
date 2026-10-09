@@ -6,7 +6,7 @@ const useAbandonSession = () => {
   const context = useContext(CurrentSessionContext);
 
   if (context === null) {
-    throw new Error("CurrentSessionContext est indisponible");
+    throw new Error("Le contexte de la séance en cours est indisponible");
   }
 
   const { refreshCurrentSession } = context;

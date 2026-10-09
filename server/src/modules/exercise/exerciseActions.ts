@@ -1,13 +1,17 @@
 import type { RequestHandler } from "express";
 import { buildImageUrl } from "../../helpers/imageUrl";
 import exerciseRepository from "./exerciseRepository";
-import type { ExerciseDetail, ExerciseSummary } from "./exerciseTypes";
+import type {
+  ExerciseDetail,
+  ExercisePage,
+  ExerciseSummary,
+} from "./exerciseTypes";
 
 type ExerciseIdParams = {
   id: string;
 };
 
-const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
+const browse: RequestHandler<Record<string, never>, ExercisePage> = async (
   req,
   res,
   next,
@@ -39,7 +43,21 @@ const browse: RequestHandler<Record<string, never>, ExerciseSummary[]> = async (
       imageUrl: buildImageUrl(exercise.slug),
     }));
 
-    res.json(exercisesWithImage);
+    let page = Number(req.query.page);
+
+    if (!Number.isInteger(page) || page < 1) {
+      page = 1;
+    }
+
+    const limit = 10;
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    const items = exercisesWithImage.slice(start, end);
+    const total = exercisesWithImage.length;
+    const pageCount = Math.ceil(total / limit);
+
+    res.json({ items, total, page, pageCount });
   } catch (error) {
     next(error);
   }
