@@ -364,12 +364,10 @@ function SessionId() {
           </div>
         )}
 
-        <div
-          className={`mt-6 flex items-stretch gap-3 ${exerciseCount === 0 ? "justify-center" : "justify-end"}`}
-        >
+        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:justify-end">
           <Link
             to={`/sessions/${session.id}/exercises`}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-center font-semibold text-xs leading-tight transition-colors duration-200 sm:text-sm md:px-5 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 md:flex-none ${
+            className={`flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3.5 text-center font-semibold text-sm leading-tight transition-colors duration-200 sm:text-sm md:px-5 focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 lg:w-auto ${
               exerciseCount === 0
                 ? "border-primary bg-primary text-primary-content hover:border-info hover:bg-info hover:text-white"
                 : "border-base-content/40 bg-base-100 hover:border-info hover:bg-info/10 hover:text-info md:bg-transparent"
@@ -383,7 +381,7 @@ function SessionId() {
               type="button"
               onClick={handleStart}
               disabled={exerciseCount === 0 || startLoading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-3 py-2.5 text-center font-semibold text-primary-content text-xs leading-tight transition-colors duration-200 sm:text-sm md:px-5 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 md:flex-none"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-3.5 text-center font-semibold text-primary-content text-sm leading-tight transition-colors duration-200 sm:text-sm md:px-5 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 lg:w-auto"
             >
               {startLoading ? "Démarrage..." : "Démarrer la séance"}
             </button>
@@ -399,7 +397,7 @@ function SessionId() {
                   ? undefined
                   : "Validez au moins une série pour terminer la séance"
               }
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-3 py-2.5 text-center font-semibold text-primary-content text-xs leading-tight transition-colors duration-200 sm:text-sm md:px-5 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 md:flex-none"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-3.5 text-center font-semibold text-primary-content text-sm leading-tight transition-colors duration-200 sm:text-sm md:px-5 hover:border-info hover:bg-info hover:text-white focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-base-300 disabled:bg-base-200 disabled:text-base-content/35 disabled:hover:border-base-300 disabled:hover:bg-base-200 lg:w-auto"
             >
               Valider la séance
             </button>
