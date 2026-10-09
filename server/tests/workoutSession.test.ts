@@ -351,6 +351,83 @@ describe("US14 - Ordonner les exercices d'une séance", () => {
   );
 });
 
+describe("US13 - Retirer un exercice d'une séance préparée", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("retire un exercice de la séance", async () => {
+    const removeExerciseMock = jest
+      .spyOn(workoutSessionRepository, "removeExercise")
+      .mockResolvedValue("deleted");
+
+    const response = await authenticatedRequest.delete(
+      "/api/workout-sessions/7/exercises/18",
+    );
+
+    expect(response.status).toBe(204);
+    expect(removeExerciseMock).toHaveBeenCalledWith(7, 18, 1);
+  });
+
+  test.each([
+    ["un identifiant de séance invalide", "abc", "18"],
+    ["un identifiant d'exercice invalide", "7", "0"],
+  ])("refuse %s", async (_description, sessionId, sessionExerciseId) => {
+    const removeExerciseMock = jest.spyOn(
+      workoutSessionRepository,
+      "removeExercise",
+    );
+
+    const response = await authenticatedRequest.delete(
+      `/api/workout-sessions/${sessionId}/exercises/${sessionExerciseId}`,
+    );
+
+    expect(response.status).toBe(400);
+    expect(removeExerciseMock).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ["exercise_not_found", 404],
+    ["session_not_editable", 409],
+  ] as const)(
+    "retourne %s avec le statut HTTP %i",
+    async (repositoryResult, expectedStatus) => {
+      jest
+        .spyOn(workoutSessionRepository, "removeExercise")
+        .mockResolvedValue(repositoryResult);
+
+      const response = await authenticatedRequest.delete(
+        "/api/workout-sessions/7/exercises/18",
+      );
+
+      expect(response.status).toBe(expectedStatus);
+    },
+  );
+
+  test("supprime l'exercice et referme le trou dans les positions", async () => {
+    const queryMock = jest
+      .spyOn(databaseClient, "query")
+      .mockResolvedValueOnce([
+        [{ status: "prepared", position: 2 }],
+        [],
+      ] as never)
+      .mockResolvedValueOnce([{ affectedRows: 1 }, []] as never)
+      .mockResolvedValueOnce([{ affectedRows: 2 }, []] as never);
+
+    const result = await workoutSessionRepository.removeExercise(7, 18, 1);
+
+    expect(result).toBe("deleted");
+    expect(String(queryMock.mock.calls[1][0])).toMatch(
+      /DELETE FROM workout_session_exercise/,
+    );
+    expect(queryMock.mock.calls[1][1]).toEqual([18, 7]);
+    expect(String(queryMock.mock.calls[2][0])).toMatch(
+      /SET position = position - 1/,
+    );
+    expect(queryMock.mock.calls[2][1]).toEqual([7, 2]);
+  });
+});
+
 describe("US15 - Régler le temps de repos d'un exercice", () => {
   afterEach(() => {
     jest.restoreAllMocks();

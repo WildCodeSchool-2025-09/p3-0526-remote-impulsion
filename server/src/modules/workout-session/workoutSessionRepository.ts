@@ -306,6 +306,53 @@ class WorkoutSessionRepository {
     return "updated";
   }
 
+  async removeExercise(
+    sessionId: number,
+    sessionExerciseId: number,
+    userId: number,
+  ): Promise<"deleted" | "exercise_not_found" | "session_not_editable"> {
+    const [rows] = await databaseClient.query<Rows>(
+      `SELECT
+        workout_session.status,
+        workout_session_exercise.position
+       FROM workout_session_exercise
+       JOIN workout_session
+         ON workout_session.id = workout_session_exercise.workout_session_id
+       WHERE workout_session.id = ?
+         AND workout_session_exercise.id = ?
+         AND workout_session.user_id = ?`,
+      [sessionId, sessionExerciseId, userId],
+    );
+
+    const sessionExercise = rows[0];
+
+    if (sessionExercise === undefined) {
+      return "exercise_not_found";
+    }
+
+    if (sessionExercise.status !== "prepared") {
+      return "session_not_editable";
+    }
+
+    await databaseClient.query<Result>(
+      `DELETE FROM workout_session_exercise
+       WHERE id = ?
+         AND workout_session_id = ?`,
+      [sessionExerciseId, sessionId],
+    );
+
+    await databaseClient.query<Result>(
+      `UPDATE workout_session_exercise
+       SET position = position - 1
+       WHERE workout_session_id = ?
+         AND position > ?
+       ORDER BY position ASC`,
+      [sessionId, sessionExercise.position],
+    );
+
+    return "deleted";
+  }
+
   async reorderExercises(
     sessionId: number,
     userId: number,

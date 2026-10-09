@@ -24,8 +24,6 @@ function Layout() {
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const isHome = pathname === "/";
-  const isAddingExercises =
-    pathname.startsWith("/sessions/") && pathname.endsWith("/exercises");
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content lg:flex">
@@ -108,23 +106,21 @@ function Layout() {
         <Outlet />
       </main>
 
-      {!isAddingExercises && (
-        <nav
-          aria-label="Navigation mobile"
-          className="fixed right-0 bottom-0 left-0 z-30 flex h-20 items-center justify-around border-base-300 border-t bg-base-200 lg:hidden"
-        >
-          {NAV_ITEMS.map(({ to, label, icon, end }) => (
-            <NavItem
-              key={to}
-              to={to}
-              label={label}
-              icon={icon}
-              end={end}
-              variant="mobile"
-            />
-          ))}
-        </nav>
-      )}
+      <nav
+        aria-label="Navigation mobile"
+        className="fixed right-0 bottom-0 left-0 z-30 flex h-20 items-center justify-around border-base-300 border-t bg-base-200 lg:hidden"
+      >
+        {NAV_ITEMS.map(({ to, label, icon, end }) => (
+          <NavItem
+            key={to}
+            to={to}
+            label={label}
+            icon={icon}
+            end={end}
+            variant="mobile"
+          />
+        ))}
+      </nav>
     </div>
   );
 }

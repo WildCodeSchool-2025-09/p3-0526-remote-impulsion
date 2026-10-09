@@ -45,6 +45,7 @@ const useWorkoutSession = (sessionId: number) => {
       return {
         ...currentSession,
         exercises,
+        exerciseCount: exercises.length,
       };
     });
   };

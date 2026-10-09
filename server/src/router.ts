@@ -26,6 +26,10 @@ router.patch(
   "/api/workout-sessions/:id/exercises/:sessionExerciseId/rest",
   workoutSessionActions.updateExerciseRest,
 );
+router.delete(
+  "/api/workout-sessions/:id/exercises/:sessionExerciseId",
+  workoutSessionActions.removeExercise,
+);
 router.get("/api/workout-sessions", workoutSessionActions.browse);
 router.get("/api/workout-sessions/current", workoutSessionActions.readCurrent);
 router.get(

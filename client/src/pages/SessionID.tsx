@@ -14,6 +14,7 @@ import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import { useMessages } from "../contexts/MessageContext";
 import useAbandonSession from "../hooks/workout-session/useAbandonSession";
 import useDeletePreparedSession from "../hooks/workout-session/useDeletePreparedSession";
+import useDeleteSessionExercise from "../hooks/workout-session/useDeleteSessionExercise";
 import useReorderSessionExercises from "../hooks/workout-session/useReorderSessionExercises";
 import useStartSession from "../hooks/workout-session/useStartSession";
 import useUpdateSessionExerciseRest from "../hooks/workout-session/useUpdateSessionExerciseRest";
@@ -63,6 +64,12 @@ function SessionId() {
     error: restError,
   } = useUpdateSessionExerciseRest();
 
+  const {
+    deleteSessionExercise,
+    deletingExerciseId,
+    error: removeExerciseError,
+  } = useDeleteSessionExercise();
+
   const currentSessionContext = useContext(CurrentSessionContext);
   const { showMessage } = useMessages();
 
@@ -89,6 +96,12 @@ function SessionId() {
       showMessage(restError, "error");
     }
   }, [restError, showMessage]);
+
+  useEffect(() => {
+    if (removeExerciseError !== null) {
+      showMessage(removeExerciseError, "error");
+    }
+  }, [removeExerciseError, showMessage]);
 
   if (currentSessionContext === null) {
     throw new Error("Le contexte de la séance en cours est indisponible");
@@ -192,6 +205,24 @@ function SessionId() {
           : exercise,
       ),
     );
+  };
+
+  const handleRemoveExercise = async (sessionExerciseId: number) => {
+    const deleted = await deleteSessionExercise(session.id, sessionExerciseId);
+
+    if (!deleted) {
+      return;
+    }
+
+    updateSessionExercises(
+      exercises
+        .filter((exercise) => exercise.sessionExerciseId !== sessionExerciseId)
+        .map((exercise, index) => ({
+          ...exercise,
+          position: index + 1,
+        })),
+    );
+    showMessage("Exercice retiré de la séance", "success");
   };
 
   const hasOtherSession =
@@ -353,11 +384,18 @@ function SessionId() {
                 onMoveDown={() => handleMoveExercise(index, 1)}
                 canMoveUp={index > 0}
                 canMoveDown={index < exercises.length - 1}
-                disabled={reorderLoading}
+                disabled={reorderLoading || deletingExerciseId !== null}
                 canEditRest={isPrepared}
-                restDisabled={updatingExerciseId !== null}
+                restDisabled={
+                  updatingExerciseId !== null || deletingExerciseId !== null
+                }
                 onRestChange={(restSeconds) =>
                   handleRestChange(exercise.sessionExerciseId, restSeconds)
+                }
+                canRemove={isPrepared}
+                removeDisabled={deletingExerciseId !== null || reorderLoading}
+                onRemove={() =>
+                  handleRemoveExercise(exercise.sessionExerciseId)
                 }
               />
             ))}
