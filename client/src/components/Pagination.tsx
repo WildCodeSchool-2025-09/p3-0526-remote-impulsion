@@ -20,7 +20,14 @@ const Pagination = ({ page, pageCount, onPageChange }: PaginationProps) => {
 
   const goToPage = (newPage: number) => {
     onPageChange(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    const resultsTop = document.getElementById("results-top");
+
+    if (resultsTop !== null) {
+      resultsTop.scrollIntoView({ block: "start" });
+    } else {
+      window.scrollTo({ top: 0 });
+    }
   };
 
   return (
