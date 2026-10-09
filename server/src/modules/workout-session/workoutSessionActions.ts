@@ -286,7 +286,10 @@ const start: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const affectedRows = await workoutSessionRepository.start(sessionId, userId);
+    const affectedRows = await workoutSessionRepository.start(
+      sessionId,
+      userId,
+    );
 
     if (affectedRows === 0) {
       res.sendStatus(409);
