@@ -8,6 +8,7 @@ import AbandonSessionModal from "../components/AbandonSessionModal";
 import Chrono from "../components/Chrono";
 import DeleteSessionModal from "../components/DeleteSessionModal";
 import PreparedExerciseCard from "../components/PreparedExerciseCard";
+import CompletedSessionView from "../components/session-detail/CompletedSessionView";
 import { CurrentSessionContext } from "../contexts/CurrentSessionContext";
 import { useMessages } from "../contexts/MessageContext";
 import { useMobileNav } from "../contexts/MobileNavContext";
@@ -100,6 +101,10 @@ function SessionId() {
 
   if (!session) {
     return <p>Séance introuvable.</p>;
+  }
+
+  if (session.status === "completed") {
+    return <CompletedSessionView sessionId={session.id} />;
   }
 
   const formattedDate = formatSessionDateWithWeekday(session.createdAt);

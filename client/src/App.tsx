@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import AddExercisesToSession from "./pages/AddExercisesToSession";
 import Exercises from "./pages/Exercises";
 import History from "./pages/History";
+import HistoryDetail from "./pages/HistoryDetail";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       { path: "exercises", element: <Exercises /> },
       { path: "programs", element: <Programs /> },
       { path: "history", element: <History /> },
+      { path: "history/:id", element: <HistoryDetail /> },
       { path: "sessions", element: <Sessions /> },
       { path: "sessions/:id", element: <SessionId /> },
       { path: "sessions/:id/summary", element: <SessionSummary /> },
