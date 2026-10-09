@@ -25,3 +25,10 @@ export type ExerciseDetail = ExerciseSummary & {
   muscles: ExerciseMuscle[];
   equipment: ExerciseEquipment[];
 };
+
+export type ExercisePage = {
+  items: ExerciseSummary[];
+  total: number;
+  page: number;
+  pageCount: number;
+};
