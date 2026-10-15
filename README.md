@@ -1,4 +1,8 @@
-# p3-0526-remote-impulsion
+# Impulsion
+
+Application de suivi sportif réalisée par Yannick, Cynthia et Fabian dans le cadre du projet 3 de la Wild Code School.
+
+Le catalogue initial de 151 exercices est adapté du projet Exercise API de Marc Mayol. Les données indispensables sont chargées directement par `server/database/schema.sql`.
 
 Ce projet est un monorepo JS, suivant l'architecture React-Express-MySQL telle qu'enseignée à la Wild Code School (v7.2.4) :
 
@@ -233,7 +237,7 @@ class ItemRepository {
 export default new ItemRepository();
 ```
 
-**Ajouter un middleware** 
+**Ajouter un middleware**
 
 ```typescript
 // ...
@@ -307,21 +311,21 @@ declare global {
 ## FAQ
 
 ### Installation avec Docker
-> ⚠️ Prérequis : Vous devez avoir installé Docker et Docker Compose sur votre machine.  
+> ⚠️ Prérequis : Vous devez avoir installé Docker et Docker Compose sur votre machine.
 > Suivez les instructions ici : [Docker Installation](https://docs.docker.com/get-docker/).
 
 Lorsque Docker est installé et démarré, exécutez la commande suivante pour construire l'image Docker et démarrer les conteneurs :
 ```bash
 docker compose up -d --build
 ```
-La partie _client_ de l'application sera accessible à l'adresse http://localhost:3000 et la partie _serveur_ à l'adresse http://localhost:3310.  
+La partie _client_ de l'application sera accessible à l'adresse http://localhost:3000 et la partie _serveur_ à l'adresse http://localhost:3310.
 Pour arrêter et supprimer les conteneurs, exécutez :
 ```bash
 docker compose down
 ```
 
 #### Mode développement
-Les dépendances (du dossier `node_modules`) sont installées dans le conteneur Docker et ne seront pas visibles directement. Si vous utilisez un IDE comme VSCode et que vous souhaitez modifier des fichiers de votre application, vous devez installer les dépendances localement pour prévenir toute erreur de fichiers manquants.  
+Les dépendances (du dossier `node_modules`) sont installées dans le conteneur Docker et ne seront pas visibles directement. Si vous utilisez un IDE comme VSCode et que vous souhaitez modifier des fichiers de votre application, vous devez installer les dépendances localement pour prévenir toute erreur de fichiers manquants.
 ```bash
 npm install
 ```
